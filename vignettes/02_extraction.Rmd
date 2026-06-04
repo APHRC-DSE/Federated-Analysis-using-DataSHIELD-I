@@ -1,0 +1,118 @@
+---
+title: "Extracting a tailored analysis dataset"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Extracting a tailored analysis dataset}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE, eval = TRUE, message = FALSE, warning = FALSE,
+  collapse = TRUE, comment = "#>"
+)
+```
+
+> Every result on this page was produced by executing the code against the
+> live three-site federation (repository steps 1–4). Connection parameters are
+> read from the gitignored `sites.env`.
+
+dsOMOP's plan DSL lets you request *exactly* the columns you want — and rename
+them on the way out — then materialises a single person-level data frame on each
+server. The table is built in place; nothing patient-level is transferred. We
+then use standard `dsBaseClient` to confirm the extract has landed as an
+ordinary server-side R data frame, and explore it.
+
+## Log in and attach the OMOP resource
+
+```{r login, results = "hide"}
+library(DSI); library(DSOpal); library(dsBaseClient); library(dsOMOPClient)
+
+find_up <- function(f, d = getwd()) {
+  repeat {
+    p <- file.path(d, f); if (file.exists(p)) return(p)
+    up <- dirname(d); if (identical(up, d)) stop(f, " not found"); d <- up
+  }
+}
+read_env <- function(path) {
+  ln <- trimws(readLines(path, warn = FALSE))
+  ln <- ln[nzchar(ln) & !startsWith(ln, "#")]
+  e <- list()
+  for (kv in regmatches(ln, regexec("^([A-Za-z_][A-Za-z0-9_]*)=(.*)$", ln)))
+    if (length(kv) == 3L) e[[kv[2]]] <- kv[3]
+  e
+}
+cfg <- read_env(Sys.getenv("SITES_ENV", unset = find_up("sites.env")))
+
+builder <- DSI::newDSLoginBuilder()
+for (S in sub("_OPAL_URL$", "", grep("_OPAL_URL$", names(cfg), value = TRUE)))
+  builder$append(server = tolower(S), url = cfg[[paste0(S, "_OPAL_URL")]],
+                 user = cfg$OPAL_USER, password = cfg$OPAL_PASSWORD,
+                 resource = cfg$OPAL_RESOURCE_PATH,
+                 driver = "OpalDriver", profile = cfg$OPAL_PROFILE)
+conns <- DSI::datashield.login(logins = builder$build())
+ds.omop.connect(resource = cfg$OPAL_RESOURCE_PATH, symbol = "omop", conns = conns)
+```
+
+## Build and execute an extraction plan
+
+We ask for two `person` columns and rename them as we extract: `gender_concept_id`
+becomes `sex` and `year_of_birth` becomes `birth_year`. The plan is executed on
+each server, producing a server-side data frame bound to the symbol `D`.
+
+```{r extract, results = "hide"}
+plan <- ds.omop.plan()
+plan <- ds.omop.plan.person_level(
+  plan,
+  tables = list(person = c(sex = "gender_concept_id", birth_year = "year_of_birth")),
+  name = "demographics")
+
+ds.omop.plan.execute(plan, out = c(demographics = "D"), symbol = "omop", conns = conns)
+```
+
+## Confirm the extract landed as a server-side data frame
+
+The columns are exactly the two we asked for, under their new names — and no
+identifier column came along:
+
+```{r colnames}
+ds.colnames("D")
+```
+
+Its dimensions, pooled across the three sites, recover the full cohort of 2 694
+persons:
+
+```{r dim}
+ds.dim("D", type = "combine")
+```
+
+`ds.summary()` reports `D` as an ordinary `data.frame` — this is the point where
+the OMOP layer hands off to the standard DataSHIELD toolchain:
+
+```{r summary}
+ds.summary("D")[[1]]
+```
+
+## Explore the extracted variable
+
+From here we use plain `dsBaseClient`. The pooled mean and quantiles of
+`birth_year` combine sufficient statistics from all three sites:
+
+```{r mean}
+ds.mean("D$birth_year", type = "combine")$Global.Mean
+```
+
+```{r quantiles}
+ds.quantileMean("D$birth_year", type = "combine")
+```
+
+## Disconnect
+
+```{r logout, results = "hide"}
+ds.omop.disconnect(symbol = "omop", conns = conns)
+DSI::datashield.logout(conns)
+```
+
+The extract is now an ordinary federated data frame. The
+[next page](03_modeling.html) fits a regression model on it with `ds.glm`.

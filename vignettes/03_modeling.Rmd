@@ -1,0 +1,114 @@
+---
+title: "Federated regression on an extracted table"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Federated regression on an extracted table}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE, eval = TRUE, message = FALSE, warning = FALSE,
+  collapse = TRUE, comment = "#>"
+)
+```
+
+> Every result on this page was produced by executing the code against the
+> live three-site federation (repository steps 1–4). Connection parameters are
+> read from the gitignored `sites.env`.
+
+Because a dsOMOP extract is just an ordinary server-side data frame, the whole
+`dsBaseClient` modelling toolchain applies to it directly. Here we re-create the
+demographics extract, recode sex into a 0/1 indicator, assemble a model frame,
+and fit federated generalised linear models. Only the models' sufficient
+statistics are pooled across the three sites — no patient row ever leaves a
+server.
+
+## Log in, attach, and re-extract the demographics table
+
+```{r login, results = "hide"}
+library(DSI); library(DSOpal); library(dsBaseClient); library(dsOMOPClient)
+
+find_up <- function(f, d = getwd()) {
+  repeat {
+    p <- file.path(d, f); if (file.exists(p)) return(p)
+    up <- dirname(d); if (identical(up, d)) stop(f, " not found"); d <- up
+  }
+}
+read_env <- function(path) {
+  ln <- trimws(readLines(path, warn = FALSE))
+  ln <- ln[nzchar(ln) & !startsWith(ln, "#")]
+  e <- list()
+  for (kv in regmatches(ln, regexec("^([A-Za-z_][A-Za-z0-9_]*)=(.*)$", ln)))
+    if (length(kv) == 3L) e[[kv[2]]] <- kv[3]
+  e
+}
+cfg <- read_env(Sys.getenv("SITES_ENV", unset = find_up("sites.env")))
+
+builder <- DSI::newDSLoginBuilder()
+for (S in sub("_OPAL_URL$", "", grep("_OPAL_URL$", names(cfg), value = TRUE)))
+  builder$append(server = tolower(S), url = cfg[[paste0(S, "_OPAL_URL")]],
+                 user = cfg$OPAL_USER, password = cfg$OPAL_PASSWORD,
+                 resource = cfg$OPAL_RESOURCE_PATH,
+                 driver = "OpalDriver", profile = cfg$OPAL_PROFILE)
+conns <- DSI::datashield.login(logins = builder$build())
+ds.omop.connect(resource = cfg$OPAL_RESOURCE_PATH, symbol = "omop", conns = conns)
+
+plan <- ds.omop.plan()
+plan <- ds.omop.plan.person_level(
+  plan,
+  tables = list(person = c(sex = "gender_concept_id", birth_year = "year_of_birth")),
+  name = "demographics")
+ds.omop.plan.execute(plan, out = c(demographics = "D"), symbol = "omop", conns = conns)
+```
+
+## Assemble a model frame
+
+OMOP encodes sex as a concept id (8507 male, 8532 female). We recode it to a
+0/1 `male` indicator and bind it onto the extract to form the model frame `DF`:
+
+```{r recode, results = "hide"}
+ds.recodeValues(var.name = "D$sex",
+                values2replace.vector = c(8507, 8532),
+                new.values.vector    = c(1, 0),
+                newobj = "male", datasources = conns)
+ds.dataFrame(x = c("D", "male"), newobj = "DF", datasources = conns)
+```
+
+```{r dfcols}
+ds.colnames("DF")[[1]]
+```
+
+## Linear model: birth year by sex
+
+A Gaussian GLM of `birth_year ~ male`, pooled across all three sites. With a
+single 0/1 predictor the intercept is the mean birth year of women and the
+slope is the men-minus-women difference, so the fit is directly interpretable:
+
+```{r gaussian}
+g <- ds.glm(formula = "DF$birth_year ~ DF$male", family = "gaussian",
+            datasources = conns)
+g$coefficients
+```
+
+## Logistic model: sex by birth year
+
+The same model frame supports a binomial GLM just as readily:
+
+```{r binomial}
+gb <- ds.glm(formula = "DF$male ~ DF$birth_year", family = "binomial",
+             datasources = conns)
+gb$coefficients
+```
+
+## Disconnect
+
+```{r logout, results = "hide"}
+ds.omop.disconnect(symbol = "omop", conns = conns)
+DSI::datashield.logout(conns)
+```
+
+The models above are standard `dsBaseClient` fits computed on a dsOMOP extract:
+the OMOP layer produced the analysis dataset, and the ordinary federated
+toolchain took it from there.
