@@ -19,11 +19,14 @@ knitr::opts_chunk$set(
 > read from the gitignored `sites.env`.
 
 Because a dsOMOP extract is just an ordinary server-side data frame, the whole
-`dsBaseClient` modelling toolchain applies to it directly. Here we re-create the
-demographics extract, recode sex into a 0/1 indicator, assemble a model frame,
-and fit federated generalised linear models. Only the models' sufficient
-statistics are pooled across the three sites — no patient row ever leaves a
-server.
+`dsBaseClient` modelling toolchain applies to it directly. And because dsOMOP
+harmonises `sex` into a federation-aligned factor — coded identically on every
+site, as the [previous page](02_extraction.html) showed — it is model-ready
+*as-is*: `ds.glm` builds the contrast for us, so the old manual 0/1 recoding is
+no longer needed. We fit the same federated GLM two ways — pooled individual-level
+and study-level meta-analysis — then a logistic model the other direction. Only
+the models' sufficient statistics are pooled across the three sites; no patient
+row ever leaves a server.
 
 ## Log in, attach, and re-extract the demographics table
 
@@ -60,44 +63,45 @@ plan <- ds.omop.plan.person_level(
   plan,
   tables = list(person = c(sex = "gender_concept_id", birth_year = "year_of_birth")),
   name = "demographics")
+plan <- ds.omop.plan.options(plan, factor_concepts = TRUE)   # on by default
 ds.omop.plan.execute(plan, out = c(demographics = "D"), symbol = "omop", conns = conns)
-```
-
-## Assemble a model frame
-
-OMOP encodes sex as a concept id (8507 male, 8532 female). We recode it to a
-0/1 `male` indicator and bind it onto the extract to form the model frame `DF`:
-
-```{r recode, results = "hide"}
-ds.recodeValues(var.name = "D$sex",
-                values2replace.vector = c(8507, 8532),
-                new.values.vector    = c(1, 0),
-                newobj = "male", datasources = conns)
-ds.dataFrame(x = c("D", "male"), newobj = "DF", datasources = conns)
-```
-
-```{r dfcols}
-ds.colnames("DF")[[1]]
 ```
 
 ## Linear model: birth year by sex
 
-A Gaussian GLM of `birth_year ~ male`, pooled across all three sites. With a
-single 0/1 predictor the intercept is the mean birth year of women and the
-slope is the men-minus-women difference, so the fit is directly interpretable:
+`sex` is a factor coded identically on every site, so we regress on it directly
+— `ds.glm` constructs the contrast itself. The reference level is `8507` (male,
+the lowest concept id), so in `birth_year ~ sex` the intercept is the mean birth
+year of men and the `sex8532` term is the women-minus-men difference:
 
 ```{r gaussian}
-g <- ds.glm(formula = "DF$birth_year ~ DF$male", family = "gaussian",
+g <- ds.glm(formula = "D$birth_year ~ D$sex", family = "gaussian",
             datasources = conns)
 g$coefficients
 ```
 
+## Meta-analysis: the same model, study-level
+
+`ds.glm` above pools individual-level sufficient statistics — one model fitted
+over the combined federation. `ds.glmSLMA` instead fits the model *separately*
+on each site and meta-combines the per-site estimates (study-level meta-analysis),
+sharing no individual-level statistic across sites. On a harmonised factor the
+two routes agree:
+
+```{r slma}
+gs <- ds.glmSLMA(formula = "D$birth_year ~ D$sex", family = "gaussian",
+                 datasources = conns)
+gs$SLMA.pooled.ests.matrix
+```
+
 ## Logistic model: sex by birth year
 
-The same model frame supports a binomial GLM just as readily:
+The harmonised factor is equally usable as a binomial *response*. Modelling
+`sex ~ birth_year` estimates the log-odds of being female (`8532`, the
+non-reference level) as a function of birth year:
 
 ```{r binomial}
-gb <- ds.glm(formula = "DF$male ~ DF$birth_year", family = "binomial",
+gb <- ds.glm(formula = "D$sex ~ D$birth_year", family = "binomial",
              datasources = conns)
 gb$coefficients
 ```
@@ -110,5 +114,6 @@ DSI::datashield.logout(conns)
 ```
 
 The models above are standard `dsBaseClient` fits computed on a dsOMOP extract:
-the OMOP layer produced the analysis dataset, and the ordinary federated
-toolchain took it from there.
+the OMOP layer produced *and harmonised* the analysis dataset — including the
+factor coding that made `sex` model-ready across the federation — and the
+ordinary federated toolchain took it from there.

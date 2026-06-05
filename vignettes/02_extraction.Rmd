@@ -94,6 +94,20 @@ the OMOP layer hands off to the standard DataSHIELD toolchain:
 ds.summary("D")[[1]]
 ```
 
+## Renaming keeps federated factor harmonisation
+
+We renamed `gender_concept_id` to `sex`, yet dsOMOP still recognises it as a
+concept column and harmonises it into a factor whose levels are coded
+*identically* on every site. Renaming a concept column never silently opts it
+out of this coordination — the class is `factor` and the level set is the same
+union of concept ids everywhere, which is the precondition for pooling it in one
+model:
+
+```{r harmonised}
+ds.class("D$sex")
+ds.levels("D$sex")
+```
+
 ## Explore the extracted variable
 
 From here we use plain `dsBaseClient`. The pooled mean and quantiles of

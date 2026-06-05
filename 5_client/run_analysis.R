@@ -9,12 +9,14 @@
 #      whole dataset (2694) while no site holds more than its shard,
 #   C. computes the most prevalent conditions (pooled),
 #   D. summarises a numeric measurement (per site + pooled),
-#   E. extracts a person-level table server-side and runs a standard
-#      dsBaseClient analysis on it — showing dsOMOP output flows into the normal
-#      DataSHIELD toolchain.
+#   E. extracts a person-level table server-side — renaming gender_concept_id
+#      to a readable `sex` while the coordination layer still harmonises it into
+#      a federation-aligned factor (identical level coding on every site), and
+#   F. models that harmonised factor directly with dsBaseClient — a pooled-IPD
+#      GLM and a meta-analytic GLM (SLMA) of birth year by sex.
 #
 # Nothing patient-level ever leaves a site: dsOMOP returns only disclosure-checked
-# aggregates, and the extracted table in (E) is analysed in place by dsBase.
+# aggregates, and the table extracted in (E) is analysed in place by dsBase.
 #
 # Usage (after steps 2-4):  bash 5_client/setup_client.sh
 #   or directly:            Rscript 5_client/run_analysis.R
@@ -123,13 +125,19 @@ try_show(ds.omop.value.quantiles("drug_exposure", "days_supply",
                                   symbol = "omop", conns = conns),
          "value.quantiles(drug_exposure$days_supply)")
 
-# --- E. extract a person-level table, then standard DataSHIELD --------------
-banner("E. Extract person-level table -> standard dsBaseClient analysis")
+# --- E. extract a person-level table (readable name + harmonised factor) -----
+# We rename gender_concept_id -> `sex` in the recipe. Renaming a concept column
+# does NOT opt it out of harmonisation: dsOMOP tags it by its landed name, so
+# the coordination layer still recodes it into a factor coded identically on
+# every site (8507 = MALE, 8532 = FEMALE). factor_concepts is on by default; we
+# set it explicitly here for the narrative.
+banner("E. Extract person-level table (rename-safe harmonised factor)")
 analysis_ok <- tryCatch({
   plan <- ds.omop.plan()
   plan <- ds.omop.plan.person_level(
-    plan, tables = list(person = c("gender_concept_id", "year_of_birth")),
+    plan, tables = list(person = c(sex = "gender_concept_id", "year_of_birth")),
     name = "demographics")
+  plan <- ds.omop.plan.options(plan, factor_concepts = TRUE)
   ds.omop.plan.preview(plan, symbol = "omop", conns = conns)
   ds.omop.plan.execute(plan, out = c(demographics = "D"),
                        symbol = "omop", conns = conns)
@@ -139,49 +147,58 @@ analysis_ok <- tryCatch({
                              sep = ""); FALSE })
 
 if (isTRUE(analysis_ok)) {
-  cat("\nExtracted server-side data frame 'D':\n")
+  cat("\nExtracted server-side data frame 'D' — the column is `sex` (the\n",
+      "_concept_id suffix renamed away) yet still harmonised:\n", sep = "")
   print(tryCatch(ds.dim("D"),      error = function(e) conditionMessage(e)))
   print(tryCatch(ds.colnames("D"), error = function(e) conditionMessage(e)))
-  # ds.summary confirms the dsOMOP extract is now an ordinary R data.frame on
-  # each server — the point where the OMOP layer hands off to standard DataSHIELD.
-  cat("\nds.summary('D') — the extract is now a normal server-side R data.frame:\n")
-  print(tryCatch(ds.summary("D")[[1]], error = function(e) conditionMessage(e)))
+  # Proof the rename did not break harmonisation: `sex` is a factor with the
+  # SAME levels on every site — the precondition for pooling it in one model.
+  cls <- tryCatch(ds.class("D$sex"),  error = function(e) NULL)
+  lvl <- tryCatch(ds.levels("D$sex"), error = function(e) NULL)
+  if (!is.null(cls))
+    cat("\nds.class('D$sex') per site: ",
+        paste(sprintf("%s=%s", names(cls),
+                      vapply(cls, function(x) paste(unlist(x), collapse = "/"), "")),
+              collapse = "  "), "\n", sep = "")
+  if (!is.null(lvl)) {
+    lchr <- lapply(lvl, function(x) as.character(if (!is.null(x$Levels)) x$Levels else unlist(x)))
+    cat("ds.levels('D$sex') identical across sites: ", length(unique(lchr)) == 1L,
+        "  ->  ", paste(lchr[[1]], collapse = ", "), "\n", sep = "")
+  }
   cat("\nPooled mean year_of_birth:\n")
   print(tryCatch(ds.mean("D$year_of_birth", type = "combine"),
                  error = function(e) conditionMessage(e)))
-  cat("\nGender distribution (concept id):\n")
-  print(tryCatch(ds.table("D$gender_concept_id"),
-                 error = function(e) conditionMessage(e)))
+  cat("\nSex distribution (harmonised factor, pooled + per site):\n")
+  print(tryCatch(ds.table("D$sex"), error = function(e) conditionMessage(e)))
 }
 
-# --- F. model the extracted table with a standard dsBaseClient GLM ----------
-# Because 'D' is just a server-side data.frame, the whole dsBaseClient modelling
-# toolchain applies directly to a dsOMOP extract. As an illustration we ask
-# whether birth year differs by sex: recode gender_concept_id (8507 male /
-# 8532 female) to a 0/1 indicator, bind a model frame, and fit a federated
-# linear model pooled across all three sites. No patient row ever leaves a
-# server — only the model's sufficient statistics are combined. (The fitted
-# intercept is the female mean birth year and the slope the male-female
-# difference, so the result is directly interpretable.)
+# --- F. model the harmonised factor directly (no manual recoding) -----------
+# Because the coordination layer guarantees identical factor coding across the
+# federation, `sex` is model-ready as-is — dsBaseClient builds the contrast for
+# us, so the old ds.recodeValues 0/1 trick is no longer needed. The reference
+# level is 8507 (MALE, the lowest id), so in `year_of_birth ~ sex` the intercept
+# is the male mean birth year and the `sex8532` term is the female - male
+# difference. We fit it two ways and confirm they agree:
+#   (a) pooled IPD    ds.glm     — one model over the combined sufficient stats,
+#   (b) meta-analytic ds.glmSLMA — fit per site, then meta-combine the estimates.
+# No patient row ever leaves a server in either case.
 if (isTRUE(analysis_ok)) {
-  banner("F. Federated GLM on the extracted table (dsBaseClient::ds.glm)")
-  model_ok <- tryCatch({
-    ds.recodeValues(var.name = "D$gender_concept_id",
-                    values2replace.vector = c(8507, 8532),
-                    new.values.vector = c(1, 0),
-                    newobj = "male", datasources = conns)
-    ds.dataFrame(x = c("D", "male"), newobj = "DF", datasources = conns)
-    TRUE
-  }, error = function(e) {
-    cat("Model-frame prep failed: ", conditionMessage(e), "\n", sep = ""); FALSE
-  })
-  if (isTRUE(model_ok)) {
-    cat("\nLinear model  year_of_birth ~ male  (Gaussian, pooled across sites):\n")
-    fit <- tryCatch(ds.glm(formula = "DF$year_of_birth ~ DF$male",
-                           family = "gaussian", datasources = conns),
-                    error = function(e) conditionMessage(e))
-    print(if (is.list(fit)) fit$coefficients else fit)
-  }
+  banner("F. Federated GLM on the harmonised factor (pooled IPD + meta-analysis)")
+
+  cat("\n(a) Pooled IPD  —  ds.glm  year_of_birth ~ sex  (Gaussian):\n")
+  fit <- tryCatch(ds.glm(formula = "D$year_of_birth ~ D$sex",
+                         family = "gaussian", datasources = conns),
+                  error = function(e) conditionMessage(e))
+  print(if (is.list(fit)) fit$coefficients else fit)
+
+  cat("\n(b) Meta-analytic  —  ds.glmSLMA  year_of_birth ~ sex  (Gaussian):\n")
+  fit_slma <- tryCatch(ds.glmSLMA(formula = "D$year_of_birth ~ D$sex",
+                                  family = "gaussian", datasources = conns),
+                       error = function(e) conditionMessage(e))
+  if (is.list(fit_slma)) {
+    est <- fit_slma$SLMA.pooled.ests.matrix
+    if (!is.null(est)) print(est) else print(fit_slma)
+  } else print(fit_slma)
 }
 
 # --- tidy up ----------------------------------------------------------------

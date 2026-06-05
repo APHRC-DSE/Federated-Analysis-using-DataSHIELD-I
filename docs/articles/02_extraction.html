@@ -164,16 +164,60 @@ off to the standard DataSHIELD toolchain:</p>
 <span><span class="co">#&gt; [1] "sex"        "birth_year"</span></span></code></pre></div>
 </div>
 <div class="section level2">
+<h2 id="renaming-keeps-federated-factor-harmonisation">Renaming keeps federated factor harmonisation<a class="anchor" aria-label="anchor" href="#renaming-keeps-federated-factor-harmonisation"></a>
+</h2>
+<p>We renamed <code>gender_concept_id</code> to <code>sex</code>, yet
+dsOMOP still recognises it as a concept column and harmonises it into a
+factor whose levels are coded <em>identically</em> on every site.
+Renaming a concept column never silently opts it out of this
+coordination — the class is <code>factor</code> and the level set is the
+same union of concept ids everywhere, which is the precondition for
+pooling it in one model:</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/dsBaseClient/man/ds.class.html" class="external-link">ds.class</a></span><span class="op">(</span><span class="st">"D$sex"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; $aphrc</span></span>
+<span><span class="co">#&gt; [1] "factor"</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $dgh</span></span>
+<span><span class="co">#&gt; [1] "factor"</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $iressef</span></span>
+<span><span class="co">#&gt; [1] "factor"</span></span>
+<span><span class="fu"><a href="https://rdrr.io/pkg/dsBaseClient/man/ds.levels.html" class="external-link">ds.levels</a></span><span class="op">(</span><span class="st">"D$sex"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; $aphrc</span></span>
+<span><span class="co">#&gt; $aphrc$Levels</span></span>
+<span><span class="co">#&gt; [1] "8507" "8532"</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $aphrc$ValidityMessage</span></span>
+<span><span class="co">#&gt; [1] "VALID ANALYSIS"</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $dgh</span></span>
+<span><span class="co">#&gt; $dgh$Levels</span></span>
+<span><span class="co">#&gt; [1] "8507" "8532"</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $dgh$ValidityMessage</span></span>
+<span><span class="co">#&gt; [1] "VALID ANALYSIS"</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $iressef</span></span>
+<span><span class="co">#&gt; $iressef$Levels</span></span>
+<span><span class="co">#&gt; [1] "8507" "8532"</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $iressef$ValidityMessage</span></span>
+<span><span class="co">#&gt; [1] "VALID ANALYSIS"</span></span></code></pre></div>
+</div>
+<div class="section level2">
 <h2 id="explore-the-extracted-variable">Explore the extracted variable<a class="anchor" aria-label="anchor" href="#explore-the-extracted-variable"></a>
 </h2>
 <p>From here we use plain <code>dsBaseClient</code>. The pooled mean and
 quantiles of <code>birth_year</code> combine sufficient statistics from
 all three sites:</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/dsBaseClient/man/ds.mean.html" class="external-link">ds.mean</a></span><span class="op">(</span><span class="st">"D$birth_year"</span>, type <span class="op">=</span> <span class="st">"combine"</span><span class="op">)</span><span class="op">$</span><span class="va">Global.Mean</span></span>
 <span><span class="co">#&gt;                 EstimatedMean Nmissing Nvalid Ntotal</span></span>
 <span><span class="co">#&gt; studiesCombined      1958.066        0   2694   2694</span></span></code></pre></div>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/dsBaseClient/man/ds.quantileMean.html" class="external-link">ds.quantileMean</a></span><span class="op">(</span><span class="st">"D$birth_year"</span>, type <span class="op">=</span> <span class="st">"combine"</span><span class="op">)</span></span>
 <span><span class="co">#&gt;       5%      10%      25%      50%      75%      90%      95%     Mean </span></span>
 <span><span class="co">#&gt; 1922.941 1936.982 1949.642 1960.656 1970.000 1976.000 1979.000 1958.066</span></span></code></pre></div>
@@ -181,7 +225,7 @@ all three sites:</p>
 <div class="section level2">
 <h2 id="disconnect">Disconnect<a class="anchor" aria-label="anchor" href="#disconnect"></a>
 </h2>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/dsOMOPClient/man/ds.omop.disconnect.html" class="external-link">ds.omop.disconnect</a></span><span class="op">(</span>symbol <span class="op">=</span> <span class="st">"omop"</span>, conns <span class="op">=</span> <span class="va">conns</span><span class="op">)</span></span>
 <span><span class="fu">DSI</span><span class="fu">::</span><span class="fu"><a href="https://datashield.github.io/DSI/reference/datashield.logout.html" class="external-link">datashield.logout</a></span><span class="op">(</span><span class="va">conns</span><span class="op">)</span></span></code></pre></div>
 <p>The extract is now an ordinary federated data frame. The <a href="03_modeling.html">next page</a> fits a regression model on it with

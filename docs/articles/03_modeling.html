@@ -73,10 +73,14 @@ parameters are read from the gitignored <code>sites.env</code>.</p>
 </blockquote>
 <p>Because a dsOMOP extract is just an ordinary server-side data frame,
 the whole <code>dsBaseClient</code> modelling toolchain applies to it
-directly. Here we re-create the demographics extract, recode sex into a
-0/1 indicator, assemble a model frame, and fit federated generalised
-linear models. Only the models’ sufficient statistics are pooled across
-the three sites — no patient row ever leaves a server.</p>
+directly. And because dsOMOP harmonises <code>sex</code> into a
+federation-aligned factor — coded identically on every site, as the <a href="02_extraction.html">previous page</a> showed — it is model-ready
+<em>as-is</em>: <code>ds.glm</code> builds the contrast for us, so the
+old manual 0/1 recoding is no longer needed. We fit the same federated
+GLM two ways — pooled individual-level and study-level meta-analysis —
+then a logistic model the other direction. Only the models’ sufficient
+statistics are pooled across the three sites; no patient row ever leaves
+a server.</p>
 <div class="section level2">
 <h2 id="log-in-attach-and-re-extract-the-demographics-table">Log in, attach, and re-extract the demographics table<a class="anchor" aria-label="anchor" href="#log-in-attach-and-re-extract-the-demographics-table"></a>
 </h2>
@@ -113,66 +117,78 @@ the three sites — no patient row ever leaves a server.</p>
 <span>  <span class="va">plan</span>,</span>
 <span>  tables <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>person <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>sex <span class="op">=</span> <span class="st">"gender_concept_id"</span>, birth_year <span class="op">=</span> <span class="st">"year_of_birth"</span><span class="op">)</span><span class="op">)</span>,</span>
 <span>  name <span class="op">=</span> <span class="st">"demographics"</span><span class="op">)</span></span>
+<span><span class="va">plan</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/dsOMOPClient/man/ds.omop.plan.options.html" class="external-link">ds.omop.plan.options</a></span><span class="op">(</span><span class="va">plan</span>, factor_concepts <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>   <span class="co"># on by default</span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/dsOMOPClient/man/ds.omop.plan.execute.html" class="external-link">ds.omop.plan.execute</a></span><span class="op">(</span><span class="va">plan</span>, out <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>demographics <span class="op">=</span> <span class="st">"D"</span><span class="op">)</span>, symbol <span class="op">=</span> <span class="st">"omop"</span>, conns <span class="op">=</span> <span class="va">conns</span><span class="op">)</span></span></code></pre></div>
-</div>
-<div class="section level2">
-<h2 id="assemble-a-model-frame">Assemble a model frame<a class="anchor" aria-label="anchor" href="#assemble-a-model-frame"></a>
-</h2>
-<p>OMOP encodes sex as a concept id (8507 male, 8532 female). We recode
-it to a 0/1 <code>male</code> indicator and bind it onto the extract to
-form the model frame <code>DF</code>:</p>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/dsBaseClient/man/ds.recodeValues.html" class="external-link">ds.recodeValues</a></span><span class="op">(</span>var.name <span class="op">=</span> <span class="st">"D$sex"</span>,</span>
-<span>                values2replace.vector <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">8507</span>, <span class="fl">8532</span><span class="op">)</span>,</span>
-<span>                new.values.vector    <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">0</span><span class="op">)</span>,</span>
-<span>                newobj <span class="op">=</span> <span class="st">"male"</span>, datasources <span class="op">=</span> <span class="va">conns</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/pkg/dsBaseClient/man/ds.dataFrame.html" class="external-link">ds.dataFrame</a></span><span class="op">(</span>x <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"D"</span>, <span class="st">"male"</span><span class="op">)</span>, newobj <span class="op">=</span> <span class="st">"DF"</span>, datasources <span class="op">=</span> <span class="va">conns</span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/dsBaseClient/man/ds.colnames.html" class="external-link">ds.colnames</a></span><span class="op">(</span><span class="st">"DF"</span><span class="op">)</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span></span>
-<span><span class="co">#&gt; [1] "sex"        "birth_year" "male"</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="linear-model-birth-year-by-sex">Linear model: birth year by sex<a class="anchor" aria-label="anchor" href="#linear-model-birth-year-by-sex"></a>
 </h2>
-<p>A Gaussian GLM of <code>birth_year ~ male</code>, pooled across all
-three sites. With a single 0/1 predictor the intercept is the mean birth
-year of women and the slope is the men-minus-women difference, so the
-fit is directly interpretable:</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">g</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/dsBaseClient/man/ds.glm.html" class="external-link">ds.glm</a></span><span class="op">(</span>formula <span class="op">=</span> <span class="st">"DF$birth_year ~ DF$male"</span>, family <span class="op">=</span> <span class="st">"gaussian"</span>,</span>
+<p><code>sex</code> is a factor coded identically on every site, so we
+regress on it directly — <code>ds.glm</code> constructs the contrast
+itself. The reference level is <code>8507</code> (male, the lowest
+concept id), so in <code>birth_year ~ sex</code> the intercept is the
+mean birth year of men and the <code>sex8532</code> term is the
+women-minus-men difference:</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">g</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/dsBaseClient/man/ds.glm.html" class="external-link">ds.glm</a></span><span class="op">(</span>formula <span class="op">=</span> <span class="st">"D$birth_year ~ D$sex"</span>, family <span class="op">=</span> <span class="st">"gaussian"</span>,</span>
 <span>            datasources <span class="op">=</span> <span class="va">conns</span><span class="op">)</span></span>
 <span><span class="va">g</span><span class="op">$</span><span class="va">coefficients</span></span>
-<span><span class="co">#&gt;                 Estimate Std. Error      z-value   p-value    low0.95CI</span></span>
-<span><span class="co">#&gt; (Intercept) 1957.8514202  0.4362186 4488.2344511 0.0000000 1956.9964475</span></span>
-<span><span class="co">#&gt; DF$male        0.4385116  0.6229477    0.7039301 0.4814763   -0.7824434</span></span>
-<span><span class="co">#&gt;              high0.95CI</span></span>
-<span><span class="co">#&gt; (Intercept) 1958.706393</span></span>
-<span><span class="co">#&gt; DF$male        1.659467</span></span></code></pre></div>
+<span><span class="co">#&gt;                 Estimate Std. Error      z-value   p-value   low0.95CI</span></span>
+<span><span class="co">#&gt; (Intercept) 1958.2899319  0.4447214 4403.4080884 0.0000000 1957.418294</span></span>
+<span><span class="co">#&gt; D$sex8532     -0.4385116  0.6229477   -0.7039301 0.4814763   -1.659467</span></span>
+<span><span class="co">#&gt;               high0.95CI</span></span>
+<span><span class="co">#&gt; (Intercept) 1959.1615699</span></span>
+<span><span class="co">#&gt; D$sex8532      0.7824434</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="meta-analysis-the-same-model-study-level">Meta-analysis: the same model, study-level<a class="anchor" aria-label="anchor" href="#meta-analysis-the-same-model-study-level"></a>
+</h2>
+<p><code>ds.glm</code> above pools individual-level sufficient
+statistics — one model fitted over the combined federation.
+<code>ds.glmSLMA</code> instead fits the model <em>separately</em> on
+each site and meta-combines the per-site estimates (study-level
+meta-analysis), sharing no individual-level statistic across sites. On a
+harmonised factor the two routes agree:</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">gs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/dsBaseClient/man/ds.glmSLMA.html" class="external-link">ds.glmSLMA</a></span><span class="op">(</span>formula <span class="op">=</span> <span class="st">"D$birth_year ~ D$sex"</span>, family <span class="op">=</span> <span class="st">"gaussian"</span>,</span>
+<span>                 datasources <span class="op">=</span> <span class="va">conns</span><span class="op">)</span></span>
+<span><span class="va">gs</span><span class="op">$</span><span class="va">SLMA.pooled.ests.matrix</span></span>
+<span><span class="co">#&gt;                pooled.ML     se.ML  pooled.REML   se.REML    pooled.FE</span></span>
+<span><span class="co">#&gt; (Intercept) 1958.3250039 0.4437898 1958.3243573 0.4486745 1958.3250041</span></span>
+<span><span class="co">#&gt; D$sex8532     -0.4127396 0.6220430   -0.4127396 0.6220430   -0.4127396</span></span>
+<span><span class="co">#&gt;                 se.FE</span></span>
+<span><span class="co">#&gt; (Intercept) 0.4437888</span></span>
+<span><span class="co">#&gt; D$sex8532   0.6220430</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="logistic-model-sex-by-birth-year">Logistic model: sex by birth year<a class="anchor" aria-label="anchor" href="#logistic-model-sex-by-birth-year"></a>
 </h2>
-<p>The same model frame supports a binomial GLM just as readily:</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">gb</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/dsBaseClient/man/ds.glm.html" class="external-link">ds.glm</a></span><span class="op">(</span>formula <span class="op">=</span> <span class="st">"DF$male ~ DF$birth_year"</span>, family <span class="op">=</span> <span class="st">"binomial"</span>,</span>
+<p>The harmonised factor is equally usable as a binomial
+<em>response</em>. Modelling <code>sex ~ birth_year</code> estimates the
+log-odds of being female (<code>8532</code>, the non-reference level) as
+a function of birth year:</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">gb</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/dsBaseClient/man/ds.glm.html" class="external-link">ds.glm</a></span><span class="op">(</span>formula <span class="op">=</span> <span class="st">"D$sex ~ D$birth_year"</span>, family <span class="op">=</span> <span class="st">"binomial"</span>,</span>
 <span>             datasources <span class="op">=</span> <span class="va">conns</span><span class="op">)</span></span>
 <span><span class="va">gb</span><span class="op">$</span><span class="va">coefficients</span></span>
-<span><span class="co">#&gt;                  Estimate  Std. Error    z-value   p-value low0.95CI.LP</span></span>
-<span><span class="co">#&gt; (Intercept)   -3.32848244 4.672977755 -0.7122830 0.4762896 -12.48735054</span></span>
-<span><span class="co">#&gt; DF$birth_year  0.00168016 0.002386432  0.7040469 0.4814036  -0.00299716</span></span>
-<span><span class="co">#&gt;               high0.95CI.LP      P_OR low0.95CI.P_OR high0.95CI.P_OR</span></span>
-<span><span class="co">#&gt; (Intercept)      5.83038566 0.0346069   3.774078e-06       0.9970717</span></span>
-<span><span class="co">#&gt; DF$birth_year    0.00635748 1.0016816   9.970073e-01       1.0063777</span></span></code></pre></div>
+<span><span class="co">#&gt;                 Estimate  Std. Error    z-value   p-value low0.95CI.LP</span></span>
+<span><span class="co">#&gt; (Intercept)   3.32848244 4.672977755  0.7122830 0.4762896  -5.83038566</span></span>
+<span><span class="co">#&gt; D$birth_year -0.00168016 0.002386432 -0.7040469 0.4814036  -0.00635748</span></span>
+<span><span class="co">#&gt;              high0.95CI.LP      P_OR low0.95CI.P_OR high0.95CI.P_OR</span></span>
+<span><span class="co">#&gt; (Intercept)    12.48735054 0.9653931    0.002928344       0.9999962</span></span>
+<span><span class="co">#&gt; D$birth_year    0.00299716 0.9983213    0.993662686       1.0030017</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="disconnect">Disconnect<a class="anchor" aria-label="anchor" href="#disconnect"></a>
 </h2>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/dsOMOPClient/man/ds.omop.disconnect.html" class="external-link">ds.omop.disconnect</a></span><span class="op">(</span>symbol <span class="op">=</span> <span class="st">"omop"</span>, conns <span class="op">=</span> <span class="va">conns</span><span class="op">)</span></span>
 <span><span class="fu">DSI</span><span class="fu">::</span><span class="fu"><a href="https://datashield.github.io/DSI/reference/datashield.logout.html" class="external-link">datashield.logout</a></span><span class="op">(</span><span class="va">conns</span><span class="op">)</span></span></code></pre></div>
 <p>The models above are standard <code>dsBaseClient</code> fits computed
-on a dsOMOP extract: the OMOP layer produced the analysis dataset, and
-the ordinary federated toolchain took it from there.</p>
+on a dsOMOP extract: the OMOP layer produced <em>and harmonised</em> the
+analysis dataset — including the factor coding that made
+<code>sex</code> model-ready across the federation — and the ordinary
+federated toolchain took it from there.</p>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>
