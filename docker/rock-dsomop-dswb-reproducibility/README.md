@@ -31,10 +31,10 @@ IMAGE=youruser/rock-dsomop-dswb-reproducibility ./build_and_push.sh
 ```
 
 The default tag is `2.0.0` and it pins `DSOMOP_REF=2.0.0` (the dsOMOP git tag,
-which resolves to commit `a93f0de`). To pin an exact commit instead of the tag:
+which resolves to commit `fea78bb`). To pin an exact commit instead of the tag:
 
 ```bash
-IMAGE=youruser/rock-dsomop-dswb-reproducibility DSOMOP_REF=a93f0dec965bb91deac8b4e70bb36272c696713b ./build_and_push.sh
+IMAGE=youruser/rock-dsomop-dswb-reproducibility DSOMOP_REF=fea78bb146bb46fbdd5c9e71be976f9c3d469ce9 ./build_and_push.sh
 ```
 
 ## Build arguments
