@@ -1,8 +1,8 @@
 #!/usr/bin/env Rscript
 # Step 4 — Create the dsOMOP CDM resource on each federated Opal site.
 #
-# For every site brought up in step 2 (read from ../sites.env) this script, via
-# the Opal REST API (opalr):
+# For each of the three sites brought up in step 2 this script, via the Opal
+# REST API (opalr):
 #   1. ensures a resource-only Opal project exists (no storage DB needed),
 #   2. (re)creates one OMOP CDM resource the dsOMOP resolver can pick up.
 #
@@ -24,13 +24,12 @@
 #     (alias "omopdb", internal port 5432 — from step 3), so the same resource
 #     definition is valid on every site regardless of host port mapping.
 #
+# Ports / credentials are HARDCODED below — the same fixed values steps 2, 3, 5
+# and the book use. If you changed a port in step 2, change it here too.
+#
 # Usage (after steps 2 and 3):
 #   bash 4_resources/setup_resources.sh
 #   # or directly:  Rscript 4_resources/create_resources.R
-#
-# Overridable via environment:
-#   OPAL_PROJECT (default "omop_demo"), OPAL_RESOURCE (default "gibleed"),
-#   SITES_ENV (default ../sites.env).
 
 suppressWarnings(suppressMessages({
   ok <- requireNamespace("opalr", quietly = TRUE)
@@ -41,58 +40,29 @@ if (!ok) {
 }
 library(opalr)
 
-# --- locate + parse sites.env ----------------------------------------------
-script_path <- (function() {
-  a <- commandArgs(FALSE)
-  f <- sub("^--file=", "", a[grepl("^--file=", a)])
-  if (length(f)) normalizePath(f) else NA_character_
-})()
-repo_root <- if (!is.na(script_path)) dirname(dirname(script_path)) else getwd()
-sites_env <- Sys.getenv("SITES_ENV", unset = file.path(repo_root, "sites.env"))
+# --- fixed configuration (hardcoded; see steps 2-3) ------------------------
+# The same localhost ports / public-demo credentials the earlier steps used.
+# If you changed a port in step 2, change the matching one here too.
+sites <- list(
+  aphrc   = "http://localhost:48080",
+  dgh     = "http://localhost:48081",
+  iressef = "http://localhost:48082"
+)
+opal_user <- "administrator"
+opal_pass <- "password"
 
-if (!file.exists(sites_env)) {
-  stop("sites.env not found at ", sites_env,
-       "\n  Run step 2 (sites) and step 3 (databases) first.", call. = FALSE)
-}
+# PostgreSQL connection details (identical on every site; from step 3). host/
+# port are the Docker-internal alias the Rock 'omop' profile resolves, NOT a
+# published host port, so this one resource definition is valid on all sites.
+pg_host   <- "omopdb"        # docker network alias (step 3)
+pg_port   <- 5432            # in-container PostgreSQL port
+pg_db     <- "omop"
+pg_schema <- "cdm"
+pg_user   <- "postgres"      # intentional, public demo
+pg_pass   <- "postgres"
 
-read_env <- function(path) {
-  lines <- trimws(readLines(path, warn = FALSE))
-  lines <- lines[nzchar(lines) & !startsWith(lines, "#")]
-  m <- regmatches(lines, regexec("^([A-Za-z_][A-Za-z0-9_]*)=(.*)$", lines))
-  env <- list()
-  for (kv in m) if (length(kv) == 3L) env[[kv[2]]] <- kv[3]
-  env
-}
-cfg <- read_env(sites_env)
-
-req <- function(key) {
-  v <- cfg[[key]]
-  if (is.null(v) || !nzchar(v))
-    stop("Missing '", key, "' in ", sites_env,
-         " — re-run the earlier steps.", call. = FALSE)
-  v
-}
-
-# Sites are every <SITE>_OPAL_URL present in sites.env (written by step 2).
-url_keys <- grep("_OPAL_URL$", names(cfg), value = TRUE)
-if (!length(url_keys))
-  stop("No <SITE>_OPAL_URL entries in ", sites_env, " — run step 2 first.",
-       call. = FALSE)
-sites <- sub("_OPAL_URL$", "", url_keys)             # e.g. APHRC, DGH, IRESSEF
-
-opal_user    <- req("OPAL_USER")
-opal_pass    <- req("OPAL_PASSWORD")
-
-# PostgreSQL connection details (identical across sites; from step 3).
-pg_host   <- req("PG_HOST_ALIAS")      # Docker network alias, not a host port
-pg_port   <- req("PG_INTERNAL_PORT")   # in-container port (5432)
-pg_db     <- req("PG_DATABASE")
-pg_schema <- req("PG_SCHEMA")
-pg_user   <- req("PG_USER")
-pg_pass   <- req("PG_PASSWORD")
-
-project       <- Sys.getenv("OPAL_PROJECT", unset = "omop_demo")
-resource      <- Sys.getenv("OPAL_RESOURCE", unset = "gibleed")
+project   <- "omop_demo"
+resource  <- "gibleed"
 
 # --- build the dsOMOP resource URL (matches dsOMOP 2.0.0 R/resource.R) ------
 make_omop_url <- function(dbms, host, port, database, cdm_schema,
@@ -121,9 +91,8 @@ cat(sprintf("  -> %s://%s:%s/%s  schema=%s  (user '%s')\n\n",
             "postgresql", pg_host, pg_port, pg_db, pg_schema, pg_user))
 
 # --- per-site provisioning --------------------------------------------------
-for (SITE in sites) {
-  url <- cfg[[paste0(SITE, "_OPAL_URL")]]
-  site <- tolower(SITE)
+for (site in names(sites)) {
+  url <- sites[[site]]
   cat(sprintf("==> [%s] %s\n", site, url))
 
   o <- opal.login(username = opal_user, password = opal_pass, url = url)
@@ -149,27 +118,6 @@ for (SITE in sites) {
   opal.logout(o)
 }
 
-# --- record choices for step 5 ---------------------------------------------
-# Refresh a step-4 block in sites.env (drop any previous one, then append).
-mark <- "# === step 4 (resources) — appended by 4_resources/create_resources.R ==="
-all_lines <- readLines(sites_env, warn = FALSE)
-cut <- which(all_lines == mark)
-if (length(cut)) all_lines <- all_lines[seq_len(cut[1] - 1L)]
-# Drop a trailing blank line so we don't accumulate blanks across re-runs.
-while (length(all_lines) && !nzchar(trimws(all_lines[length(all_lines)])))
-  all_lines <- all_lines[-length(all_lines)]
-
-block <- c(
-  "",
-  mark,
-  paste0("OPAL_PROJECT=", project),
-  paste0("OPAL_RESOURCE=", resource),
-  paste0("OPAL_RESOURCE_PATH=", project, ".", resource)
-)
-writeLines(c(all_lines, block), sites_env)
-
 cat(sprintf("==> Done. Resource '%s.%s' exists on %d site(s).\n",
             project, resource, length(sites)))
-cat(sprintf("    Recorded OPAL_RESOURCE_PATH=%s.%s in %s\n",
-            project, resource, sites_env))
 cat("Next: run the federated DataSHIELD analysis (step 5).\n")

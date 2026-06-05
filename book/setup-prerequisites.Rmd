@@ -1,0 +1,61 @@
+# (PART) Reproducing the federation {-}
+
+# Prerequisites and installing easy-opal {#setup-prerequisites}
+
+Part I builds the three-site federation from nothing. The five chapters mirror the
+five numbered folders in the repository, and each one shows the **real commands**
+and links the exact script that runs them. You can either run the scripts as-is, or
+follow along to understand what each does.
+
+There are two roles in play, which may be the **same computer**:
+
+- **The server host** runs the three simulated sites (Opal + Rock + PostgreSQL).
+  Steps 1–4 happen here and need **Docker** and **Python**.
+- **The DataSHIELD client** is the R session that connects to the sites and runs
+  the analysis (step 5 and all of Part II). It needs **R**.
+
+## What you need
+
+| Tool | Minimum version | Used for |
+|------|-----------------|----------|
+| Python | **3.11** | Installing and running the `easy-opal` CLI (step 1). |
+| Docker | Engine ≥ 20.10 with **Compose v2** (`docker compose`) | Running the Opal, Rock, MongoDB and PostgreSQL containers (steps 2–4). The daemon must be running. |
+| R | **4.1** (ideally **4.4.x**, to match the Rock server's R) | The DataSHIELD client packages (step 5 / Part II). |
+
+> The dsOMOP Rock image is published for **`linux/amd64`**. It runs natively on
+> Linux/amd64 hosts and **emulated** on Apple Silicon (slower, but it works).
+
+## Installing easy-opal (step 1)
+
+We deploy and manage the Opal + Rock sites with
+[**easy-opal**](https://github.com/isglobal-brge/easy-opal), a CLI that wraps
+Docker Compose. Step 1 pins it to version **2.1.0** and installs it into a local
+virtual environment at the repo root, which sidesteps the
+`externally-managed-environment` error (PEP 668) on recent macOS / Ubuntu:
+
+```bash
+bash 1_setup/install_easy_opal.sh
+```
+
+Then activate the environment and confirm it works — `easy-opal doctor` checks that
+Docker is reachable and correctly configured:
+
+```bash
+source .venv/bin/activate
+easy-opal --version   # -> 2.1.0
+easy-opal doctor      # checks Docker, permissions, etc.
+```
+
+`easy-opal` is an ordinary PyPI package, so if you prefer a global install any of
+these work just as well:
+
+```bash
+pipx install easy-opal==2.1.0      # isolated, on PATH globally
+uv tool install easy-opal==2.1.0   # fastest
+pip install easy-opal==2.1.0       # into the currently active environment
+```
+
+The full script for this step:
+[`1_setup/install_easy_opal.sh`](https://github.com/APHRC-DSE/Federated-Analysis-using-DataSHIELD-I/blob/main/1_setup/install_easy_opal.sh).
+
+With `easy-opal` on your `PATH`, the next chapter stands up the three sites.

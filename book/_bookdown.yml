@@ -4,6 +4,11 @@ delete_merged_file: true
 new_session: false
 rmd_files:
   - "index.Rmd"
+  - "setup-prerequisites.Rmd"
+  - "setup-sites.Rmd"
+  - "setup-databases.Rmd"
+  - "setup-resources.Rmd"
+  - "setup-connect.Rmd"
   - "01-explore.Rmd"
   - "02-extract.Rmd"
   - "03-observe.Rmd"

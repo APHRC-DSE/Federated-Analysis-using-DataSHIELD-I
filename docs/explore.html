@@ -4,23 +4,23 @@
 
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <title>Chapter 1 Exploring the catalogue | Federated Analysis using DataSHIELD</title>
+  <title>Chapter 6 Exploring the catalogue | Federated Analysis using DataSHIELD</title>
   <meta name="description" content="A reproducible, end-to-end federated analysis over OMOP CDM data with DataSHIELD and dsOMOP v2. Every figure and table on these pages is the genuine result of executing the code against a live three-site federation." />
   <meta name="generator" content="bookdown 0.46 and GitBook 2.6.7" />
 
-  <meta property="og:title" content="Chapter 1 Exploring the catalogue | Federated Analysis using DataSHIELD" />
+  <meta property="og:title" content="Chapter 6 Exploring the catalogue | Federated Analysis using DataSHIELD" />
   <meta property="og:type" content="book" />
   
   <meta property="og:description" content="A reproducible, end-to-end federated analysis over OMOP CDM data with DataSHIELD and dsOMOP v2. Every figure and table on these pages is the genuine result of executing the code against a live three-site federation." />
   <meta name="github-repo" content="APHRC-DSE/Federated-Analysis-using-DataSHIELD-I" />
 
   <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="Chapter 1 Exploring the catalogue | Federated Analysis using DataSHIELD" />
+  <meta name="twitter:title" content="Chapter 6 Exploring the catalogue | Federated Analysis using DataSHIELD" />
   
   <meta name="twitter:description" content="A reproducible, end-to-end federated analysis over OMOP CDM data with DataSHIELD and dsOMOP v2. Every figure and table on these pages is the genuine result of executing the code against a live three-site federation." />
   
 
-<meta name="author" content="David Sarrat González · Michael Ochola" />
+<meta name="author" content="David Sarrat González, Michael Ochola" />
 
 
 
@@ -29,7 +29,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black" />
   
   
-<link rel="prev" href="index.html"/>
+<link rel="prev" href="setup-connect.html"/>
 <link rel="next" href="extract.html"/>
 <script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6/dist/fuse.min.js"></script>
@@ -51,6 +51,11 @@
 <link href="libs/anchor-sections-1.1.0/anchor-sections.css" rel="stylesheet" />
 <link href="libs/anchor-sections-1.1.0/anchor-sections-hash.css" rel="stylesheet" />
 <script src="libs/anchor-sections-1.1.0/anchor-sections.js"></script>
+<link href="libs/htmltools-fill-0.5.9/fill.css" rel="stylesheet" />
+<script src="libs/htmlwidgets-1.6.4/htmlwidgets.js"></script>
+<script src="libs/viz-1.8.2/viz.js"></script>
+<link href="libs/DiagrammeR-styles-0.2/styles.css" rel="stylesheet" />
+<script src="libs/grViz-binding-1.0.12/grViz.js"></script>
 
 
 <style type="text/css">
@@ -141,45 +146,79 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <li class="divider"></li>
 <li class="chapter" data-level="" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i>Overview</a>
 <ul>
+<li class="chapter" data-level="" data-path="index.html"><a href="index.html#why-a-simulated-federation"><i class="fa fa-check"></i>Why a <em>simulated</em> federation</a></li>
 <li class="chapter" data-level="" data-path="index.html"><a href="index.html#the-federation"><i class="fa fa-check"></i>The federation</a></li>
+<li class="chapter" data-level="" data-path="index.html"><a href="index.html#the-dataset-ohdsi-gibleed"><i class="fa fa-check"></i>The dataset: OHDSI GiBleed</a></li>
 <li class="chapter" data-level="" data-path="index.html"><a href="index.html#the-study"><i class="fa fa-check"></i>The study</a></li>
-<li class="chapter" data-level="" data-path="index.html"><a href="index.html#reproducing-this-book"><i class="fa fa-check"></i>Reproducing this book</a></li>
-<li class="chapter" data-level="" data-path="index.html"><a href="index.html#connecting"><i class="fa fa-check"></i>Connecting</a></li>
+<li class="chapter" data-level="" data-path="index.html"><a href="index.html#reproducing-it-yourself"><i class="fa fa-check"></i>Reproducing it yourself</a></li>
 </ul></li>
-<li class="chapter" data-level="1" data-path="explore.html"><a href="explore.html"><i class="fa fa-check"></i><b>1</b> Exploring the catalogue</a>
+<li class="part"><span><b>I Reproducing the federation</b></span></li>
+<li class="chapter" data-level="1" data-path="setup-prerequisites.html"><a href="setup-prerequisites.html"><i class="fa fa-check"></i><b>1</b> Prerequisites and installing easy-opal</a>
 <ul>
-<li class="chapter" data-level="1.1" data-path="explore.html"><a href="explore.html#what-tables-does-each-site-expose"><i class="fa fa-check"></i><b>1.1</b> What tables does each site expose?</a></li>
-<li class="chapter" data-level="1.2" data-path="explore.html"><a href="explore.html#what-variables-live-in-a-table"><i class="fa fa-check"></i><b>1.2</b> What variables live in a table?</a></li>
-<li class="chapter" data-level="1.3" data-path="explore.html"><a href="explore.html#how-big-is-each-table-per-site-and-pooled"><i class="fa fa-check"></i><b>1.3</b> How big is each table, per site and pooled?</a></li>
-<li class="chapter" data-level="1.4" data-path="explore.html"><a href="explore.html#which-clinical-concepts-are-most-prevalent"><i class="fa fa-check"></i><b>1.4</b> Which clinical concepts are most prevalent?</a></li>
-<li class="chapter" data-level="1.5" data-path="explore.html"><a href="explore.html#the-study-this-suggests"><i class="fa fa-check"></i><b>1.5</b> The study this suggests</a></li>
+<li class="chapter" data-level="1.1" data-path="setup-prerequisites.html"><a href="setup-prerequisites.html#what-you-need"><i class="fa fa-check"></i><b>1.1</b> What you need</a></li>
+<li class="chapter" data-level="1.2" data-path="setup-prerequisites.html"><a href="setup-prerequisites.html#installing-easy-opal-step-1"><i class="fa fa-check"></i><b>1.2</b> Installing easy-opal (step 1)</a></li>
 </ul></li>
-<li class="chapter" data-level="2" data-path="extract.html"><a href="extract.html"><i class="fa fa-check"></i><b>2</b> Extracting a fused person-level table</a>
+<li class="chapter" data-level="2" data-path="setup-sites.html"><a href="setup-sites.html"><i class="fa fa-check"></i><b>2</b> Standing up the three sites</a>
 <ul>
-<li class="chapter" data-level="2.1" data-path="extract.html"><a href="extract.html#the-concepts-to-extract"><i class="fa fa-check"></i><b>2.1</b> The concepts to extract</a></li>
-<li class="chapter" data-level="2.2" data-path="extract.html"><a href="extract.html#building-the-plan"><i class="fa fa-check"></i><b>2.2</b> Building the plan</a></li>
-<li class="chapter" data-level="2.3" data-path="extract.html"><a href="extract.html#executing-on-the-server"><i class="fa fa-check"></i><b>2.3</b> Executing on the server</a></li>
-<li class="chapter" data-level="2.4" data-path="extract.html"><a href="extract.html#confirming-the-fused-frame"><i class="fa fa-check"></i><b>2.4</b> Confirming the fused frame</a></li>
+<li class="chapter" data-level="2.1" data-path="setup-sites.html"><a href="setup-sites.html#the-fixed-ports-and-password"><i class="fa fa-check"></i><b>2.1</b> The fixed ports and password</a></li>
+<li class="chapter" data-level="2.2" data-path="setup-sites.html"><a href="setup-sites.html#what-easy-opal-does-per-site"><i class="fa fa-check"></i><b>2.2</b> What easy-opal does per site</a></li>
+<li class="chapter" data-level="2.3" data-path="setup-sites.html"><a href="setup-sites.html#using-your-own-image"><i class="fa fa-check"></i><b>2.3</b> Using your own image</a></li>
+<li class="chapter" data-level="2.4" data-path="setup-sites.html"><a href="setup-sites.html#verifying"><i class="fa fa-check"></i><b>2.4</b> Verifying</a></li>
 </ul></li>
-<li class="chapter" data-level="3" data-path="observe.html"><a href="observe.html"><i class="fa fa-check"></i><b>3</b> Observing the extracted variables</a>
+<li class="chapter" data-level="3" data-path="setup-databases.html"><a href="setup-databases.html"><i class="fa fa-check"></i><b>3</b> Seeding the OMOP databases</a>
 <ul>
-<li class="chapter" data-level="3.1" data-path="observe.html"><a href="observe.html#a-derived-feature-age"><i class="fa fa-check"></i><b>3.1</b> A derived feature: age</a></li>
-<li class="chapter" data-level="3.2" data-path="observe.html"><a href="observe.html#prevalence-over-the-full-cohort"><i class="fa fa-check"></i><b>3.2</b> Prevalence over the full cohort</a>
-<ul>
-<li class="chapter" data-level="3.2.1" data-path="observe.html"><a href="observe.html#a-finding-hiding-in-the-data"><i class="fa fa-check"></i><b>3.2.1</b> A finding hiding in the data</a></li>
+<li class="chapter" data-level="3.1" data-path="setup-databases.html"><a href="setup-databases.html#where-the-data-comes-from"><i class="fa fa-check"></i><b>3.1</b> Where the data comes from</a></li>
+<li class="chapter" data-level="3.2" data-path="setup-databases.html"><a href="setup-databases.html#a-self-managed-postgresql-per-site"><i class="fa fa-check"></i><b>3.2</b> A self-managed PostgreSQL per site</a></li>
+<li class="chapter" data-level="3.3" data-path="setup-databases.html"><a href="setup-databases.html#sharding-by-person"><i class="fa fa-check"></i><b>3.3</b> Sharding by person</a></li>
+<li class="chapter" data-level="3.4" data-path="setup-databases.html"><a href="setup-databases.html#inspecting-a-site"><i class="fa fa-check"></i><b>3.4</b> Inspecting a site</a></li>
 </ul></li>
-<li class="chapter" data-level="3.3" data-path="observe.html"><a href="observe.html#pooled-summaries-of-the-continuous-features"><i class="fa fa-check"></i><b>3.3</b> Pooled summaries of the continuous features</a></li>
-<li class="chapter" data-level="3.4" data-path="observe.html"><a href="observe.html#federated-plots"><i class="fa fa-check"></i><b>3.4</b> Federated plots</a></li>
-<li class="chapter" data-level="3.5" data-path="observe.html"><a href="observe.html#the-key-association-previewed"><i class="fa fa-check"></i><b>3.5</b> The key association, previewed</a></li>
-</ul></li>
-<li class="chapter" data-level="4" data-path="model.html"><a href="model.html"><i class="fa fa-check"></i><b>4</b> Modelling: a federated logistic GLM</a>
+<li class="chapter" data-level="4" data-path="setup-resources.html"><a href="setup-resources.html"><i class="fa fa-check"></i><b>4</b> Registering the dsOMOP resources</a>
 <ul>
-<li class="chapter" data-level="4.1" data-path="model.html"><a href="model.html#assembling-the-modelling-frame"><i class="fa fa-check"></i><b>4.1</b> Assembling the modelling frame</a></li>
-<li class="chapter" data-level="4.2" data-path="model.html"><a href="model.html#fitting-the-model-with-its-live-training-trace"><i class="fa fa-check"></i><b>4.2</b> Fitting the model (with its live training trace)</a></li>
-<li class="chapter" data-level="4.3" data-path="model.html"><a href="model.html#reading-the-result"><i class="fa fa-check"></i><b>4.3</b> Reading the result</a></li>
-<li class="chapter" data-level="4.4" data-path="model.html"><a href="model.html#the-same-model-study-level"><i class="fa fa-check"></i><b>4.4</b> The same model, study-level</a></li>
-<li class="chapter" data-level="4.5" data-path="model.html"><a href="model.html#disconnect"><i class="fa fa-check"></i><b>4.5</b> Disconnect</a></li>
-<li class="chapter" data-level="4.6" data-path="model.html"><a href="model.html#in-summary"><i class="fa fa-check"></i><b>4.6</b> In summary</a></li>
+<li class="chapter" data-level="4.1" data-path="setup-resources.html"><a href="setup-resources.html#the-dsomop-v2-resource-format"><i class="fa fa-check"></i><b>4.1</b> The dsOMOP v2 resource format</a></li>
+<li class="chapter" data-level="4.2" data-path="setup-resources.html"><a href="setup-resources.html#a-note-on-disclosure-control"><i class="fa fa-check"></i><b>4.2</b> A note on disclosure control</a></li>
+<li class="chapter" data-level="4.3" data-path="setup-resources.html"><a href="setup-resources.html#verifying-1"><i class="fa fa-check"></i><b>4.3</b> Verifying</a></li>
+</ul></li>
+<li class="chapter" data-level="5" data-path="setup-connect.html"><a href="setup-connect.html"><i class="fa fa-check"></i><b>5</b> Connecting the DataSHIELD client</a>
+<ul>
+<li class="chapter" data-level="5.1" data-path="setup-connect.html"><a href="setup-connect.html#installing-the-client-packages"><i class="fa fa-check"></i><b>5.1</b> Installing the client packages</a></li>
+<li class="chapter" data-level="5.2" data-path="setup-connect.html"><a href="setup-connect.html#logging-in"><i class="fa fa-check"></i><b>5.2</b> Logging in</a></li>
+<li class="chapter" data-level="5.3" data-path="setup-connect.html"><a href="setup-connect.html#attaching-the-omop-resource"><i class="fa fa-check"></i><b>5.3</b> Attaching the OMOP resource</a></li>
+</ul></li>
+<li class="part"><span><b>II The federated analysis</b></span></li>
+<li class="chapter" data-level="6" data-path="explore.html"><a href="explore.html"><i class="fa fa-check"></i><b>6</b> Exploring the catalogue</a>
+<ul>
+<li class="chapter" data-level="6.1" data-path="explore.html"><a href="explore.html#what-tables-does-each-site-expose"><i class="fa fa-check"></i><b>6.1</b> What tables does each site expose?</a></li>
+<li class="chapter" data-level="6.2" data-path="explore.html"><a href="explore.html#what-variables-live-in-a-table"><i class="fa fa-check"></i><b>6.2</b> What variables live in a table?</a></li>
+<li class="chapter" data-level="6.3" data-path="explore.html"><a href="explore.html#how-big-is-each-table-per-site-and-pooled"><i class="fa fa-check"></i><b>6.3</b> How big is each table, per site and pooled?</a></li>
+<li class="chapter" data-level="6.4" data-path="explore.html"><a href="explore.html#which-clinical-concepts-are-most-prevalent"><i class="fa fa-check"></i><b>6.4</b> Which clinical concepts are most prevalent?</a></li>
+<li class="chapter" data-level="6.5" data-path="explore.html"><a href="explore.html#the-study-this-suggests"><i class="fa fa-check"></i><b>6.5</b> The study this suggests</a></li>
+</ul></li>
+<li class="chapter" data-level="7" data-path="extract.html"><a href="extract.html"><i class="fa fa-check"></i><b>7</b> Extracting a fused person-level table</a>
+<ul>
+<li class="chapter" data-level="7.1" data-path="extract.html"><a href="extract.html#the-concepts-to-extract"><i class="fa fa-check"></i><b>7.1</b> The concepts to extract</a></li>
+<li class="chapter" data-level="7.2" data-path="extract.html"><a href="extract.html#building-the-plan"><i class="fa fa-check"></i><b>7.2</b> Building the plan</a></li>
+<li class="chapter" data-level="7.3" data-path="extract.html"><a href="extract.html#executing-on-the-server"><i class="fa fa-check"></i><b>7.3</b> Executing on the server</a></li>
+<li class="chapter" data-level="7.4" data-path="extract.html"><a href="extract.html#confirming-the-fused-frame"><i class="fa fa-check"></i><b>7.4</b> Confirming the fused frame</a></li>
+</ul></li>
+<li class="chapter" data-level="8" data-path="observe.html"><a href="observe.html"><i class="fa fa-check"></i><b>8</b> Observing the extracted variables</a>
+<ul>
+<li class="chapter" data-level="8.1" data-path="observe.html"><a href="observe.html#a-derived-feature-age"><i class="fa fa-check"></i><b>8.1</b> A derived feature: age</a></li>
+<li class="chapter" data-level="8.2" data-path="observe.html"><a href="observe.html#prevalence-over-the-full-cohort"><i class="fa fa-check"></i><b>8.2</b> Prevalence over the full cohort</a>
+<ul>
+<li class="chapter" data-level="8.2.1" data-path="observe.html"><a href="observe.html#a-finding-hiding-in-the-data"><i class="fa fa-check"></i><b>8.2.1</b> A finding hiding in the data</a></li>
+</ul></li>
+<li class="chapter" data-level="8.3" data-path="observe.html"><a href="observe.html#pooled-summaries-of-the-continuous-features"><i class="fa fa-check"></i><b>8.3</b> Pooled summaries of the continuous features</a></li>
+<li class="chapter" data-level="8.4" data-path="observe.html"><a href="observe.html#federated-plots"><i class="fa fa-check"></i><b>8.4</b> Federated plots</a></li>
+<li class="chapter" data-level="8.5" data-path="observe.html"><a href="observe.html#the-key-association-previewed"><i class="fa fa-check"></i><b>8.5</b> The key association, previewed</a></li>
+</ul></li>
+<li class="chapter" data-level="9" data-path="model.html"><a href="model.html"><i class="fa fa-check"></i><b>9</b> Modelling: a federated logistic GLM</a>
+<ul>
+<li class="chapter" data-level="9.1" data-path="model.html"><a href="model.html#assembling-the-modelling-frame"><i class="fa fa-check"></i><b>9.1</b> Assembling the modelling frame</a></li>
+<li class="chapter" data-level="9.2" data-path="model.html"><a href="model.html#fitting-the-model-with-its-live-training-trace"><i class="fa fa-check"></i><b>9.2</b> Fitting the model (with its live training trace)</a></li>
+<li class="chapter" data-level="9.3" data-path="model.html"><a href="model.html#reading-the-result"><i class="fa fa-check"></i><b>9.3</b> Reading the result</a></li>
+<li class="chapter" data-level="9.4" data-path="model.html"><a href="model.html#the-same-model-study-level"><i class="fa fa-check"></i><b>9.4</b> The same model, study-level</a></li>
+<li class="chapter" data-level="9.5" data-path="model.html"><a href="model.html#disconnect"><i class="fa fa-check"></i><b>9.5</b> Disconnect</a></li>
+<li class="chapter" data-level="9.6" data-path="model.html"><a href="model.html#in-summary"><i class="fa fa-check"></i><b>9.6</b> In summary</a></li>
 </ul></li>
 <li class="divider"></li>
 <li><a href="https://github.com/APHRC-DSE/Federated-Analysis-using-DataSHIELD-I" target="blank">Reproducibility package</a></li>
@@ -201,211 +240,211 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
           <div class="page-inner">
 
             <section class="normal" id="section-">
-<div id="explore" class="section level1 hasAnchor" number="1">
-<h1><span class="header-section-number">Chapter 1</span> Exploring the catalogue<a href="explore.html#explore" class="anchor-section" aria-label="Anchor link to header"></a></h1>
+<div id="explore" class="section level1 hasAnchor" number="6">
+<h1><span class="header-section-number">Chapter 6</span> Exploring the catalogue<a href="explore.html#explore" class="anchor-section" aria-label="Anchor link to header"></a></h1>
 <p>Before extracting anything we explore the federation with dsOMOP’s <strong>aggregate</strong>
 functions. These introspect each site’s OMOP schema and return only
 disclosure-checked metadata and counts — no patient-level data is transferred.
 This is how an analyst decides <em>what</em> to study.</p>
-<div id="what-tables-does-each-site-expose" class="section level2 hasAnchor" number="1.1">
-<h2><span class="header-section-number">1.1</span> What tables does each site expose?<a href="explore.html#what-tables-does-each-site-expose" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<div id="what-tables-does-each-site-expose" class="section level2 hasAnchor" number="6.1">
+<h2><span class="header-section-number">6.1</span> What tables does each site expose?<a href="explore.html#what-tables-does-each-site-expose" class="anchor-section" aria-label="Anchor link to header"></a></h2>
 <p>dsOMOP discovers tables at runtime by reading the CDM schema; it does not
 hard-code an OMOP version. Here are the tables visible on the first site:</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="explore.html#cb5-1" tabindex="-1"></a>tabs <span class="ot">&lt;-</span> <span class="fu">ds.omop.tables</span>(<span class="at">symbol =</span> <span class="st">&quot;omop&quot;</span>, <span class="at">conns =</span> conns)</span>
-<span id="cb5-2"><a href="explore.html#cb5-2" tabindex="-1"></a><span class="fu">head</span>(tabs[[<span class="dv">1</span>]], <span class="dv">15</span>)</span>
-<span id="cb5-3"><a href="explore.html#cb5-3" tabindex="-1"></a><span class="co">#&gt;              table_name schema_category has_person_id concept_prefix</span></span>
-<span id="cb5-4"><a href="explore.html#cb5-4" tabindex="-1"></a><span class="co">#&gt; 1                person             CDM          TRUE         gender</span></span>
-<span id="cb5-5"><a href="explore.html#cb5-5" tabindex="-1"></a><span class="co">#&gt; 2    observation_period             CDM          TRUE    period_type</span></span>
-<span id="cb5-6"><a href="explore.html#cb5-6" tabindex="-1"></a><span class="co">#&gt; 3      visit_occurrence             CDM          TRUE          visit</span></span>
-<span id="cb5-7"><a href="explore.html#cb5-7" tabindex="-1"></a><span class="co">#&gt; 4          visit_detail             CDM          TRUE   visit_detail</span></span>
-<span id="cb5-8"><a href="explore.html#cb5-8" tabindex="-1"></a><span class="co">#&gt; 5  condition_occurrence             CDM          TRUE      condition</span></span>
-<span id="cb5-9"><a href="explore.html#cb5-9" tabindex="-1"></a><span class="co">#&gt; 6         drug_exposure             CDM          TRUE           drug</span></span>
-<span id="cb5-10"><a href="explore.html#cb5-10" tabindex="-1"></a><span class="co">#&gt; 7  procedure_occurrence             CDM          TRUE      procedure</span></span>
-<span id="cb5-11"><a href="explore.html#cb5-11" tabindex="-1"></a><span class="co">#&gt; 8       device_exposure             CDM          TRUE         device</span></span>
-<span id="cb5-12"><a href="explore.html#cb5-12" tabindex="-1"></a><span class="co">#&gt; 9           measurement             CDM          TRUE    measurement</span></span>
-<span id="cb5-13"><a href="explore.html#cb5-13" tabindex="-1"></a><span class="co">#&gt; 10          observation             CDM          TRUE    observation</span></span>
-<span id="cb5-14"><a href="explore.html#cb5-14" tabindex="-1"></a><span class="co">#&gt; 11                death             CDM          TRUE          death</span></span>
-<span id="cb5-15"><a href="explore.html#cb5-15" tabindex="-1"></a><span class="co">#&gt; 12                 note             CDM          TRUE           note</span></span>
-<span id="cb5-16"><a href="explore.html#cb5-16" tabindex="-1"></a><span class="co">#&gt; 13             note_nlp             CDM         FALSE       note_nlp</span></span>
-<span id="cb5-17"><a href="explore.html#cb5-17" tabindex="-1"></a><span class="co">#&gt; 14             specimen             CDM          TRUE       specimen</span></span>
-<span id="cb5-18"><a href="explore.html#cb5-18" tabindex="-1"></a><span class="co">#&gt; 15    fact_relationship             CDM         FALSE</span></span></code></pre></div>
+<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="explore.html#cb21-1" tabindex="-1"></a>tabs <span class="ot">&lt;-</span> <span class="fu">ds.omop.tables</span>(<span class="at">symbol =</span> <span class="st">&quot;omop&quot;</span>, <span class="at">conns =</span> conns)</span>
+<span id="cb21-2"><a href="explore.html#cb21-2" tabindex="-1"></a><span class="fu">head</span>(tabs[[<span class="dv">1</span>]], <span class="dv">15</span>)</span>
+<span id="cb21-3"><a href="explore.html#cb21-3" tabindex="-1"></a><span class="co">#&gt;              table_name schema_category has_person_id concept_prefix</span></span>
+<span id="cb21-4"><a href="explore.html#cb21-4" tabindex="-1"></a><span class="co">#&gt; 1                person             CDM          TRUE         gender</span></span>
+<span id="cb21-5"><a href="explore.html#cb21-5" tabindex="-1"></a><span class="co">#&gt; 2    observation_period             CDM          TRUE    period_type</span></span>
+<span id="cb21-6"><a href="explore.html#cb21-6" tabindex="-1"></a><span class="co">#&gt; 3      visit_occurrence             CDM          TRUE          visit</span></span>
+<span id="cb21-7"><a href="explore.html#cb21-7" tabindex="-1"></a><span class="co">#&gt; 4          visit_detail             CDM          TRUE   visit_detail</span></span>
+<span id="cb21-8"><a href="explore.html#cb21-8" tabindex="-1"></a><span class="co">#&gt; 5  condition_occurrence             CDM          TRUE      condition</span></span>
+<span id="cb21-9"><a href="explore.html#cb21-9" tabindex="-1"></a><span class="co">#&gt; 6         drug_exposure             CDM          TRUE           drug</span></span>
+<span id="cb21-10"><a href="explore.html#cb21-10" tabindex="-1"></a><span class="co">#&gt; 7  procedure_occurrence             CDM          TRUE      procedure</span></span>
+<span id="cb21-11"><a href="explore.html#cb21-11" tabindex="-1"></a><span class="co">#&gt; 8       device_exposure             CDM          TRUE         device</span></span>
+<span id="cb21-12"><a href="explore.html#cb21-12" tabindex="-1"></a><span class="co">#&gt; 9           measurement             CDM          TRUE    measurement</span></span>
+<span id="cb21-13"><a href="explore.html#cb21-13" tabindex="-1"></a><span class="co">#&gt; 10          observation             CDM          TRUE    observation</span></span>
+<span id="cb21-14"><a href="explore.html#cb21-14" tabindex="-1"></a><span class="co">#&gt; 11                death             CDM          TRUE          death</span></span>
+<span id="cb21-15"><a href="explore.html#cb21-15" tabindex="-1"></a><span class="co">#&gt; 12                 note             CDM          TRUE           note</span></span>
+<span id="cb21-16"><a href="explore.html#cb21-16" tabindex="-1"></a><span class="co">#&gt; 13             note_nlp             CDM         FALSE       note_nlp</span></span>
+<span id="cb21-17"><a href="explore.html#cb21-17" tabindex="-1"></a><span class="co">#&gt; 14             specimen             CDM          TRUE       specimen</span></span>
+<span id="cb21-18"><a href="explore.html#cb21-18" tabindex="-1"></a><span class="co">#&gt; 15    fact_relationship             CDM         FALSE</span></span></code></pre></div>
 </div>
-<div id="what-variables-live-in-a-table" class="section level2 hasAnchor" number="1.2">
-<h2><span class="header-section-number">1.2</span> What variables live in a table?<a href="explore.html#what-variables-live-in-a-table" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<div id="what-variables-live-in-a-table" class="section level2 hasAnchor" number="6.2">
+<h2><span class="header-section-number">6.2</span> What variables live in a table?<a href="explore.html#what-variables-live-in-a-table" class="anchor-section" aria-label="Anchor link to header"></a></h2>
 <p><code>ds.omop.columns()</code> lists a table’s fields. The <code>person</code> table carries the
 demographics we will use, and the event tables carry the clinical concepts:</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="explore.html#cb6-1" tabindex="-1"></a><span class="fu">ds.omop.columns</span>(<span class="st">&quot;person&quot;</span>, <span class="at">symbol =</span> <span class="st">&quot;omop&quot;</span>, <span class="at">conns =</span> conns)[[<span class="dv">1</span>]]</span>
-<span id="cb6-2"><a href="explore.html#cb6-2" tabindex="-1"></a><span class="co">#&gt;                    column_name cdm_datatype                 db_datatype      concept_role</span></span>
-<span id="cb6-3"><a href="explore.html#cb6-3" tabindex="-1"></a><span class="co">#&gt; 1                    person_id      integer                     integer       non_concept</span></span>
-<span id="cb6-4"><a href="explore.html#cb6-4" tabindex="-1"></a><span class="co">#&gt; 2            gender_concept_id      integer                     integer    domain_concept</span></span>
-<span id="cb6-5"><a href="explore.html#cb6-5" tabindex="-1"></a><span class="co">#&gt; 3                year_of_birth      integer                     integer       non_concept</span></span>
-<span id="cb6-6"><a href="explore.html#cb6-6" tabindex="-1"></a><span class="co">#&gt; 4               month_of_birth      integer                     integer       non_concept</span></span>
-<span id="cb6-7"><a href="explore.html#cb6-7" tabindex="-1"></a><span class="co">#&gt; 5                 day_of_birth      integer                     integer       non_concept</span></span>
-<span id="cb6-8"><a href="explore.html#cb6-8" tabindex="-1"></a><span class="co">#&gt; 6               birth_datetime     datetime timestamp without time zone       non_concept</span></span>
-<span id="cb6-9"><a href="explore.html#cb6-9" tabindex="-1"></a><span class="co">#&gt; 7              race_concept_id      integer                     integer attribute_concept</span></span>
-<span id="cb6-10"><a href="explore.html#cb6-10" tabindex="-1"></a><span class="co">#&gt; 8         ethnicity_concept_id      integer                     integer attribute_concept</span></span>
-<span id="cb6-11"><a href="explore.html#cb6-11" tabindex="-1"></a><span class="co">#&gt; 9                  location_id      integer                     integer       non_concept</span></span>
-<span id="cb6-12"><a href="explore.html#cb6-12" tabindex="-1"></a><span class="co">#&gt; 10                 provider_id      integer                     integer       non_concept</span></span>
-<span id="cb6-13"><a href="explore.html#cb6-13" tabindex="-1"></a><span class="co">#&gt; 11                care_site_id      integer                     integer       non_concept</span></span>
-<span id="cb6-14"><a href="explore.html#cb6-14" tabindex="-1"></a><span class="co">#&gt; 12         person_source_value  varchar(50)           character varying       non_concept</span></span>
-<span id="cb6-15"><a href="explore.html#cb6-15" tabindex="-1"></a><span class="co">#&gt; 13         gender_source_value  varchar(50)           character varying       non_concept</span></span>
-<span id="cb6-16"><a href="explore.html#cb6-16" tabindex="-1"></a><span class="co">#&gt; 14    gender_source_concept_id      integer                     integer    source_concept</span></span>
-<span id="cb6-17"><a href="explore.html#cb6-17" tabindex="-1"></a><span class="co">#&gt; 15           race_source_value  varchar(50)           character varying       non_concept</span></span>
-<span id="cb6-18"><a href="explore.html#cb6-18" tabindex="-1"></a><span class="co">#&gt; 16      race_source_concept_id      integer                     integer    source_concept</span></span>
-<span id="cb6-19"><a href="explore.html#cb6-19" tabindex="-1"></a><span class="co">#&gt; 17      ethnicity_source_value  varchar(50)           character varying       non_concept</span></span>
-<span id="cb6-20"><a href="explore.html#cb6-20" tabindex="-1"></a><span class="co">#&gt; 18 ethnicity_source_concept_id      integer                     integer    source_concept</span></span>
-<span id="cb6-21"><a href="explore.html#cb6-21" tabindex="-1"></a><span class="co">#&gt;    fk_domain is_date is_sensitive is_blocked</span></span>
-<span id="cb6-22"><a href="explore.html#cb6-22" tabindex="-1"></a><span class="co">#&gt; 1              FALSE        FALSE      FALSE</span></span>
-<span id="cb6-23"><a href="explore.html#cb6-23" tabindex="-1"></a><span class="co">#&gt; 2     Gender   FALSE        FALSE      FALSE</span></span>
-<span id="cb6-24"><a href="explore.html#cb6-24" tabindex="-1"></a><span class="co">#&gt; 3              FALSE        FALSE      FALSE</span></span>
-<span id="cb6-25"><a href="explore.html#cb6-25" tabindex="-1"></a><span class="co">#&gt; 4              FALSE        FALSE      FALSE</span></span>
-<span id="cb6-26"><a href="explore.html#cb6-26" tabindex="-1"></a><span class="co">#&gt; 5              FALSE        FALSE      FALSE</span></span>
-<span id="cb6-27"><a href="explore.html#cb6-27" tabindex="-1"></a><span class="co">#&gt; 6               TRUE        FALSE      FALSE</span></span>
-<span id="cb6-28"><a href="explore.html#cb6-28" tabindex="-1"></a><span class="co">#&gt; 7       Race   FALSE        FALSE      FALSE</span></span>
-<span id="cb6-29"><a href="explore.html#cb6-29" tabindex="-1"></a><span class="co">#&gt; 8  Ethnicity   FALSE        FALSE      FALSE</span></span>
-<span id="cb6-30"><a href="explore.html#cb6-30" tabindex="-1"></a><span class="co">#&gt; 9              FALSE        FALSE      FALSE</span></span>
-<span id="cb6-31"><a href="explore.html#cb6-31" tabindex="-1"></a><span class="co">#&gt; 10             FALSE        FALSE      FALSE</span></span>
-<span id="cb6-32"><a href="explore.html#cb6-32" tabindex="-1"></a><span class="co">#&gt; 11             FALSE        FALSE      FALSE</span></span>
-<span id="cb6-33"><a href="explore.html#cb6-33" tabindex="-1"></a><span class="co">#&gt; 12             FALSE         TRUE       TRUE</span></span>
-<span id="cb6-34"><a href="explore.html#cb6-34" tabindex="-1"></a><span class="co">#&gt; 13             FALSE         TRUE       TRUE</span></span>
-<span id="cb6-35"><a href="explore.html#cb6-35" tabindex="-1"></a><span class="co">#&gt; 14    Gender   FALSE         TRUE       TRUE</span></span>
-<span id="cb6-36"><a href="explore.html#cb6-36" tabindex="-1"></a><span class="co">#&gt; 15             FALSE         TRUE       TRUE</span></span>
-<span id="cb6-37"><a href="explore.html#cb6-37" tabindex="-1"></a><span class="co">#&gt; 16      Race   FALSE         TRUE       TRUE</span></span>
-<span id="cb6-38"><a href="explore.html#cb6-38" tabindex="-1"></a><span class="co">#&gt; 17             FALSE         TRUE       TRUE</span></span>
-<span id="cb6-39"><a href="explore.html#cb6-39" tabindex="-1"></a><span class="co">#&gt; 18 Ethnicity   FALSE         TRUE       TRUE</span></span>
-<span id="cb6-40"><a href="explore.html#cb6-40" tabindex="-1"></a><span class="fu">ds.omop.columns</span>(<span class="st">&quot;condition_occurrence&quot;</span>, <span class="at">symbol =</span> <span class="st">&quot;omop&quot;</span>, <span class="at">conns =</span> conns)[[<span class="dv">1</span>]]</span>
-<span id="cb6-41"><a href="explore.html#cb6-41" tabindex="-1"></a><span class="co">#&gt;                      column_name cdm_datatype                 db_datatype</span></span>
-<span id="cb6-42"><a href="explore.html#cb6-42" tabindex="-1"></a><span class="co">#&gt; 1        condition_occurrence_id      integer                     integer</span></span>
-<span id="cb6-43"><a href="explore.html#cb6-43" tabindex="-1"></a><span class="co">#&gt; 2                      person_id      integer                     integer</span></span>
-<span id="cb6-44"><a href="explore.html#cb6-44" tabindex="-1"></a><span class="co">#&gt; 3           condition_concept_id      integer                     integer</span></span>
-<span id="cb6-45"><a href="explore.html#cb6-45" tabindex="-1"></a><span class="co">#&gt; 4           condition_start_date         date                        date</span></span>
-<span id="cb6-46"><a href="explore.html#cb6-46" tabindex="-1"></a><span class="co">#&gt; 5       condition_start_datetime     datetime timestamp without time zone</span></span>
-<span id="cb6-47"><a href="explore.html#cb6-47" tabindex="-1"></a><span class="co">#&gt; 6             condition_end_date         date                        date</span></span>
-<span id="cb6-48"><a href="explore.html#cb6-48" tabindex="-1"></a><span class="co">#&gt; 7         condition_end_datetime     datetime timestamp without time zone</span></span>
-<span id="cb6-49"><a href="explore.html#cb6-49" tabindex="-1"></a><span class="co">#&gt; 8      condition_type_concept_id      integer                     integer</span></span>
-<span id="cb6-50"><a href="explore.html#cb6-50" tabindex="-1"></a><span class="co">#&gt; 9    condition_status_concept_id      integer                     integer</span></span>
-<span id="cb6-51"><a href="explore.html#cb6-51" tabindex="-1"></a><span class="co">#&gt; 10                   stop_reason  varchar(20)           character varying</span></span>
-<span id="cb6-52"><a href="explore.html#cb6-52" tabindex="-1"></a><span class="co">#&gt; 11                   provider_id      integer                     integer</span></span>
-<span id="cb6-53"><a href="explore.html#cb6-53" tabindex="-1"></a><span class="co">#&gt; 12           visit_occurrence_id      integer                     integer</span></span>
-<span id="cb6-54"><a href="explore.html#cb6-54" tabindex="-1"></a><span class="co">#&gt; 13               visit_detail_id      integer                     integer</span></span>
-<span id="cb6-55"><a href="explore.html#cb6-55" tabindex="-1"></a><span class="co">#&gt; 14        condition_source_value  varchar(50)           character varying</span></span>
-<span id="cb6-56"><a href="explore.html#cb6-56" tabindex="-1"></a><span class="co">#&gt; 15   condition_source_concept_id      integer                     integer</span></span>
-<span id="cb6-57"><a href="explore.html#cb6-57" tabindex="-1"></a><span class="co">#&gt; 16 condition_status_source_value  varchar(50)           character varying</span></span>
-<span id="cb6-58"><a href="explore.html#cb6-58" tabindex="-1"></a><span class="co">#&gt;         concept_role        fk_domain is_date is_sensitive is_blocked</span></span>
-<span id="cb6-59"><a href="explore.html#cb6-59" tabindex="-1"></a><span class="co">#&gt; 1        non_concept                    FALSE        FALSE      FALSE</span></span>
-<span id="cb6-60"><a href="explore.html#cb6-60" tabindex="-1"></a><span class="co">#&gt; 2        non_concept                    FALSE        FALSE      FALSE</span></span>
-<span id="cb6-61"><a href="explore.html#cb6-61" tabindex="-1"></a><span class="co">#&gt; 3     domain_concept        Condition   FALSE        FALSE      FALSE</span></span>
-<span id="cb6-62"><a href="explore.html#cb6-62" tabindex="-1"></a><span class="co">#&gt; 4        non_concept                     TRUE        FALSE      FALSE</span></span>
-<span id="cb6-63"><a href="explore.html#cb6-63" tabindex="-1"></a><span class="co">#&gt; 5        non_concept                     TRUE        FALSE      FALSE</span></span>
-<span id="cb6-64"><a href="explore.html#cb6-64" tabindex="-1"></a><span class="co">#&gt; 6        non_concept                     TRUE        FALSE      FALSE</span></span>
-<span id="cb6-65"><a href="explore.html#cb6-65" tabindex="-1"></a><span class="co">#&gt; 7        non_concept                     TRUE        FALSE      FALSE</span></span>
-<span id="cb6-66"><a href="explore.html#cb6-66" tabindex="-1"></a><span class="co">#&gt; 8       type_concept     Type Concept   FALSE        FALSE      FALSE</span></span>
-<span id="cb6-67"><a href="explore.html#cb6-67" tabindex="-1"></a><span class="co">#&gt; 9  attribute_concept Condition Status   FALSE        FALSE      FALSE</span></span>
-<span id="cb6-68"><a href="explore.html#cb6-68" tabindex="-1"></a><span class="co">#&gt; 10       non_concept                    FALSE         TRUE       TRUE</span></span>
-<span id="cb6-69"><a href="explore.html#cb6-69" tabindex="-1"></a><span class="co">#&gt; 11       non_concept                    FALSE        FALSE      FALSE</span></span>
-<span id="cb6-70"><a href="explore.html#cb6-70" tabindex="-1"></a><span class="co">#&gt; 12       non_concept                    FALSE        FALSE      FALSE</span></span>
-<span id="cb6-71"><a href="explore.html#cb6-71" tabindex="-1"></a><span class="co">#&gt; 13       non_concept                    FALSE        FALSE      FALSE</span></span>
-<span id="cb6-72"><a href="explore.html#cb6-72" tabindex="-1"></a><span class="co">#&gt; 14       non_concept                    FALSE         TRUE       TRUE</span></span>
-<span id="cb6-73"><a href="explore.html#cb6-73" tabindex="-1"></a><span class="co">#&gt; 15    source_concept        Condition   FALSE         TRUE       TRUE</span></span>
-<span id="cb6-74"><a href="explore.html#cb6-74" tabindex="-1"></a><span class="co">#&gt; 16       non_concept                    FALSE         TRUE       TRUE</span></span></code></pre></div>
+<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="explore.html#cb22-1" tabindex="-1"></a><span class="fu">ds.omop.columns</span>(<span class="st">&quot;person&quot;</span>, <span class="at">symbol =</span> <span class="st">&quot;omop&quot;</span>, <span class="at">conns =</span> conns)[[<span class="dv">1</span>]]</span>
+<span id="cb22-2"><a href="explore.html#cb22-2" tabindex="-1"></a><span class="co">#&gt;                    column_name cdm_datatype                 db_datatype      concept_role</span></span>
+<span id="cb22-3"><a href="explore.html#cb22-3" tabindex="-1"></a><span class="co">#&gt; 1                    person_id      integer                     integer       non_concept</span></span>
+<span id="cb22-4"><a href="explore.html#cb22-4" tabindex="-1"></a><span class="co">#&gt; 2            gender_concept_id      integer                     integer    domain_concept</span></span>
+<span id="cb22-5"><a href="explore.html#cb22-5" tabindex="-1"></a><span class="co">#&gt; 3                year_of_birth      integer                     integer       non_concept</span></span>
+<span id="cb22-6"><a href="explore.html#cb22-6" tabindex="-1"></a><span class="co">#&gt; 4               month_of_birth      integer                     integer       non_concept</span></span>
+<span id="cb22-7"><a href="explore.html#cb22-7" tabindex="-1"></a><span class="co">#&gt; 5                 day_of_birth      integer                     integer       non_concept</span></span>
+<span id="cb22-8"><a href="explore.html#cb22-8" tabindex="-1"></a><span class="co">#&gt; 6               birth_datetime     datetime timestamp without time zone       non_concept</span></span>
+<span id="cb22-9"><a href="explore.html#cb22-9" tabindex="-1"></a><span class="co">#&gt; 7              race_concept_id      integer                     integer attribute_concept</span></span>
+<span id="cb22-10"><a href="explore.html#cb22-10" tabindex="-1"></a><span class="co">#&gt; 8         ethnicity_concept_id      integer                     integer attribute_concept</span></span>
+<span id="cb22-11"><a href="explore.html#cb22-11" tabindex="-1"></a><span class="co">#&gt; 9                  location_id      integer                     integer       non_concept</span></span>
+<span id="cb22-12"><a href="explore.html#cb22-12" tabindex="-1"></a><span class="co">#&gt; 10                 provider_id      integer                     integer       non_concept</span></span>
+<span id="cb22-13"><a href="explore.html#cb22-13" tabindex="-1"></a><span class="co">#&gt; 11                care_site_id      integer                     integer       non_concept</span></span>
+<span id="cb22-14"><a href="explore.html#cb22-14" tabindex="-1"></a><span class="co">#&gt; 12         person_source_value  varchar(50)           character varying       non_concept</span></span>
+<span id="cb22-15"><a href="explore.html#cb22-15" tabindex="-1"></a><span class="co">#&gt; 13         gender_source_value  varchar(50)           character varying       non_concept</span></span>
+<span id="cb22-16"><a href="explore.html#cb22-16" tabindex="-1"></a><span class="co">#&gt; 14    gender_source_concept_id      integer                     integer    source_concept</span></span>
+<span id="cb22-17"><a href="explore.html#cb22-17" tabindex="-1"></a><span class="co">#&gt; 15           race_source_value  varchar(50)           character varying       non_concept</span></span>
+<span id="cb22-18"><a href="explore.html#cb22-18" tabindex="-1"></a><span class="co">#&gt; 16      race_source_concept_id      integer                     integer    source_concept</span></span>
+<span id="cb22-19"><a href="explore.html#cb22-19" tabindex="-1"></a><span class="co">#&gt; 17      ethnicity_source_value  varchar(50)           character varying       non_concept</span></span>
+<span id="cb22-20"><a href="explore.html#cb22-20" tabindex="-1"></a><span class="co">#&gt; 18 ethnicity_source_concept_id      integer                     integer    source_concept</span></span>
+<span id="cb22-21"><a href="explore.html#cb22-21" tabindex="-1"></a><span class="co">#&gt;    fk_domain is_date is_sensitive is_blocked</span></span>
+<span id="cb22-22"><a href="explore.html#cb22-22" tabindex="-1"></a><span class="co">#&gt; 1              FALSE        FALSE      FALSE</span></span>
+<span id="cb22-23"><a href="explore.html#cb22-23" tabindex="-1"></a><span class="co">#&gt; 2     Gender   FALSE        FALSE      FALSE</span></span>
+<span id="cb22-24"><a href="explore.html#cb22-24" tabindex="-1"></a><span class="co">#&gt; 3              FALSE        FALSE      FALSE</span></span>
+<span id="cb22-25"><a href="explore.html#cb22-25" tabindex="-1"></a><span class="co">#&gt; 4              FALSE        FALSE      FALSE</span></span>
+<span id="cb22-26"><a href="explore.html#cb22-26" tabindex="-1"></a><span class="co">#&gt; 5              FALSE        FALSE      FALSE</span></span>
+<span id="cb22-27"><a href="explore.html#cb22-27" tabindex="-1"></a><span class="co">#&gt; 6               TRUE        FALSE      FALSE</span></span>
+<span id="cb22-28"><a href="explore.html#cb22-28" tabindex="-1"></a><span class="co">#&gt; 7       Race   FALSE        FALSE      FALSE</span></span>
+<span id="cb22-29"><a href="explore.html#cb22-29" tabindex="-1"></a><span class="co">#&gt; 8  Ethnicity   FALSE        FALSE      FALSE</span></span>
+<span id="cb22-30"><a href="explore.html#cb22-30" tabindex="-1"></a><span class="co">#&gt; 9              FALSE        FALSE      FALSE</span></span>
+<span id="cb22-31"><a href="explore.html#cb22-31" tabindex="-1"></a><span class="co">#&gt; 10             FALSE        FALSE      FALSE</span></span>
+<span id="cb22-32"><a href="explore.html#cb22-32" tabindex="-1"></a><span class="co">#&gt; 11             FALSE        FALSE      FALSE</span></span>
+<span id="cb22-33"><a href="explore.html#cb22-33" tabindex="-1"></a><span class="co">#&gt; 12             FALSE         TRUE       TRUE</span></span>
+<span id="cb22-34"><a href="explore.html#cb22-34" tabindex="-1"></a><span class="co">#&gt; 13             FALSE         TRUE       TRUE</span></span>
+<span id="cb22-35"><a href="explore.html#cb22-35" tabindex="-1"></a><span class="co">#&gt; 14    Gender   FALSE         TRUE       TRUE</span></span>
+<span id="cb22-36"><a href="explore.html#cb22-36" tabindex="-1"></a><span class="co">#&gt; 15             FALSE         TRUE       TRUE</span></span>
+<span id="cb22-37"><a href="explore.html#cb22-37" tabindex="-1"></a><span class="co">#&gt; 16      Race   FALSE         TRUE       TRUE</span></span>
+<span id="cb22-38"><a href="explore.html#cb22-38" tabindex="-1"></a><span class="co">#&gt; 17             FALSE         TRUE       TRUE</span></span>
+<span id="cb22-39"><a href="explore.html#cb22-39" tabindex="-1"></a><span class="co">#&gt; 18 Ethnicity   FALSE         TRUE       TRUE</span></span>
+<span id="cb22-40"><a href="explore.html#cb22-40" tabindex="-1"></a><span class="fu">ds.omop.columns</span>(<span class="st">&quot;condition_occurrence&quot;</span>, <span class="at">symbol =</span> <span class="st">&quot;omop&quot;</span>, <span class="at">conns =</span> conns)[[<span class="dv">1</span>]]</span>
+<span id="cb22-41"><a href="explore.html#cb22-41" tabindex="-1"></a><span class="co">#&gt;                      column_name cdm_datatype                 db_datatype</span></span>
+<span id="cb22-42"><a href="explore.html#cb22-42" tabindex="-1"></a><span class="co">#&gt; 1        condition_occurrence_id      integer                     integer</span></span>
+<span id="cb22-43"><a href="explore.html#cb22-43" tabindex="-1"></a><span class="co">#&gt; 2                      person_id      integer                     integer</span></span>
+<span id="cb22-44"><a href="explore.html#cb22-44" tabindex="-1"></a><span class="co">#&gt; 3           condition_concept_id      integer                     integer</span></span>
+<span id="cb22-45"><a href="explore.html#cb22-45" tabindex="-1"></a><span class="co">#&gt; 4           condition_start_date         date                        date</span></span>
+<span id="cb22-46"><a href="explore.html#cb22-46" tabindex="-1"></a><span class="co">#&gt; 5       condition_start_datetime     datetime timestamp without time zone</span></span>
+<span id="cb22-47"><a href="explore.html#cb22-47" tabindex="-1"></a><span class="co">#&gt; 6             condition_end_date         date                        date</span></span>
+<span id="cb22-48"><a href="explore.html#cb22-48" tabindex="-1"></a><span class="co">#&gt; 7         condition_end_datetime     datetime timestamp without time zone</span></span>
+<span id="cb22-49"><a href="explore.html#cb22-49" tabindex="-1"></a><span class="co">#&gt; 8      condition_type_concept_id      integer                     integer</span></span>
+<span id="cb22-50"><a href="explore.html#cb22-50" tabindex="-1"></a><span class="co">#&gt; 9    condition_status_concept_id      integer                     integer</span></span>
+<span id="cb22-51"><a href="explore.html#cb22-51" tabindex="-1"></a><span class="co">#&gt; 10                   stop_reason  varchar(20)           character varying</span></span>
+<span id="cb22-52"><a href="explore.html#cb22-52" tabindex="-1"></a><span class="co">#&gt; 11                   provider_id      integer                     integer</span></span>
+<span id="cb22-53"><a href="explore.html#cb22-53" tabindex="-1"></a><span class="co">#&gt; 12           visit_occurrence_id      integer                     integer</span></span>
+<span id="cb22-54"><a href="explore.html#cb22-54" tabindex="-1"></a><span class="co">#&gt; 13               visit_detail_id      integer                     integer</span></span>
+<span id="cb22-55"><a href="explore.html#cb22-55" tabindex="-1"></a><span class="co">#&gt; 14        condition_source_value  varchar(50)           character varying</span></span>
+<span id="cb22-56"><a href="explore.html#cb22-56" tabindex="-1"></a><span class="co">#&gt; 15   condition_source_concept_id      integer                     integer</span></span>
+<span id="cb22-57"><a href="explore.html#cb22-57" tabindex="-1"></a><span class="co">#&gt; 16 condition_status_source_value  varchar(50)           character varying</span></span>
+<span id="cb22-58"><a href="explore.html#cb22-58" tabindex="-1"></a><span class="co">#&gt;         concept_role        fk_domain is_date is_sensitive is_blocked</span></span>
+<span id="cb22-59"><a href="explore.html#cb22-59" tabindex="-1"></a><span class="co">#&gt; 1        non_concept                    FALSE        FALSE      FALSE</span></span>
+<span id="cb22-60"><a href="explore.html#cb22-60" tabindex="-1"></a><span class="co">#&gt; 2        non_concept                    FALSE        FALSE      FALSE</span></span>
+<span id="cb22-61"><a href="explore.html#cb22-61" tabindex="-1"></a><span class="co">#&gt; 3     domain_concept        Condition   FALSE        FALSE      FALSE</span></span>
+<span id="cb22-62"><a href="explore.html#cb22-62" tabindex="-1"></a><span class="co">#&gt; 4        non_concept                     TRUE        FALSE      FALSE</span></span>
+<span id="cb22-63"><a href="explore.html#cb22-63" tabindex="-1"></a><span class="co">#&gt; 5        non_concept                     TRUE        FALSE      FALSE</span></span>
+<span id="cb22-64"><a href="explore.html#cb22-64" tabindex="-1"></a><span class="co">#&gt; 6        non_concept                     TRUE        FALSE      FALSE</span></span>
+<span id="cb22-65"><a href="explore.html#cb22-65" tabindex="-1"></a><span class="co">#&gt; 7        non_concept                     TRUE        FALSE      FALSE</span></span>
+<span id="cb22-66"><a href="explore.html#cb22-66" tabindex="-1"></a><span class="co">#&gt; 8       type_concept     Type Concept   FALSE        FALSE      FALSE</span></span>
+<span id="cb22-67"><a href="explore.html#cb22-67" tabindex="-1"></a><span class="co">#&gt; 9  attribute_concept Condition Status   FALSE        FALSE      FALSE</span></span>
+<span id="cb22-68"><a href="explore.html#cb22-68" tabindex="-1"></a><span class="co">#&gt; 10       non_concept                    FALSE         TRUE       TRUE</span></span>
+<span id="cb22-69"><a href="explore.html#cb22-69" tabindex="-1"></a><span class="co">#&gt; 11       non_concept                    FALSE        FALSE      FALSE</span></span>
+<span id="cb22-70"><a href="explore.html#cb22-70" tabindex="-1"></a><span class="co">#&gt; 12       non_concept                    FALSE        FALSE      FALSE</span></span>
+<span id="cb22-71"><a href="explore.html#cb22-71" tabindex="-1"></a><span class="co">#&gt; 13       non_concept                    FALSE        FALSE      FALSE</span></span>
+<span id="cb22-72"><a href="explore.html#cb22-72" tabindex="-1"></a><span class="co">#&gt; 14       non_concept                    FALSE         TRUE       TRUE</span></span>
+<span id="cb22-73"><a href="explore.html#cb22-73" tabindex="-1"></a><span class="co">#&gt; 15    source_concept        Condition   FALSE         TRUE       TRUE</span></span>
+<span id="cb22-74"><a href="explore.html#cb22-74" tabindex="-1"></a><span class="co">#&gt; 16       non_concept                    FALSE         TRUE       TRUE</span></span></code></pre></div>
 </div>
-<div id="how-big-is-each-table-per-site-and-pooled" class="section level2 hasAnchor" number="1.3">
-<h2><span class="header-section-number">1.3</span> How big is each table, per site and pooled?<a href="explore.html#how-big-is-each-table-per-site-and-pooled" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<div id="how-big-is-each-table-per-site-and-pooled" class="section level2 hasAnchor" number="6.3">
+<h2><span class="header-section-number">6.3</span> How big is each table, per site and pooled?<a href="explore.html#how-big-is-each-table-per-site-and-pooled" class="anchor-section" aria-label="Anchor link to header"></a></h2>
 <p><code>ds.omop.table.stats()</code> returns disclosure-checked <strong>row</strong> counts and
 <strong>distinct-person</strong> counts for each site. Because the cohort is sharded by
 person into disjoint slices, the pooled distinct-person count is the sum across
 sites — and for <code>person</code> it reconstructs the whole cohort (2 694), without
 any site exposing more than its own shard.</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="explore.html#cb7-1" tabindex="-1"></a>sites <span class="ot">&lt;-</span> <span class="fu">names</span>(conns)</span>
-<span id="cb7-2"><a href="explore.html#cb7-2" tabindex="-1"></a>tbls  <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;person&quot;</span>, <span class="st">&quot;condition_occurrence&quot;</span>, <span class="st">&quot;drug_exposure&quot;</span>, <span class="st">&quot;measurement&quot;</span>)</span>
-<span id="cb7-3"><a href="explore.html#cb7-3" tabindex="-1"></a></span>
-<span id="cb7-4"><a href="explore.html#cb7-4" tabindex="-1"></a>per_site <span class="ot">&lt;-</span> <span class="fu">lapply</span>(tbls, <span class="cf">function</span>(tb)</span>
-<span id="cb7-5"><a href="explore.html#cb7-5" tabindex="-1"></a>  <span class="fu">ds.omop.table.stats</span>(tb, <span class="at">symbol =</span> <span class="st">&quot;omop&quot;</span>, <span class="at">conns =</span> conns)<span class="sc">$</span>per_site)</span>
-<span id="cb7-6"><a href="explore.html#cb7-6" tabindex="-1"></a><span class="fu">names</span>(per_site) <span class="ot">&lt;-</span> tbls</span>
-<span id="cb7-7"><a href="explore.html#cb7-7" tabindex="-1"></a></span>
-<span id="cb7-8"><a href="explore.html#cb7-8" tabindex="-1"></a>tabulate_field <span class="ot">&lt;-</span> <span class="cf">function</span>(field) {</span>
-<span id="cb7-9"><a href="explore.html#cb7-9" tabindex="-1"></a>  m <span class="ot">&lt;-</span> <span class="fu">t</span>(<span class="fu">vapply</span>(per_site, <span class="cf">function</span>(ps)</span>
-<span id="cb7-10"><a href="explore.html#cb7-10" tabindex="-1"></a>    <span class="fu">vapply</span>(sites, <span class="cf">function</span>(s) <span class="fu">as.numeric</span>(ps[[s]][[field]]), <span class="fu">numeric</span>(<span class="dv">1</span>)),</span>
-<span id="cb7-11"><a href="explore.html#cb7-11" tabindex="-1"></a>    <span class="fu">numeric</span>(<span class="fu">length</span>(sites))))</span>
-<span id="cb7-12"><a href="explore.html#cb7-12" tabindex="-1"></a>  <span class="fu">colnames</span>(m) <span class="ot">&lt;-</span> sites</span>
-<span id="cb7-13"><a href="explore.html#cb7-13" tabindex="-1"></a>  <span class="fu">cbind</span>(m, <span class="at">pooled =</span> <span class="fu">rowSums</span>(m))</span>
-<span id="cb7-14"><a href="explore.html#cb7-14" tabindex="-1"></a>}</span></code></pre></div>
+<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="explore.html#cb23-1" tabindex="-1"></a>sites <span class="ot">&lt;-</span> <span class="fu">names</span>(conns)</span>
+<span id="cb23-2"><a href="explore.html#cb23-2" tabindex="-1"></a>tbls  <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;person&quot;</span>, <span class="st">&quot;condition_occurrence&quot;</span>, <span class="st">&quot;drug_exposure&quot;</span>, <span class="st">&quot;measurement&quot;</span>)</span>
+<span id="cb23-3"><a href="explore.html#cb23-3" tabindex="-1"></a></span>
+<span id="cb23-4"><a href="explore.html#cb23-4" tabindex="-1"></a>per_site <span class="ot">&lt;-</span> <span class="fu">lapply</span>(tbls, <span class="cf">function</span>(tb)</span>
+<span id="cb23-5"><a href="explore.html#cb23-5" tabindex="-1"></a>  <span class="fu">ds.omop.table.stats</span>(tb, <span class="at">symbol =</span> <span class="st">&quot;omop&quot;</span>, <span class="at">conns =</span> conns)<span class="sc">$</span>per_site)</span>
+<span id="cb23-6"><a href="explore.html#cb23-6" tabindex="-1"></a><span class="fu">names</span>(per_site) <span class="ot">&lt;-</span> tbls</span>
+<span id="cb23-7"><a href="explore.html#cb23-7" tabindex="-1"></a></span>
+<span id="cb23-8"><a href="explore.html#cb23-8" tabindex="-1"></a>tabulate_field <span class="ot">&lt;-</span> <span class="cf">function</span>(field) {</span>
+<span id="cb23-9"><a href="explore.html#cb23-9" tabindex="-1"></a>  m <span class="ot">&lt;-</span> <span class="fu">t</span>(<span class="fu">vapply</span>(per_site, <span class="cf">function</span>(ps)</span>
+<span id="cb23-10"><a href="explore.html#cb23-10" tabindex="-1"></a>    <span class="fu">vapply</span>(sites, <span class="cf">function</span>(s) <span class="fu">as.numeric</span>(ps[[s]][[field]]), <span class="fu">numeric</span>(<span class="dv">1</span>)),</span>
+<span id="cb23-11"><a href="explore.html#cb23-11" tabindex="-1"></a>    <span class="fu">numeric</span>(<span class="fu">length</span>(sites))))</span>
+<span id="cb23-12"><a href="explore.html#cb23-12" tabindex="-1"></a>  <span class="fu">colnames</span>(m) <span class="ot">&lt;-</span> sites</span>
+<span id="cb23-13"><a href="explore.html#cb23-13" tabindex="-1"></a>  <span class="fu">cbind</span>(m, <span class="at">pooled =</span> <span class="fu">rowSums</span>(m))</span>
+<span id="cb23-14"><a href="explore.html#cb23-14" tabindex="-1"></a>}</span></code></pre></div>
 <p>Distinct persons per table — the <code>person</code> row is the full cohort, and the event
 tables show how many of those persons have records of each kind:</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="explore.html#cb8-1" tabindex="-1"></a><span class="fu">tabulate_field</span>(<span class="st">&quot;persons&quot;</span>)</span>
-<span id="cb8-2"><a href="explore.html#cb8-2" tabindex="-1"></a><span class="co">#&gt;                      aphrc dgh iressef pooled</span></span>
-<span id="cb8-3"><a href="explore.html#cb8-3" tabindex="-1"></a><span class="co">#&gt; person                 889 878     927   2694</span></span>
-<span id="cb8-4"><a href="explore.html#cb8-4" tabindex="-1"></a><span class="co">#&gt; condition_occurrence   889 878     927   2694</span></span>
-<span id="cb8-5"><a href="explore.html#cb8-5" tabindex="-1"></a><span class="co">#&gt; drug_exposure          889 878     927   2694</span></span>
-<span id="cb8-6"><a href="explore.html#cb8-6" tabindex="-1"></a><span class="co">#&gt; measurement            885 875     926   2686</span></span></code></pre></div>
+<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="explore.html#cb24-1" tabindex="-1"></a><span class="fu">tabulate_field</span>(<span class="st">&quot;persons&quot;</span>)</span>
+<span id="cb24-2"><a href="explore.html#cb24-2" tabindex="-1"></a><span class="co">#&gt;                      aphrc dgh iressef pooled</span></span>
+<span id="cb24-3"><a href="explore.html#cb24-3" tabindex="-1"></a><span class="co">#&gt; person                 889 878     927   2694</span></span>
+<span id="cb24-4"><a href="explore.html#cb24-4" tabindex="-1"></a><span class="co">#&gt; condition_occurrence   889 878     927   2694</span></span>
+<span id="cb24-5"><a href="explore.html#cb24-5" tabindex="-1"></a><span class="co">#&gt; drug_exposure          889 878     927   2694</span></span>
+<span id="cb24-6"><a href="explore.html#cb24-6" tabindex="-1"></a><span class="co">#&gt; measurement            885 875     926   2686</span></span></code></pre></div>
 <p>Total rows per table:</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="explore.html#cb9-1" tabindex="-1"></a><span class="fu">tabulate_field</span>(<span class="st">&quot;rows&quot;</span>)</span>
-<span id="cb9-2"><a href="explore.html#cb9-2" tabindex="-1"></a><span class="co">#&gt;                      aphrc   dgh iressef pooled</span></span>
-<span id="cb9-3"><a href="explore.html#cb9-3" tabindex="-1"></a><span class="co">#&gt; person                 889   878     927   2694</span></span>
-<span id="cb9-4"><a href="explore.html#cb9-4" tabindex="-1"></a><span class="co">#&gt; condition_occurrence 21470 20983   22879  65332</span></span>
-<span id="cb9-5"><a href="explore.html#cb9-5" tabindex="-1"></a><span class="co">#&gt; drug_exposure        22348 21946   23413  67707</span></span>
-<span id="cb9-6"><a href="explore.html#cb9-6" tabindex="-1"></a><span class="co">#&gt; measurement          14214 13852   15987  44053</span></span></code></pre></div>
+<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="explore.html#cb25-1" tabindex="-1"></a><span class="fu">tabulate_field</span>(<span class="st">&quot;rows&quot;</span>)</span>
+<span id="cb25-2"><a href="explore.html#cb25-2" tabindex="-1"></a><span class="co">#&gt;                      aphrc   dgh iressef pooled</span></span>
+<span id="cb25-3"><a href="explore.html#cb25-3" tabindex="-1"></a><span class="co">#&gt; person                 889   878     927   2694</span></span>
+<span id="cb25-4"><a href="explore.html#cb25-4" tabindex="-1"></a><span class="co">#&gt; condition_occurrence 21470 20983   22879  65332</span></span>
+<span id="cb25-5"><a href="explore.html#cb25-5" tabindex="-1"></a><span class="co">#&gt; drug_exposure        22348 21946   23413  67707</span></span>
+<span id="cb25-6"><a href="explore.html#cb25-6" tabindex="-1"></a><span class="co">#&gt; measurement          14214 13852   15987  44053</span></span></code></pre></div>
 </div>
-<div id="which-clinical-concepts-are-most-prevalent" class="section level2 hasAnchor" number="1.4">
-<h2><span class="header-section-number">1.4</span> Which clinical concepts are most prevalent?<a href="explore.html#which-clinical-concepts-are-most-prevalent" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<div id="which-clinical-concepts-are-most-prevalent" class="section level2 hasAnchor" number="6.4">
+<h2><span class="header-section-number">6.4</span> Which clinical concepts are most prevalent?<a href="explore.html#which-clinical-concepts-are-most-prevalent" class="anchor-section" aria-label="Anchor link to header"></a></h2>
 <p><code>ds.omop.concept.prevalence()</code> ranks concepts by the number of distinct persons
 who have them, fusing the three shards into one pooled ranking. A concept is
 reported only when every shard contributes (otherwise it is suppressed), so the
 ranking is both pooled and disclosure-safe.</p>
 <p>The most prevalent <strong>conditions</strong> point straight at a question — gastrointestinal
 haemorrhage and peptic ulcer are both here:</p>
-<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="explore.html#cb10-1" tabindex="-1"></a>prev_cond <span class="ot">&lt;-</span> <span class="fu">ds.omop.concept.prevalence</span>(</span>
-<span id="cb10-2"><a href="explore.html#cb10-2" tabindex="-1"></a>  <span class="st">&quot;condition_occurrence&quot;</span>, <span class="at">metric =</span> <span class="st">&quot;persons&quot;</span>, <span class="at">top_n =</span> <span class="dv">12</span>,</span>
-<span id="cb10-3"><a href="explore.html#cb10-3" tabindex="-1"></a>  <span class="at">scope =</span> <span class="st">&quot;pooled&quot;</span>, <span class="at">symbol =</span> <span class="st">&quot;omop&quot;</span>, <span class="at">conns =</span> conns)</span>
-<span id="cb10-4"><a href="explore.html#cb10-4" tabindex="-1"></a><span class="fu">subset</span>(prev_cond<span class="sc">$</span>pooled, <span class="sc">!</span>suppressed, <span class="at">select =</span> <span class="fu">c</span>(<span class="st">&quot;concept_name&quot;</span>, <span class="st">&quot;n_persons&quot;</span>))</span>
-<span id="cb10-5"><a href="explore.html#cb10-5" tabindex="-1"></a><span class="co">#&gt;                                concept_name n_persons</span></span>
-<span id="cb10-6"><a href="explore.html#cb10-6" tabindex="-1"></a><span class="co">#&gt; 1                            Osteoarthritis      2694</span></span>
-<span id="cb10-7"><a href="explore.html#cb10-7" tabindex="-1"></a><span class="co">#&gt; 2                           Viral sinusitis      2686</span></span>
-<span id="cb10-8"><a href="explore.html#cb10-8" tabindex="-1"></a><span class="co">#&gt; 3                   Acute viral pharyngitis      2606</span></span>
-<span id="cb10-9"><a href="explore.html#cb10-9" tabindex="-1"></a><span class="co">#&gt; 4                          Acute bronchitis      2543</span></span>
-<span id="cb10-10"><a href="explore.html#cb10-10" tabindex="-1"></a><span class="co">#&gt; 5                              Otitis media      2025</span></span>
-<span id="cb10-11"><a href="explore.html#cb10-11" tabindex="-1"></a><span class="co">#&gt; 6                 Streptococcal sore throat      1677</span></span>
-<span id="cb10-12"><a href="explore.html#cb10-12" tabindex="-1"></a><span class="co">#&gt; 7                           Sprain of ankle      1357</span></span>
-<span id="cb10-13"><a href="explore.html#cb10-13" tabindex="-1"></a><span class="co">#&gt; 8  Concussion with no loss of consciousness       852</span></span>
-<span id="cb10-14"><a href="explore.html#cb10-14" tabindex="-1"></a><span class="co">#&gt; 9                                 Sinusitis       833</span></span>
-<span id="cb10-15"><a href="explore.html#cb10-15" tabindex="-1"></a><span class="co">#&gt; 10                        Chronic sinusitis       812</span></span>
-<span id="cb10-16"><a href="explore.html#cb10-16" tabindex="-1"></a><span class="co">#&gt; 11                             Peptic ulcer       802</span></span>
-<span id="cb10-17"><a href="explore.html#cb10-17" tabindex="-1"></a><span class="co">#&gt; 12                Acute bacterial sinusitis       786</span></span></code></pre></div>
+<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="explore.html#cb26-1" tabindex="-1"></a>prev_cond <span class="ot">&lt;-</span> <span class="fu">ds.omop.concept.prevalence</span>(</span>
+<span id="cb26-2"><a href="explore.html#cb26-2" tabindex="-1"></a>  <span class="st">&quot;condition_occurrence&quot;</span>, <span class="at">metric =</span> <span class="st">&quot;persons&quot;</span>, <span class="at">top_n =</span> <span class="dv">12</span>,</span>
+<span id="cb26-3"><a href="explore.html#cb26-3" tabindex="-1"></a>  <span class="at">scope =</span> <span class="st">&quot;pooled&quot;</span>, <span class="at">symbol =</span> <span class="st">&quot;omop&quot;</span>, <span class="at">conns =</span> conns)</span>
+<span id="cb26-4"><a href="explore.html#cb26-4" tabindex="-1"></a><span class="fu">subset</span>(prev_cond<span class="sc">$</span>pooled, <span class="sc">!</span>suppressed, <span class="at">select =</span> <span class="fu">c</span>(<span class="st">&quot;concept_name&quot;</span>, <span class="st">&quot;n_persons&quot;</span>))</span>
+<span id="cb26-5"><a href="explore.html#cb26-5" tabindex="-1"></a><span class="co">#&gt;                                concept_name n_persons</span></span>
+<span id="cb26-6"><a href="explore.html#cb26-6" tabindex="-1"></a><span class="co">#&gt; 1                            Osteoarthritis      2694</span></span>
+<span id="cb26-7"><a href="explore.html#cb26-7" tabindex="-1"></a><span class="co">#&gt; 2                           Viral sinusitis      2686</span></span>
+<span id="cb26-8"><a href="explore.html#cb26-8" tabindex="-1"></a><span class="co">#&gt; 3                   Acute viral pharyngitis      2606</span></span>
+<span id="cb26-9"><a href="explore.html#cb26-9" tabindex="-1"></a><span class="co">#&gt; 4                          Acute bronchitis      2543</span></span>
+<span id="cb26-10"><a href="explore.html#cb26-10" tabindex="-1"></a><span class="co">#&gt; 5                              Otitis media      2025</span></span>
+<span id="cb26-11"><a href="explore.html#cb26-11" tabindex="-1"></a><span class="co">#&gt; 6                 Streptococcal sore throat      1677</span></span>
+<span id="cb26-12"><a href="explore.html#cb26-12" tabindex="-1"></a><span class="co">#&gt; 7                           Sprain of ankle      1357</span></span>
+<span id="cb26-13"><a href="explore.html#cb26-13" tabindex="-1"></a><span class="co">#&gt; 8  Concussion with no loss of consciousness       852</span></span>
+<span id="cb26-14"><a href="explore.html#cb26-14" tabindex="-1"></a><span class="co">#&gt; 9                                 Sinusitis       833</span></span>
+<span id="cb26-15"><a href="explore.html#cb26-15" tabindex="-1"></a><span class="co">#&gt; 10                        Chronic sinusitis       812</span></span>
+<span id="cb26-16"><a href="explore.html#cb26-16" tabindex="-1"></a><span class="co">#&gt; 11                             Peptic ulcer       802</span></span>
+<span id="cb26-17"><a href="explore.html#cb26-17" tabindex="-1"></a><span class="co">#&gt; 12                Acute bacterial sinusitis       786</span></span></code></pre></div>
 <p>And the most prevalent <strong>drugs</strong> are dominated by NSAIDs and analgesics — the
 exposure of interest for a GI-bleed study:</p>
-<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="explore.html#cb11-1" tabindex="-1"></a>prev_drug <span class="ot">&lt;-</span> <span class="fu">ds.omop.concept.prevalence</span>(</span>
-<span id="cb11-2"><a href="explore.html#cb11-2" tabindex="-1"></a>  <span class="st">&quot;drug_exposure&quot;</span>, <span class="at">metric =</span> <span class="st">&quot;persons&quot;</span>, <span class="at">top_n =</span> <span class="dv">12</span>,</span>
-<span id="cb11-3"><a href="explore.html#cb11-3" tabindex="-1"></a>  <span class="at">scope =</span> <span class="st">&quot;pooled&quot;</span>, <span class="at">symbol =</span> <span class="st">&quot;omop&quot;</span>, <span class="at">conns =</span> conns)</span>
-<span id="cb11-4"><a href="explore.html#cb11-4" tabindex="-1"></a><span class="fu">subset</span>(prev_drug<span class="sc">$</span>pooled, <span class="sc">!</span>suppressed, <span class="at">select =</span> <span class="fu">c</span>(<span class="st">&quot;concept_name&quot;</span>, <span class="st">&quot;n_persons&quot;</span>))</span>
-<span id="cb11-5"><a href="explore.html#cb11-5" tabindex="-1"></a><span class="co">#&gt;                                                                                                         concept_name</span></span>
-<span id="cb11-6"><a href="explore.html#cb11-6" tabindex="-1"></a><span class="co">#&gt; 1                                         tetanus and diphtheria toxoids, adsorbed, preservative free, for adult use</span></span>
-<span id="cb11-7"><a href="explore.html#cb11-7" tabindex="-1"></a><span class="co">#&gt; 2                                                                                   Acetaminophen 325 MG Oral Tablet</span></span>
-<span id="cb11-8"><a href="explore.html#cb11-8" tabindex="-1"></a><span class="co">#&gt; 3                                                                                    poliovirus vaccine, inactivated</span></span>
-<span id="cb11-9"><a href="explore.html#cb11-9" tabindex="-1"></a><span class="co">#&gt; 4                                                                Amoxicillin 250 MG / Clavulanate 125 MG Oral Tablet</span></span>
-<span id="cb11-10"><a href="explore.html#cb11-10" tabindex="-1"></a><span class="co">#&gt; 5                                                                                          Aspirin 81 MG Oral Tablet</span></span>
-<span id="cb11-11"><a href="explore.html#cb11-11" tabindex="-1"></a><span class="co">#&gt; 6                                                                                                          celecoxib</span></span>
-<span id="cb11-12"><a href="explore.html#cb11-12" tabindex="-1"></a><span class="co">#&gt; 7                                                                                  hepatitis A vaccine, adult dosage</span></span>
-<span id="cb11-13"><a href="explore.html#cb11-13" tabindex="-1"></a><span class="co">#&gt; 8                                                                                  hepatitis B vaccine, adult dosage</span></span>
-<span id="cb11-14"><a href="explore.html#cb11-14" tabindex="-1"></a><span class="co">#&gt; 9                                                                                   Acetaminophen 160 MG Oral Tablet</span></span>
-<span id="cb11-15"><a href="explore.html#cb11-15" tabindex="-1"></a><span class="co">#&gt; 10 Acetaminophen 21.7 MG/ML / Dextromethorphan Hydrobromide 1 MG/ML / doxylamine succinate 0.417 MG/ML Oral Solution</span></span>
-<span id="cb11-16"><a href="explore.html#cb11-16" tabindex="-1"></a><span class="co">#&gt; 11                                                                                      Ibuprofen 200 MG Oral Tablet</span></span>
-<span id="cb11-17"><a href="explore.html#cb11-17" tabindex="-1"></a><span class="co">#&gt; 12                                                                         Penicillin V Potassium 250 MG Oral Tablet</span></span>
-<span id="cb11-18"><a href="explore.html#cb11-18" tabindex="-1"></a><span class="co">#&gt;    n_persons</span></span>
-<span id="cb11-19"><a href="explore.html#cb11-19" tabindex="-1"></a><span class="co">#&gt; 1       2660</span></span>
-<span id="cb11-20"><a href="explore.html#cb11-20" tabindex="-1"></a><span class="co">#&gt; 2       2580</span></span>
-<span id="cb11-21"><a href="explore.html#cb11-21" tabindex="-1"></a><span class="co">#&gt; 3       2140</span></span>
-<span id="cb11-22"><a href="explore.html#cb11-22" tabindex="-1"></a><span class="co">#&gt; 4       2021</span></span>
-<span id="cb11-23"><a href="explore.html#cb11-23" tabindex="-1"></a><span class="co">#&gt; 5       1927</span></span>
-<span id="cb11-24"><a href="explore.html#cb11-24" tabindex="-1"></a><span class="co">#&gt; 6       1844</span></span>
-<span id="cb11-25"><a href="explore.html#cb11-25" tabindex="-1"></a><span class="co">#&gt; 7       1737</span></span>
-<span id="cb11-26"><a href="explore.html#cb11-26" tabindex="-1"></a><span class="co">#&gt; 8       1560</span></span>
-<span id="cb11-27"><a href="explore.html#cb11-27" tabindex="-1"></a><span class="co">#&gt; 9       1428</span></span>
-<span id="cb11-28"><a href="explore.html#cb11-28" tabindex="-1"></a><span class="co">#&gt; 10      1393</span></span>
-<span id="cb11-29"><a href="explore.html#cb11-29" tabindex="-1"></a><span class="co">#&gt; 11      1280</span></span>
-<span id="cb11-30"><a href="explore.html#cb11-30" tabindex="-1"></a><span class="co">#&gt; 12      1272</span></span></code></pre></div>
+<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb27-1"><a href="explore.html#cb27-1" tabindex="-1"></a>prev_drug <span class="ot">&lt;-</span> <span class="fu">ds.omop.concept.prevalence</span>(</span>
+<span id="cb27-2"><a href="explore.html#cb27-2" tabindex="-1"></a>  <span class="st">&quot;drug_exposure&quot;</span>, <span class="at">metric =</span> <span class="st">&quot;persons&quot;</span>, <span class="at">top_n =</span> <span class="dv">12</span>,</span>
+<span id="cb27-3"><a href="explore.html#cb27-3" tabindex="-1"></a>  <span class="at">scope =</span> <span class="st">&quot;pooled&quot;</span>, <span class="at">symbol =</span> <span class="st">&quot;omop&quot;</span>, <span class="at">conns =</span> conns)</span>
+<span id="cb27-4"><a href="explore.html#cb27-4" tabindex="-1"></a><span class="fu">subset</span>(prev_drug<span class="sc">$</span>pooled, <span class="sc">!</span>suppressed, <span class="at">select =</span> <span class="fu">c</span>(<span class="st">&quot;concept_name&quot;</span>, <span class="st">&quot;n_persons&quot;</span>))</span>
+<span id="cb27-5"><a href="explore.html#cb27-5" tabindex="-1"></a><span class="co">#&gt;                                                                                                         concept_name</span></span>
+<span id="cb27-6"><a href="explore.html#cb27-6" tabindex="-1"></a><span class="co">#&gt; 1                                         tetanus and diphtheria toxoids, adsorbed, preservative free, for adult use</span></span>
+<span id="cb27-7"><a href="explore.html#cb27-7" tabindex="-1"></a><span class="co">#&gt; 2                                                                                   Acetaminophen 325 MG Oral Tablet</span></span>
+<span id="cb27-8"><a href="explore.html#cb27-8" tabindex="-1"></a><span class="co">#&gt; 3                                                                                    poliovirus vaccine, inactivated</span></span>
+<span id="cb27-9"><a href="explore.html#cb27-9" tabindex="-1"></a><span class="co">#&gt; 4                                                                Amoxicillin 250 MG / Clavulanate 125 MG Oral Tablet</span></span>
+<span id="cb27-10"><a href="explore.html#cb27-10" tabindex="-1"></a><span class="co">#&gt; 5                                                                                          Aspirin 81 MG Oral Tablet</span></span>
+<span id="cb27-11"><a href="explore.html#cb27-11" tabindex="-1"></a><span class="co">#&gt; 6                                                                                                          celecoxib</span></span>
+<span id="cb27-12"><a href="explore.html#cb27-12" tabindex="-1"></a><span class="co">#&gt; 7                                                                                  hepatitis A vaccine, adult dosage</span></span>
+<span id="cb27-13"><a href="explore.html#cb27-13" tabindex="-1"></a><span class="co">#&gt; 8                                                                                  hepatitis B vaccine, adult dosage</span></span>
+<span id="cb27-14"><a href="explore.html#cb27-14" tabindex="-1"></a><span class="co">#&gt; 9                                                                                   Acetaminophen 160 MG Oral Tablet</span></span>
+<span id="cb27-15"><a href="explore.html#cb27-15" tabindex="-1"></a><span class="co">#&gt; 10 Acetaminophen 21.7 MG/ML / Dextromethorphan Hydrobromide 1 MG/ML / doxylamine succinate 0.417 MG/ML Oral Solution</span></span>
+<span id="cb27-16"><a href="explore.html#cb27-16" tabindex="-1"></a><span class="co">#&gt; 11                                                                                      Ibuprofen 200 MG Oral Tablet</span></span>
+<span id="cb27-17"><a href="explore.html#cb27-17" tabindex="-1"></a><span class="co">#&gt; 12                                                                         Penicillin V Potassium 250 MG Oral Tablet</span></span>
+<span id="cb27-18"><a href="explore.html#cb27-18" tabindex="-1"></a><span class="co">#&gt;    n_persons</span></span>
+<span id="cb27-19"><a href="explore.html#cb27-19" tabindex="-1"></a><span class="co">#&gt; 1       2660</span></span>
+<span id="cb27-20"><a href="explore.html#cb27-20" tabindex="-1"></a><span class="co">#&gt; 2       2580</span></span>
+<span id="cb27-21"><a href="explore.html#cb27-21" tabindex="-1"></a><span class="co">#&gt; 3       2140</span></span>
+<span id="cb27-22"><a href="explore.html#cb27-22" tabindex="-1"></a><span class="co">#&gt; 4       2021</span></span>
+<span id="cb27-23"><a href="explore.html#cb27-23" tabindex="-1"></a><span class="co">#&gt; 5       1927</span></span>
+<span id="cb27-24"><a href="explore.html#cb27-24" tabindex="-1"></a><span class="co">#&gt; 6       1844</span></span>
+<span id="cb27-25"><a href="explore.html#cb27-25" tabindex="-1"></a><span class="co">#&gt; 7       1737</span></span>
+<span id="cb27-26"><a href="explore.html#cb27-26" tabindex="-1"></a><span class="co">#&gt; 8       1560</span></span>
+<span id="cb27-27"><a href="explore.html#cb27-27" tabindex="-1"></a><span class="co">#&gt; 9       1428</span></span>
+<span id="cb27-28"><a href="explore.html#cb27-28" tabindex="-1"></a><span class="co">#&gt; 10      1393</span></span>
+<span id="cb27-29"><a href="explore.html#cb27-29" tabindex="-1"></a><span class="co">#&gt; 11      1280</span></span>
+<span id="cb27-30"><a href="explore.html#cb27-30" tabindex="-1"></a><span class="co">#&gt; 12      1272</span></span></code></pre></div>
 </div>
-<div id="the-study-this-suggests" class="section level2 hasAnchor" number="1.5">
-<h2><span class="header-section-number">1.5</span> The study this suggests<a href="explore.html#the-study-this-suggests" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<div id="the-study-this-suggests" class="section level2 hasAnchor" number="6.5">
+<h2><span class="header-section-number">6.5</span> The study this suggests<a href="explore.html#the-study-this-suggests" class="anchor-section" aria-label="Anchor link to header"></a></h2>
 <p>The catalogue hands us a clinically coherent question. Gastrointestinal
 haemorrhage is well represented; peptic ulcer — its best-known antecedent — is
 even more common; and the cohort is saturated with NSAIDs, the classic
@@ -450,7 +489,7 @@ pharmacological trigger. So we will build a person-level frame fusing:</p>
           </div>
         </div>
       </div>
-<a href="index.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="setup-connect.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
 <a href="extract.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
     </div>
   </div>

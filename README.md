@@ -1,47 +1,30 @@
 # Federated Analysis using DataSHIELD — reproducibility package
 
-Reproducibility package for the methods paper **"Federated Analysis using
-DataSHIELD"**. It stands up a **fully local, three-site federation** and runs a
-real federated analysis over **OMOP CDM** data using **DataSHIELD** and
+This repository is the reproducibility package for the methods paper
+**"Federated Analysis using DataSHIELD"**. It is built around a
+[**bookdown**](https://bookdown.org/) book that doubles as a **step-by-step
+tutorial**: it walks you through standing up a **fully local, three-site
+federation** and then runs a real federated analysis over **OMOP CDM** data
+using **DataSHIELD** and
 [**dsOMOP**](https://github.com/isglobal-brge/dsOMOP) **v2.0.0**.
 
-> **Read the analysis:** the full end-to-end workflow — catalogue exploration,
-> multi-table extraction, federated summaries and plots, and a federated logistic
-> regression — is published as a live-rendered book at
-> **<https://aphrc-dse.github.io/Federated-Analysis-using-DataSHIELD-I/>**. Every
-> figure and table there is the genuine result of executing the code against the
-> three sites. The book sources live in [`book/`](book/).
+> **Read the book:** the rendered tutorial + analysis lives at
+> **<https://aphrc-dse.github.io/Federated-Analysis-using-DataSHIELD-I/>**. Its
+> first part reproduces the federation one step at a time; its second part
+> explores the catalogue, extracts a fused person-level table, describes it, and
+> fits a federated logistic regression — every figure and table is the genuine
+> result of executing the code against the three sites. The sources live in
+> [`book/`](book/).
 
-The synthetic OHDSI **GiBleed** cohort (2 694 persons) is **sharded by person**
-across three independent sites — `aphrc`, `dgh`, `iressef` — so that every
-person and all of their records live on exactly one site. The client never sees
-patient-level data: dsOMOP returns only disclosure-checked aggregates, and the
-one person-level table it extracts is analysed *in place* on each server by
-standard `dsBaseClient`. The pooled person count across the three shards
-reconstructs the whole cohort (**2 694**) without any site holding more than its
-own shard.
+We **simulate three research centres on one machine** because real centre data
+cannot leave its owner. In their place we load the synthetic OHDSI **GiBleed**
+cohort (2 694 persons), **sharded by person** across the three sites — `aphrc`,
+`dgh`, `iressef` — so every person and all of their records live on exactly one
+site. The client never sees patient-level data: dsOMOP returns only
+disclosure-checked aggregates, and the one person-level table it extracts is
+analysed *in place* on each server with standard `dsBaseClient`.
 
 ## Architecture
-
-```
-                         DataSHIELD client (host R)
-                  DSI · DSOpal · dsBaseClient · dsOMOPClient
-                                   │
-         ┌─────────────────────────┼─────────────────────────┐
-         │ login(profile = "omop") │                          │
-   ┌─────▼─────┐              ┌─────▼─────┐              ┌─────▼─────┐
-   │  aphrc    │              │   dgh     │              │  iressef  │
-   │  Opal     │              │   Opal    │              │   Opal    │
-   │  + Rock   │              │  + Rock   │              │  + Rock   │   Rock "omop" profile
-   │  "omop"   │              │  "omop"   │              │  "omop"   │   = dsOMOP image
-   └─────┬─────┘              └─────┬─────┘              └─────┬─────┘
-         │ resource omop_demo.gibleed (format omop.dbi.db)     │
-   ┌─────▼─────┐              ┌─────▼─────┐              ┌─────▼─────┐
-   │ PostgreSQL│              │ PostgreSQL│              │ PostgreSQL│   alias "omopdb:5432"
-   │  cdm      │              │  cdm      │              │  cdm      │   on the site's
-   │ person%3=0│              │ person%3=1│              │ person%3=2│   docker network
-   └───────────┘              └───────────┘              └───────────┘
-```
 
 Each site is an independent [easy-opal](https://github.com/isglobal-brge/easy-opal)
 instance: **Opal + MongoDB**, plus a **Rock** R-server profile named `omop` built
@@ -49,7 +32,9 @@ from the dsOMOP image. A **self-managed PostgreSQL** holds that site's OMOP CDM
 shard and is attached to the site's Docker network under the alias `omopdb`, so
 each Rock session resolves `omopdb:5432` to *its own* database. A DataSHIELD
 **resource** (`omop_demo.gibleed`, format `omop.dbi.db`) tells dsOMOP how to open
-it. The same resource definition is therefore valid on every site.
+it — the same definition is valid on every site. The DataSHIELD client (host R:
+DSI · DSOpal · dsBaseClient · dsOMOPClient) logs in to all three. The book's
+**Overview** renders this as a diagram.
 
 ## Prerequisites
 
@@ -57,7 +42,7 @@ it. The same resource definition is therefore valid on every site.
 |------|---------|----------|
 | Docker | Engine ≥ 20.10 with **Compose v2** (tested 29.0.1) | Opal, Rock, MongoDB, PostgreSQL containers |
 | Python | ≥ 3.11 | runs easy-opal |
-| R | ≥ 4.1 (tested 4.5.2) | the DataSHIELD client packages |
+| R | ≥ 4.1 (tested 4.5.2) | the DataSHIELD client packages and bookdown |
 
 > **Apple Silicon / arm64:** the upstream Opal, Rock and dsOMOP images are
 > published for **`linux/amd64` only**, so they run under emulation (slower, but
@@ -65,9 +50,10 @@ it. The same resource definition is therefore valid on every site.
 
 ## Quick start
 
-Run the five steps in order. Each step reads the machine-specific values the
-previous one wrote to `sites.env` (gitignored), so there is nothing to configure
-by hand.
+Run the steps in order, then render the book. There is **nothing to configure by
+hand**: ports, credentials and the resource path are hardcoded in the scripts
+(Opal on `localhost:48080`–`48082`, password `password`). If a port is already
+taken, edit the matching value in the script — see each step's `README.md`.
 
 ```bash
 bash 1_setup/install_easy_opal.sh        # install easy-opal into ./.venv
@@ -75,16 +61,27 @@ source .venv/bin/activate                #   (puts easy-opal on PATH)
 bash 2_opal_stacks/setup_sites.sh        # 3 × Opal + Rock("omop") + MongoDB
 bash 3_databases/setup_databases.sh      # 3 × PostgreSQL, GiBleed sharded by person
 bash 4_resources/setup_resources.sh      # the dsOMOP CDM resource on each site
-bash 5_client/setup_client.sh            # install client stack + run the analysis
+Rscript 5_client/install_client.R        # install the DataSHIELD client packages
 ```
 
-Open any site in a browser (URL printed by step 2, also in `sites.env`) and log
-in as `administrator` / `password` to inspect it.
+With the federation up, render the book (it connects to all three sites and runs
+the analysis live):
 
-## What you should see
+```bash
+cd book && Rscript -e 'bookdown::render_book("index.Rmd")'   # outputs to ../docs
+```
 
-Step 3 prints each site's shard size and step 5 prints federated results. The
-person shards partition the cohort:
+The demo credentials are **intentional and public** (Opal `administrator` /
+`password`, PostgreSQL `postgres` / `postgres`) — do not reuse them anywhere
+real. Open any site at <http://localhost:48080> and log in as `administrator` /
+`password` to inspect it. A standalone, book-free run of the same analysis is
+available via `bash 5_client/setup_client.sh`.
+
+## The person shards
+
+The synthetic cohort is partitioned deterministically by `person_id`, so the
+pooled person count reconstructs the whole cohort without any site holding more
+than its own shard:
 
 | Site | `person_id % 3` | Persons |
 |------|-----------------|---------|
@@ -93,31 +90,19 @@ person shards partition the cohort:
 | `iressef` | 2 | 927 |
 | **pooled** | — | **2 694** |
 
-Step 5 walks through: schema exploration, federated row/person counts (per site
-and pooled), most-prevalent conditions, numeric value quantiles (drug-exposure
-days-supply), and finally a server-side person-level extraction analysed with
-`dsBaseClient` (`ds.dim`, `ds.colnames`, `ds.mean`, `ds.table`).
-
 ## How privacy is enforced
 
 Nothing patient-level ever leaves a site. **dsOMOP v2 performs its own
-statistical disclosure control** on every server response:
-
-- the standard DataSHIELD **`nfilter.*`** thresholds (minimum cell/subset counts,
-  maximum factor levels, string-length limits), published with the package onto
-  the Rock `omop` profile, plus dsOMOP's own `dsomop.*` opt-outs;
-- a **mandatory, non-disableable identifier strip** applied to every extracted
-  table before it enters the DataSHIELD session.
-
-dsOMOP v2 does **not** use `datashield.privacyControlLevel` (the
-`permissive/banana/avocado/...` hierarchy is a *dsBase* mechanism it does not
-rely on), so no privacy level needs to be set — see
+statistical disclosure control** on every server response — the standard
+DataSHIELD `nfilter.*` thresholds plus a **mandatory, non-disableable identifier
+strip** — so it does **not** rely on `datashield.privacyControlLevel` and no
+privacy level needs to be set. Details in
 [`4_resources/README.md`](4_resources/README.md).
 
 ## Software versions (manifest)
 
 Pinned for reproducibility. Server-side packages come from the dsOMOP image
-([`docker/`](docker/)); client-side packages are installed by step 5.
+([`docker/`](docker/)); client-side packages are installed in step 5.
 
 | Component | Version | Source / pin |
 |-----------|---------|--------------|
@@ -153,26 +138,13 @@ This repository's own code is released under the **MIT License** (see
 
 | Path | What it does |
 |------|--------------|
+| [`book/`](book/) | The bookdown tutorial + analysis (the main deliverable). |
 | [`1_setup/`](1_setup/) | Install easy-opal (pinned) into `./.venv`. |
 | [`2_opal_stacks/`](2_opal_stacks/) | Stand up the three Opal + Rock + MongoDB sites. |
 | [`3_databases/`](3_databases/) | Seed each site's PostgreSQL with the GiBleed shard. |
 | [`4_resources/`](4_resources/) | Register the dsOMOP CDM resource on each site. |
 | [`5_client/`](5_client/) | Install the client stack and run the federated analysis. |
 | [`docker/`](docker/) | The Rock + dsOMOP image used by the `omop` profile. |
-| `sites.env` | Generated by steps 2–4; machine-specific, **gitignored**. |
-
-## Reproducibility notes
-
-- **Opal / MongoDB pinning.** `2_opal_stacks/setup_sites.sh` defaults
-  `OPAL_VERSION` / `MONGO_VERSION` to the manifest versions (Opal 5.5.1, MongoDB
-  8.2.4); override either env var to use a different version.
-- **Plain HTTP** is used (`OPAL_SSL=none`) because everything is on `localhost`,
-  which keeps the client reproducible with no certificates. Set
-  `OPAL_SSL=self-signed` for HTTPS.
-- **Demo credentials are intentional** and public: Opal `administrator` /
-  `password`, PostgreSQL `postgres` / `postgres`. Do not reuse them anywhere real.
-- **Ports are auto-selected** from free blocks (Opal near 48080, PostgreSQL near
-  45432) and recorded in `sites.env`; the dsOMOP resource never uses a host port.
 
 ## Citation
 

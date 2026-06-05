@@ -4,18 +4,18 @@
 
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <title>Chapter 7 Extracting a fused person-level table | Federated Analysis using DataSHIELD</title>
+  <title>Chapter 3 Seeding the OMOP databases | Federated Analysis using DataSHIELD</title>
   <meta name="description" content="A reproducible, end-to-end federated analysis over OMOP CDM data with DataSHIELD and dsOMOP v2. Every figure and table on these pages is the genuine result of executing the code against a live three-site federation." />
   <meta name="generator" content="bookdown 0.46 and GitBook 2.6.7" />
 
-  <meta property="og:title" content="Chapter 7 Extracting a fused person-level table | Federated Analysis using DataSHIELD" />
+  <meta property="og:title" content="Chapter 3 Seeding the OMOP databases | Federated Analysis using DataSHIELD" />
   <meta property="og:type" content="book" />
   
   <meta property="og:description" content="A reproducible, end-to-end federated analysis over OMOP CDM data with DataSHIELD and dsOMOP v2. Every figure and table on these pages is the genuine result of executing the code against a live three-site federation." />
   <meta name="github-repo" content="APHRC-DSE/Federated-Analysis-using-DataSHIELD-I" />
 
   <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="Chapter 7 Extracting a fused person-level table | Federated Analysis using DataSHIELD" />
+  <meta name="twitter:title" content="Chapter 3 Seeding the OMOP databases | Federated Analysis using DataSHIELD" />
   
   <meta name="twitter:description" content="A reproducible, end-to-end federated analysis over OMOP CDM data with DataSHIELD and dsOMOP v2. Every figure and table on these pages is the genuine result of executing the code against a live three-site federation." />
   
@@ -29,8 +29,8 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black" />
   
   
-<link rel="prev" href="explore.html"/>
-<link rel="next" href="observe.html"/>
+<link rel="prev" href="setup-sites.html"/>
+<link rel="next" href="setup-resources.html"/>
 <script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6/dist/fuse.min.js"></script>
 <link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
@@ -240,99 +240,109 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
           <div class="page-inner">
 
             <section class="normal" id="section-">
-<div id="extract" class="section level1 hasAnchor" number="7">
-<h1><span class="header-section-number">Chapter 7</span> Extracting a fused person-level table<a href="extract.html#extract" class="anchor-section" aria-label="Anchor link to header"></a></h1>
-<p>dsOMOP’s <strong>plan DSL</strong> lets you request <em>exactly</em> the features you want — drawn
-from several OMOP tables — and materialises a single person-level data frame on
-each server. The fusion happens in place; nothing patient-level is transferred.
-We then hand off to standard <code>dsBaseClient</code> to confirm the extract landed as an
-ordinary server-side data frame.</p>
-<div id="the-concepts-to-extract" class="section level2 hasAnchor" number="7.1">
-<h2><span class="header-section-number">7.1</span> The concepts to extract<a href="extract.html#the-concepts-to-extract" class="anchor-section" aria-label="Anchor link to header"></a></h2>
-<p>These are the OMOP concept ids the catalogue pointed us to — the outcome and its
-antecedent condition, and the NSAID ingredient set:</p>
-<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb28-1"><a href="extract.html#cb28-1" tabindex="-1"></a>NSAID <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="at">aspirin   =</span> <span class="dv">19059056</span>, <span class="at">celecoxib =</span> <span class="dv">1118084</span>, <span class="at">ibuprofen =</span> <span class="dv">19078461</span>,</span>
-<span id="cb28-2"><a href="extract.html#cb28-2" tabindex="-1"></a>           <span class="at">naproxen  =</span> <span class="dv">1115171</span>,  <span class="at">diclofenac =</span> <span class="dv">1124300</span>)</span>
-<span id="cb28-3"><a href="extract.html#cb28-3" tabindex="-1"></a>GI_BLEED     <span class="ot">&lt;-</span> <span class="dv">192671</span></span>
-<span id="cb28-4"><a href="extract.html#cb28-4" tabindex="-1"></a>PEPTIC_ULCER <span class="ot">&lt;-</span> <span class="dv">4027663</span></span></code></pre></div>
-</div>
-<div id="building-the-plan" class="section level2 hasAnchor" number="7.2">
-<h2><span class="header-section-number">7.2</span> Building the plan<a href="extract.html#building-the-plan" class="anchor-section" aria-label="Anchor link to header"></a></h2>
-<p>We declare one <strong>person-level</strong> output that fuses three tables. Each feature is
-<em>named</em> — the name on the left of <code>=</code> becomes the output column — so nothing
-leaks out as an opaque <code>x&lt;concept_id&gt;</code> column. Two feature constructors do the
-clinical work:</p>
+<div id="setup-databases" class="section level1 hasAnchor" number="3">
+<h1><span class="header-section-number">Chapter 3</span> Seeding the OMOP databases<a href="setup-databases.html#setup-databases" class="anchor-section" aria-label="Anchor link to header"></a></h1>
+<p>Each site now needs its <strong>own</strong> OMOP CDM database. This step gives every site a
+PostgreSQL container holding a person-disjoint slice of the OHDSI <strong>GiBleed</strong>
+cohort. One command does it all:</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb10-1"><a href="setup-databases.html#cb10-1" tabindex="-1"></a><span class="fu">bash</span> 3_databases/setup_databases.sh</span></code></pre></div>
+<p>The full script:
+<a href="https://github.com/APHRC-DSE/Federated-Analysis-using-DataSHIELD-I/blob/main/3_databases/setup_databases.sh"><code>3_databases/setup_databases.sh</code></a>.</p>
+<div id="where-the-data-comes-from" class="section level2 hasAnchor" number="3.1">
+<h2><span class="header-section-number">3.1</span> Where the data comes from<a href="setup-databases.html#where-the-data-comes-from" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>The script downloads two <strong>pinned, Apache-2.0</strong> sources from OHDSI and caches them
+under <code>3_databases/.cache/</code>:</p>
 <ul>
-<li><code>omop.feature.boolean(set)</code> — a single <strong>“any of the set”</strong> flag: <code>TRUE</code> when
-the person has a record for <em>any</em> concept in the set. <code>nsaid</code> is <code>TRUE</code> for a
-person with <em>any</em> of the five NSAIDs; <code>diclofenac</code> is the flag for one agent.</li>
-<li><code>omop.feature.count(set)</code> — the <strong>total number of records</strong> across the set,
-giving <code>nsaid_n</code>, a continuous measure of NSAID burden.</li>
+<li>the <strong>GiBleed</strong> synthetic CSVs (OMOP CDM 5.3) — from
+<a href="https://github.com/OHDSI/EunomiaDatasets"><code>OHDSI/EunomiaDatasets</code></a> at commit
+<code>3efd533</code>;</li>
+<li>the <strong>OMOP CDM 5.3 DDL</strong> for PostgreSQL — from
+<a href="https://github.com/OHDSI/CommonDataModel"><code>OHDSI/CommonDataModel</code></a> at commit
+<code>d83d48c</code>.</li>
 </ul>
-<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb29-1"><a href="extract.html#cb29-1" tabindex="-1"></a>plan <span class="ot">&lt;-</span> <span class="fu">ds.omop.plan</span>()</span>
-<span id="cb29-2"><a href="extract.html#cb29-2" tabindex="-1"></a>plan <span class="ot">&lt;-</span> <span class="fu">ds.omop.plan.person_level</span>(</span>
-<span id="cb29-3"><a href="extract.html#cb29-3" tabindex="-1"></a>  plan, <span class="at">name =</span> <span class="st">&quot;study&quot;</span>,</span>
-<span id="cb29-4"><a href="extract.html#cb29-4" tabindex="-1"></a>  <span class="at">tables =</span> <span class="fu">list</span>(</span>
-<span id="cb29-5"><a href="extract.html#cb29-5" tabindex="-1"></a>    <span class="at">person =</span> <span class="fu">c</span>(<span class="at">sex =</span> <span class="st">&quot;gender_concept_id&quot;</span>, <span class="at">birth_year =</span> <span class="st">&quot;year_of_birth&quot;</span>),</span>
-<span id="cb29-6"><a href="extract.html#cb29-6" tabindex="-1"></a>    <span class="at">condition_occurrence =</span> <span class="fu">list</span>(</span>
-<span id="cb29-7"><a href="extract.html#cb29-7" tabindex="-1"></a>      <span class="at">features =</span> <span class="fu">list</span>(</span>
-<span id="cb29-8"><a href="extract.html#cb29-8" tabindex="-1"></a>        <span class="at">gi_bleed     =</span> <span class="fu">omop.feature.boolean</span>(GI_BLEED),</span>
-<span id="cb29-9"><a href="extract.html#cb29-9" tabindex="-1"></a>        <span class="at">peptic_ulcer =</span> <span class="fu">omop.feature.boolean</span>(PEPTIC_ULCER)),</span>
-<span id="cb29-10"><a href="extract.html#cb29-10" tabindex="-1"></a>      <span class="at">concept_set =</span> <span class="fu">c</span>(GI_BLEED, PEPTIC_ULCER)),</span>
-<span id="cb29-11"><a href="extract.html#cb29-11" tabindex="-1"></a>    <span class="at">drug_exposure =</span> <span class="fu">list</span>(</span>
-<span id="cb29-12"><a href="extract.html#cb29-12" tabindex="-1"></a>      <span class="at">features =</span> <span class="fu">list</span>(</span>
-<span id="cb29-13"><a href="extract.html#cb29-13" tabindex="-1"></a>        <span class="at">diclofenac =</span> <span class="fu">omop.feature.boolean</span>(NSAID[<span class="st">&quot;diclofenac&quot;</span>]),</span>
-<span id="cb29-14"><a href="extract.html#cb29-14" tabindex="-1"></a>        <span class="at">nsaid      =</span> <span class="fu">omop.feature.boolean</span>(<span class="fu">unname</span>(NSAID)),</span>
-<span id="cb29-15"><a href="extract.html#cb29-15" tabindex="-1"></a>        <span class="at">nsaid_n    =</span> <span class="fu">omop.feature.count</span>(<span class="fu">unname</span>(NSAID))),</span>
-<span id="cb29-16"><a href="extract.html#cb29-16" tabindex="-1"></a>      <span class="at">concept_set =</span> <span class="fu">unname</span>(NSAID))))</span>
-<span id="cb29-17"><a href="extract.html#cb29-17" tabindex="-1"></a></span>
-<span id="cb29-18"><a href="extract.html#cb29-18" tabindex="-1"></a><span class="co"># Translate concept ids to readable names (e.g. sex → female/male) and harmonise</span></span>
-<span id="cb29-19"><a href="extract.html#cb29-19" tabindex="-1"></a><span class="co"># the concept-coded columns into federation-aligned factors.</span></span>
-<span id="cb29-20"><a href="extract.html#cb29-20" tabindex="-1"></a>plan <span class="ot">&lt;-</span> <span class="fu">ds.omop.plan.options</span>(plan, <span class="at">translate_concepts =</span> <span class="cn">TRUE</span>, <span class="at">factor_concepts =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
-<p><code>ds.omop.plan.preview()</code> resolves the plan against the schema without
-materialising data — a cheap dry run before committing:</p>
-<div class="sourceCode" id="cb30"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb30-1"><a href="extract.html#cb30-1" tabindex="-1"></a><span class="fu">invisible</span>(<span class="fu">ds.omop.plan.preview</span>(plan, <span class="at">symbol =</span> <span class="st">&quot;omop&quot;</span>, <span class="at">conns =</span> conns))</span></code></pre></div>
+<p>Pinning to exact commits is what makes the load byte-for-byte identical on every
+machine.</p>
 </div>
-<div id="executing-on-the-server" class="section level2 hasAnchor" number="7.3">
-<h2><span class="header-section-number">7.3</span> Executing on the server<a href="extract.html#executing-on-the-server" class="anchor-section" aria-label="Anchor link to header"></a></h2>
-<p><code>ds.omop.plan.execute()</code> runs the plan on each site and binds the resulting
-person-level frame to the symbol <code>D</code>:</p>
-<div class="sourceCode" id="cb31"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb31-1"><a href="extract.html#cb31-1" tabindex="-1"></a><span class="fu">ds.omop.plan.execute</span>(plan, <span class="at">out =</span> <span class="fu">c</span>(<span class="at">study =</span> <span class="st">&quot;D&quot;</span>), <span class="at">symbol =</span> <span class="st">&quot;omop&quot;</span>, <span class="at">conns =</span> conns)</span></code></pre></div>
+<div id="a-self-managed-postgresql-per-site" class="section level2 hasAnchor" number="3.2">
+<h2><span class="header-section-number">3.2</span> A self-managed PostgreSQL per site<a href="setup-databases.html#a-self-managed-postgresql-per-site" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>For each site the script starts a fresh PostgreSQL 16 container and <strong>attaches it to
+that site’s Docker network</strong> with the alias <code>omopdb</code>. Taking <code>aphrc</code> as the example:</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb11-1"><a href="setup-databases.html#cb11-1" tabindex="-1"></a><span class="ex">docker</span> run <span class="at">-d</span> <span class="at">--name</span> omopdb-aphrc <span class="dt">\</span></span>
+<span id="cb11-2"><a href="setup-databases.html#cb11-2" tabindex="-1"></a>  <span class="at">--network</span> <span class="op">&lt;</span>aphrc-network<span class="op">&gt;</span> --network-alias omopdb <span class="dt">\</span></span>
+<span id="cb11-3"><a href="setup-databases.html#cb11-3" tabindex="-1"></a>  <span class="at">-e</span> POSTGRES_USER=postgres <span class="at">-e</span> POSTGRES_PASSWORD=postgres <span class="at">-e</span> POSTGRES_DB=omop <span class="dt">\</span></span>
+<span id="cb11-4"><a href="setup-databases.html#cb11-4" tabindex="-1"></a>  <span class="at">-p</span> 45432:5432 <span class="dt">\</span></span>
+<span id="cb11-5"><a href="setup-databases.html#cb11-5" tabindex="-1"></a>  postgres:16</span></code></pre></div>
+<p>Two things matter here:</p>
+<ul>
+<li><strong>The network alias <code>omopdb</code>.</strong> Inside the site’s Docker network the Rock server
+reaches its database at <strong><code>omopdb:5432</code></strong> — a Docker-internal address that does
+not depend on any host port. That is why the <em>same</em> resource definition (next
+chapter) is valid on every site.</li>
+<li><strong>The host port <code>45432</code> is for you, not Rock.</strong> It is published only so you can
+inspect the data from your laptop with <code>psql</code> or a GUI. The three inspection
+ports are <code>45432</code> / <code>45433</code> / <code>45434</code>; edit <code>PG_PORTS</code> in the script if one is
+taken.</li>
+</ul>
+<blockquote>
+<p>We use <code>postgres</code> / <code>postgres</code> and database <code>omop</code> (public-demo values, hardcoded
+in the script). easy-opal <em>can</em> manage a database for you, but it auto-generates a
+password — which would make the next step’s resource non-reproducible. A
+self-managed container with known credentials keeps the whole thing turnkey.</p>
+</blockquote>
+<p>Then the script creates the <code>cdm</code> schema, loads the CDM 5.3 DDL, and <code>\copy</code>s every
+GiBleed CSV into its table.</p>
 </div>
-<div id="confirming-the-fused-frame" class="section level2 hasAnchor" number="7.4">
-<h2><span class="header-section-number">7.4</span> Confirming the fused frame<a href="extract.html#confirming-the-fused-frame" class="anchor-section" aria-label="Anchor link to header"></a></h2>
-<p>The columns are exactly the named features we asked for — across three tables —
-and <strong>no identifier column came along</strong> (dsOMOP strips person ids before the
-frame ever enters the DataSHIELD session):</p>
-<div class="sourceCode" id="cb32"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb32-1"><a href="extract.html#cb32-1" tabindex="-1"></a><span class="fu">ds.colnames</span>(<span class="st">&quot;D&quot;</span>)</span>
-<span id="cb32-2"><a href="extract.html#cb32-2" tabindex="-1"></a><span class="co">#&gt; $aphrc</span></span>
-<span id="cb32-3"><a href="extract.html#cb32-3" tabindex="-1"></a><span class="co">#&gt; [1] &quot;sex&quot;          &quot;birth_year&quot;   &quot;gi_bleed&quot;     &quot;peptic_ulcer&quot; &quot;diclofenac&quot;  </span></span>
-<span id="cb32-4"><a href="extract.html#cb32-4" tabindex="-1"></a><span class="co">#&gt; [6] &quot;nsaid&quot;        &quot;nsaid_n&quot;     </span></span>
-<span id="cb32-5"><a href="extract.html#cb32-5" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb32-6"><a href="extract.html#cb32-6" tabindex="-1"></a><span class="co">#&gt; $dgh</span></span>
-<span id="cb32-7"><a href="extract.html#cb32-7" tabindex="-1"></a><span class="co">#&gt; [1] &quot;sex&quot;          &quot;birth_year&quot;   &quot;gi_bleed&quot;     &quot;peptic_ulcer&quot; &quot;diclofenac&quot;  </span></span>
-<span id="cb32-8"><a href="extract.html#cb32-8" tabindex="-1"></a><span class="co">#&gt; [6] &quot;nsaid&quot;        &quot;nsaid_n&quot;     </span></span>
-<span id="cb32-9"><a href="extract.html#cb32-9" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb32-10"><a href="extract.html#cb32-10" tabindex="-1"></a><span class="co">#&gt; $iressef</span></span>
-<span id="cb32-11"><a href="extract.html#cb32-11" tabindex="-1"></a><span class="co">#&gt; [1] &quot;sex&quot;          &quot;birth_year&quot;   &quot;gi_bleed&quot;     &quot;peptic_ulcer&quot; &quot;diclofenac&quot;  </span></span>
-<span id="cb32-12"><a href="extract.html#cb32-12" tabindex="-1"></a><span class="co">#&gt; [6] &quot;nsaid&quot;        &quot;nsaid_n&quot;</span></span></code></pre></div>
-<p>Its dimensions, pooled across the three sites, recover the <strong>full cohort of
-2 694 persons</strong> with seven feature columns:</p>
-<div class="sourceCode" id="cb33"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb33-1"><a href="extract.html#cb33-1" tabindex="-1"></a><span class="fu">ds.dim</span>(<span class="st">&quot;D&quot;</span>, <span class="at">type =</span> <span class="st">&quot;combine&quot;</span>)</span>
-<span id="cb33-2"><a href="extract.html#cb33-2" tabindex="-1"></a><span class="co">#&gt; $`dimensions of D in combined studies`</span></span>
-<span id="cb33-3"><a href="extract.html#cb33-3" tabindex="-1"></a><span class="co">#&gt; [1] 2694    7</span></span></code></pre></div>
-<p>This full-cohort count is not an accident. When a person has <em>no</em> NSAID record,
-or no peptic ulcer, the fused boolean/count features for that person are filled
-with <strong>0</strong>, not <code>NA</code> — so persons are never silently dropped from the cohort by
-the cross-table join. An absent event means “did not occur”, which is exactly
-what a <code>0</code> encodes.</p>
-<p><code>ds.summary()</code> confirms <code>D</code> is an ordinary server-side <code>data.frame</code> — this is the
-hand-off point from the OMOP layer to the standard DataSHIELD toolchain:</p>
-<div class="sourceCode" id="cb34"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb34-1"><a href="extract.html#cb34-1" tabindex="-1"></a><span class="fu">ds.summary</span>(<span class="st">&quot;D&quot;</span>)[[<span class="dv">1</span>]]<span class="sc">$</span>class</span>
-<span id="cb34-2"><a href="extract.html#cb34-2" tabindex="-1"></a><span class="co">#&gt; [1] &quot;data.frame&quot;</span></span>
-<span id="cb34-3"><a href="extract.html#cb34-3" tabindex="-1"></a><span class="fu">ds.summary</span>(<span class="st">&quot;D&quot;</span>)[[<span class="dv">1</span>]]<span class="sc">$</span><span class="st">`</span><span class="at">number of columns</span><span class="st">`</span></span>
-<span id="cb34-4"><a href="extract.html#cb34-4" tabindex="-1"></a><span class="co">#&gt; [1] 7</span></span></code></pre></div>
-<p>The extract is now a federated data frame. The next chapter describes it.</p>
+<div id="sharding-by-person" class="section level2 hasAnchor" number="3.3">
+<h2><span class="header-section-number">3.3</span> Sharding by person<a href="setup-databases.html#sharding-by-person" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>This is what makes it a <em>federation</em> rather than three copies. After loading, the
+script keeps on each site only the persons whose <code>person_id</code> falls in that site’s
+residue class, and deletes their rows from every person-linked table:</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode sql"><code class="sourceCode sql"><span id="cb12-1"><a href="setup-databases.html#cb12-1" tabindex="-1"></a><span class="kw">DELETE</span> <span class="kw">FROM</span> cdm.<span class="op">&lt;</span><span class="kw">table</span><span class="op">&gt;</span> <span class="kw">WHERE</span> person_id % <span class="dv">3</span> <span class="op">&lt;&gt;</span> <span class="op">&lt;</span>site <span class="kw">index</span><span class="op">&gt;</span>;</span></code></pre></div>
+<p>So a person — and <strong>all</strong> of their records — lives on exactly one site:</p>
+<table>
+<thead>
+<tr class="header">
+<th>Site</th>
+<th>Keeps <code>person_id % 3 ==</code></th>
+<th>Persons</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>aphrc</td>
+<td>0</td>
+<td>889</td>
+</tr>
+<tr class="even">
+<td>dgh</td>
+<td>1</td>
+<td>878</td>
+</tr>
+<tr class="odd">
+<td>iressef</td>
+<td>2</td>
+<td>927</td>
+</tr>
+<tr class="even">
+<td><strong>pooled</strong></td>
+<td></td>
+<td><strong>2 694</strong></td>
+</tr>
+</tbody>
+</table>
+<p>Vocabulary and metadata tables (<code>concept</code>, <code>vocabulary</code>, <code>location</code>, …) carry no
+<code>person_id</code>, so they are <strong>replicated</strong> to all three sites — each one can resolve
+concept names locally without ever sharing a patient.</p>
+</div>
+<div id="inspecting-a-site" class="section level2 hasAnchor" number="3.4">
+<h2><span class="header-section-number">3.4</span> Inspecting a site<a href="setup-databases.html#inspecting-a-site" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>The split is deterministic, so you can verify it directly against a site’s
+inspection port:</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb13-1"><a href="setup-databases.html#cb13-1" tabindex="-1"></a><span class="va">PGPASSWORD</span><span class="op">=</span>postgres <span class="ex">psql</span> <span class="at">-h</span> localhost <span class="at">-p</span> 45432 <span class="at">-U</span> postgres <span class="at">-d</span> omop <span class="dt">\</span></span>
+<span id="cb13-2"><a href="setup-databases.html#cb13-2" tabindex="-1"></a>  <span class="at">-c</span> <span class="st">&#39;select count(*) from cdm.person;&#39;</span>   <span class="co"># aphrc -&gt; 889</span></span></code></pre></div>
+<p>Re-running the script recreates each <code>omopdb-&lt;site&gt;</code> container and its volume from
+scratch, so you always get a clean, identical load. Next we tell Opal where this
+database lives.</p>
 
 </div>
 </div>
@@ -341,8 +351,8 @@ hand-off point from the OMOP layer to the standard DataSHIELD toolchain:</p>
           </div>
         </div>
       </div>
-<a href="explore.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
-<a href="observe.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+<a href="setup-sites.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="setup-resources.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
     </div>
   </div>
 <script src="libs/gitbook-2.6.7/js/app.min.js"></script>

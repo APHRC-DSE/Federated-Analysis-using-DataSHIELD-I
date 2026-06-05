@@ -20,7 +20,7 @@
   <meta name="twitter:description" content="A reproducible, end-to-end federated analysis over OMOP CDM data with DataSHIELD and dsOMOP v2. Every figure and table on these pages is the genuine result of executing the code against a live three-site federation." />
   
 
-<meta name="author" content="David Sarrat González · Michael Ochola" />
+<meta name="author" content="David Sarrat González, Michael Ochola" />
 
 
 
@@ -30,7 +30,7 @@
   
   
 
-<link rel="next" href="explore.html"/>
+<link rel="next" href="setup-prerequisites.html"/>
 <script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6/dist/fuse.min.js"></script>
 <link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
@@ -51,6 +51,11 @@
 <link href="libs/anchor-sections-1.1.0/anchor-sections.css" rel="stylesheet" />
 <link href="libs/anchor-sections-1.1.0/anchor-sections-hash.css" rel="stylesheet" />
 <script src="libs/anchor-sections-1.1.0/anchor-sections.js"></script>
+<link href="libs/htmltools-fill-0.5.9/fill.css" rel="stylesheet" />
+<script src="libs/htmlwidgets-1.6.4/htmlwidgets.js"></script>
+<script src="libs/viz-1.8.2/viz.js"></script>
+<link href="libs/DiagrammeR-styles-0.2/styles.css" rel="stylesheet" />
+<script src="libs/grViz-binding-1.0.12/grViz.js"></script>
 
 
 <style type="text/css">
@@ -141,45 +146,79 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <li class="divider"></li>
 <li class="chapter" data-level="" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i>Overview</a>
 <ul>
+<li class="chapter" data-level="" data-path="index.html"><a href="index.html#why-a-simulated-federation"><i class="fa fa-check"></i>Why a <em>simulated</em> federation</a></li>
 <li class="chapter" data-level="" data-path="index.html"><a href="index.html#the-federation"><i class="fa fa-check"></i>The federation</a></li>
+<li class="chapter" data-level="" data-path="index.html"><a href="index.html#the-dataset-ohdsi-gibleed"><i class="fa fa-check"></i>The dataset: OHDSI GiBleed</a></li>
 <li class="chapter" data-level="" data-path="index.html"><a href="index.html#the-study"><i class="fa fa-check"></i>The study</a></li>
-<li class="chapter" data-level="" data-path="index.html"><a href="index.html#reproducing-this-book"><i class="fa fa-check"></i>Reproducing this book</a></li>
-<li class="chapter" data-level="" data-path="index.html"><a href="index.html#connecting"><i class="fa fa-check"></i>Connecting</a></li>
+<li class="chapter" data-level="" data-path="index.html"><a href="index.html#reproducing-it-yourself"><i class="fa fa-check"></i>Reproducing it yourself</a></li>
 </ul></li>
-<li class="chapter" data-level="1" data-path="explore.html"><a href="explore.html"><i class="fa fa-check"></i><b>1</b> Exploring the catalogue</a>
+<li class="part"><span><b>I Reproducing the federation</b></span></li>
+<li class="chapter" data-level="1" data-path="setup-prerequisites.html"><a href="setup-prerequisites.html"><i class="fa fa-check"></i><b>1</b> Prerequisites and installing easy-opal</a>
 <ul>
-<li class="chapter" data-level="1.1" data-path="explore.html"><a href="explore.html#what-tables-does-each-site-expose"><i class="fa fa-check"></i><b>1.1</b> What tables does each site expose?</a></li>
-<li class="chapter" data-level="1.2" data-path="explore.html"><a href="explore.html#what-variables-live-in-a-table"><i class="fa fa-check"></i><b>1.2</b> What variables live in a table?</a></li>
-<li class="chapter" data-level="1.3" data-path="explore.html"><a href="explore.html#how-big-is-each-table-per-site-and-pooled"><i class="fa fa-check"></i><b>1.3</b> How big is each table, per site and pooled?</a></li>
-<li class="chapter" data-level="1.4" data-path="explore.html"><a href="explore.html#which-clinical-concepts-are-most-prevalent"><i class="fa fa-check"></i><b>1.4</b> Which clinical concepts are most prevalent?</a></li>
-<li class="chapter" data-level="1.5" data-path="explore.html"><a href="explore.html#the-study-this-suggests"><i class="fa fa-check"></i><b>1.5</b> The study this suggests</a></li>
+<li class="chapter" data-level="1.1" data-path="setup-prerequisites.html"><a href="setup-prerequisites.html#what-you-need"><i class="fa fa-check"></i><b>1.1</b> What you need</a></li>
+<li class="chapter" data-level="1.2" data-path="setup-prerequisites.html"><a href="setup-prerequisites.html#installing-easy-opal-step-1"><i class="fa fa-check"></i><b>1.2</b> Installing easy-opal (step 1)</a></li>
 </ul></li>
-<li class="chapter" data-level="2" data-path="extract.html"><a href="extract.html"><i class="fa fa-check"></i><b>2</b> Extracting a fused person-level table</a>
+<li class="chapter" data-level="2" data-path="setup-sites.html"><a href="setup-sites.html"><i class="fa fa-check"></i><b>2</b> Standing up the three sites</a>
 <ul>
-<li class="chapter" data-level="2.1" data-path="extract.html"><a href="extract.html#the-concepts-to-extract"><i class="fa fa-check"></i><b>2.1</b> The concepts to extract</a></li>
-<li class="chapter" data-level="2.2" data-path="extract.html"><a href="extract.html#building-the-plan"><i class="fa fa-check"></i><b>2.2</b> Building the plan</a></li>
-<li class="chapter" data-level="2.3" data-path="extract.html"><a href="extract.html#executing-on-the-server"><i class="fa fa-check"></i><b>2.3</b> Executing on the server</a></li>
-<li class="chapter" data-level="2.4" data-path="extract.html"><a href="extract.html#confirming-the-fused-frame"><i class="fa fa-check"></i><b>2.4</b> Confirming the fused frame</a></li>
+<li class="chapter" data-level="2.1" data-path="setup-sites.html"><a href="setup-sites.html#the-fixed-ports-and-password"><i class="fa fa-check"></i><b>2.1</b> The fixed ports and password</a></li>
+<li class="chapter" data-level="2.2" data-path="setup-sites.html"><a href="setup-sites.html#what-easy-opal-does-per-site"><i class="fa fa-check"></i><b>2.2</b> What easy-opal does per site</a></li>
+<li class="chapter" data-level="2.3" data-path="setup-sites.html"><a href="setup-sites.html#using-your-own-image"><i class="fa fa-check"></i><b>2.3</b> Using your own image</a></li>
+<li class="chapter" data-level="2.4" data-path="setup-sites.html"><a href="setup-sites.html#verifying"><i class="fa fa-check"></i><b>2.4</b> Verifying</a></li>
 </ul></li>
-<li class="chapter" data-level="3" data-path="observe.html"><a href="observe.html"><i class="fa fa-check"></i><b>3</b> Observing the extracted variables</a>
+<li class="chapter" data-level="3" data-path="setup-databases.html"><a href="setup-databases.html"><i class="fa fa-check"></i><b>3</b> Seeding the OMOP databases</a>
 <ul>
-<li class="chapter" data-level="3.1" data-path="observe.html"><a href="observe.html#a-derived-feature-age"><i class="fa fa-check"></i><b>3.1</b> A derived feature: age</a></li>
-<li class="chapter" data-level="3.2" data-path="observe.html"><a href="observe.html#prevalence-over-the-full-cohort"><i class="fa fa-check"></i><b>3.2</b> Prevalence over the full cohort</a>
-<ul>
-<li class="chapter" data-level="3.2.1" data-path="observe.html"><a href="observe.html#a-finding-hiding-in-the-data"><i class="fa fa-check"></i><b>3.2.1</b> A finding hiding in the data</a></li>
+<li class="chapter" data-level="3.1" data-path="setup-databases.html"><a href="setup-databases.html#where-the-data-comes-from"><i class="fa fa-check"></i><b>3.1</b> Where the data comes from</a></li>
+<li class="chapter" data-level="3.2" data-path="setup-databases.html"><a href="setup-databases.html#a-self-managed-postgresql-per-site"><i class="fa fa-check"></i><b>3.2</b> A self-managed PostgreSQL per site</a></li>
+<li class="chapter" data-level="3.3" data-path="setup-databases.html"><a href="setup-databases.html#sharding-by-person"><i class="fa fa-check"></i><b>3.3</b> Sharding by person</a></li>
+<li class="chapter" data-level="3.4" data-path="setup-databases.html"><a href="setup-databases.html#inspecting-a-site"><i class="fa fa-check"></i><b>3.4</b> Inspecting a site</a></li>
 </ul></li>
-<li class="chapter" data-level="3.3" data-path="observe.html"><a href="observe.html#pooled-summaries-of-the-continuous-features"><i class="fa fa-check"></i><b>3.3</b> Pooled summaries of the continuous features</a></li>
-<li class="chapter" data-level="3.4" data-path="observe.html"><a href="observe.html#federated-plots"><i class="fa fa-check"></i><b>3.4</b> Federated plots</a></li>
-<li class="chapter" data-level="3.5" data-path="observe.html"><a href="observe.html#the-key-association-previewed"><i class="fa fa-check"></i><b>3.5</b> The key association, previewed</a></li>
-</ul></li>
-<li class="chapter" data-level="4" data-path="model.html"><a href="model.html"><i class="fa fa-check"></i><b>4</b> Modelling: a federated logistic GLM</a>
+<li class="chapter" data-level="4" data-path="setup-resources.html"><a href="setup-resources.html"><i class="fa fa-check"></i><b>4</b> Registering the dsOMOP resources</a>
 <ul>
-<li class="chapter" data-level="4.1" data-path="model.html"><a href="model.html#assembling-the-modelling-frame"><i class="fa fa-check"></i><b>4.1</b> Assembling the modelling frame</a></li>
-<li class="chapter" data-level="4.2" data-path="model.html"><a href="model.html#fitting-the-model-with-its-live-training-trace"><i class="fa fa-check"></i><b>4.2</b> Fitting the model (with its live training trace)</a></li>
-<li class="chapter" data-level="4.3" data-path="model.html"><a href="model.html#reading-the-result"><i class="fa fa-check"></i><b>4.3</b> Reading the result</a></li>
-<li class="chapter" data-level="4.4" data-path="model.html"><a href="model.html#the-same-model-study-level"><i class="fa fa-check"></i><b>4.4</b> The same model, study-level</a></li>
-<li class="chapter" data-level="4.5" data-path="model.html"><a href="model.html#disconnect"><i class="fa fa-check"></i><b>4.5</b> Disconnect</a></li>
-<li class="chapter" data-level="4.6" data-path="model.html"><a href="model.html#in-summary"><i class="fa fa-check"></i><b>4.6</b> In summary</a></li>
+<li class="chapter" data-level="4.1" data-path="setup-resources.html"><a href="setup-resources.html#the-dsomop-v2-resource-format"><i class="fa fa-check"></i><b>4.1</b> The dsOMOP v2 resource format</a></li>
+<li class="chapter" data-level="4.2" data-path="setup-resources.html"><a href="setup-resources.html#a-note-on-disclosure-control"><i class="fa fa-check"></i><b>4.2</b> A note on disclosure control</a></li>
+<li class="chapter" data-level="4.3" data-path="setup-resources.html"><a href="setup-resources.html#verifying-1"><i class="fa fa-check"></i><b>4.3</b> Verifying</a></li>
+</ul></li>
+<li class="chapter" data-level="5" data-path="setup-connect.html"><a href="setup-connect.html"><i class="fa fa-check"></i><b>5</b> Connecting the DataSHIELD client</a>
+<ul>
+<li class="chapter" data-level="5.1" data-path="setup-connect.html"><a href="setup-connect.html#installing-the-client-packages"><i class="fa fa-check"></i><b>5.1</b> Installing the client packages</a></li>
+<li class="chapter" data-level="5.2" data-path="setup-connect.html"><a href="setup-connect.html#logging-in"><i class="fa fa-check"></i><b>5.2</b> Logging in</a></li>
+<li class="chapter" data-level="5.3" data-path="setup-connect.html"><a href="setup-connect.html#attaching-the-omop-resource"><i class="fa fa-check"></i><b>5.3</b> Attaching the OMOP resource</a></li>
+</ul></li>
+<li class="part"><span><b>II The federated analysis</b></span></li>
+<li class="chapter" data-level="6" data-path="explore.html"><a href="explore.html"><i class="fa fa-check"></i><b>6</b> Exploring the catalogue</a>
+<ul>
+<li class="chapter" data-level="6.1" data-path="explore.html"><a href="explore.html#what-tables-does-each-site-expose"><i class="fa fa-check"></i><b>6.1</b> What tables does each site expose?</a></li>
+<li class="chapter" data-level="6.2" data-path="explore.html"><a href="explore.html#what-variables-live-in-a-table"><i class="fa fa-check"></i><b>6.2</b> What variables live in a table?</a></li>
+<li class="chapter" data-level="6.3" data-path="explore.html"><a href="explore.html#how-big-is-each-table-per-site-and-pooled"><i class="fa fa-check"></i><b>6.3</b> How big is each table, per site and pooled?</a></li>
+<li class="chapter" data-level="6.4" data-path="explore.html"><a href="explore.html#which-clinical-concepts-are-most-prevalent"><i class="fa fa-check"></i><b>6.4</b> Which clinical concepts are most prevalent?</a></li>
+<li class="chapter" data-level="6.5" data-path="explore.html"><a href="explore.html#the-study-this-suggests"><i class="fa fa-check"></i><b>6.5</b> The study this suggests</a></li>
+</ul></li>
+<li class="chapter" data-level="7" data-path="extract.html"><a href="extract.html"><i class="fa fa-check"></i><b>7</b> Extracting a fused person-level table</a>
+<ul>
+<li class="chapter" data-level="7.1" data-path="extract.html"><a href="extract.html#the-concepts-to-extract"><i class="fa fa-check"></i><b>7.1</b> The concepts to extract</a></li>
+<li class="chapter" data-level="7.2" data-path="extract.html"><a href="extract.html#building-the-plan"><i class="fa fa-check"></i><b>7.2</b> Building the plan</a></li>
+<li class="chapter" data-level="7.3" data-path="extract.html"><a href="extract.html#executing-on-the-server"><i class="fa fa-check"></i><b>7.3</b> Executing on the server</a></li>
+<li class="chapter" data-level="7.4" data-path="extract.html"><a href="extract.html#confirming-the-fused-frame"><i class="fa fa-check"></i><b>7.4</b> Confirming the fused frame</a></li>
+</ul></li>
+<li class="chapter" data-level="8" data-path="observe.html"><a href="observe.html"><i class="fa fa-check"></i><b>8</b> Observing the extracted variables</a>
+<ul>
+<li class="chapter" data-level="8.1" data-path="observe.html"><a href="observe.html#a-derived-feature-age"><i class="fa fa-check"></i><b>8.1</b> A derived feature: age</a></li>
+<li class="chapter" data-level="8.2" data-path="observe.html"><a href="observe.html#prevalence-over-the-full-cohort"><i class="fa fa-check"></i><b>8.2</b> Prevalence over the full cohort</a>
+<ul>
+<li class="chapter" data-level="8.2.1" data-path="observe.html"><a href="observe.html#a-finding-hiding-in-the-data"><i class="fa fa-check"></i><b>8.2.1</b> A finding hiding in the data</a></li>
+</ul></li>
+<li class="chapter" data-level="8.3" data-path="observe.html"><a href="observe.html#pooled-summaries-of-the-continuous-features"><i class="fa fa-check"></i><b>8.3</b> Pooled summaries of the continuous features</a></li>
+<li class="chapter" data-level="8.4" data-path="observe.html"><a href="observe.html#federated-plots"><i class="fa fa-check"></i><b>8.4</b> Federated plots</a></li>
+<li class="chapter" data-level="8.5" data-path="observe.html"><a href="observe.html#the-key-association-previewed"><i class="fa fa-check"></i><b>8.5</b> The key association, previewed</a></li>
+</ul></li>
+<li class="chapter" data-level="9" data-path="model.html"><a href="model.html"><i class="fa fa-check"></i><b>9</b> Modelling: a federated logistic GLM</a>
+<ul>
+<li class="chapter" data-level="9.1" data-path="model.html"><a href="model.html#assembling-the-modelling-frame"><i class="fa fa-check"></i><b>9.1</b> Assembling the modelling frame</a></li>
+<li class="chapter" data-level="9.2" data-path="model.html"><a href="model.html#fitting-the-model-with-its-live-training-trace"><i class="fa fa-check"></i><b>9.2</b> Fitting the model (with its live training trace)</a></li>
+<li class="chapter" data-level="9.3" data-path="model.html"><a href="model.html#reading-the-result"><i class="fa fa-check"></i><b>9.3</b> Reading the result</a></li>
+<li class="chapter" data-level="9.4" data-path="model.html"><a href="model.html#the-same-model-study-level"><i class="fa fa-check"></i><b>9.4</b> The same model, study-level</a></li>
+<li class="chapter" data-level="9.5" data-path="model.html"><a href="model.html#disconnect"><i class="fa fa-check"></i><b>9.5</b> Disconnect</a></li>
+<li class="chapter" data-level="9.6" data-path="model.html"><a href="model.html#in-summary"><i class="fa fa-check"></i><b>9.6</b> In summary</a></li>
 </ul></li>
 <li class="divider"></li>
 <li><a href="https://github.com/APHRC-DSE/Federated-Analysis-using-DataSHIELD-I" target="blank">Reproducibility package</a></li>
@@ -204,43 +243,69 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <div id="header">
 <h1 class="title">Federated Analysis using DataSHIELD</h1>
 <h2 class="subtitle"><em>A live, three-site OMOP CDM workflow with dsOMOP v2</em></h2>
-<p class="author"><em>David Sarrat González · Michael Ochola</em></p>
-<p class="date"><em>Rendered live against the federation on 05 June 2026</em></p>
+<p class="author"><em>David Sarrat González, Michael Ochola</em></p>
 </div>
 <div id="overview" class="section level1 unnumbered hasAnchor">
 <h1>Overview<a href="index.html#overview" class="anchor-section" aria-label="Anchor link to header"></a></h1>
-<p>This book is a <strong>single, end-to-end federated analysis</strong>. It connects to a
-<strong>local three-site DataSHIELD federation</strong> built over <strong>OMOP CDM</strong> data, explores
-what each site holds, extracts one tailored person-level table by <strong>fusing three
-OMOP tables on the server</strong>, describes it, and finally fits a <strong>federated logistic
-regression</strong> — all without a single patient-level row ever leaving a site.</p>
+<p>This book is the <strong>reproducibility companion</strong> to the paper <em>“Federated Analysis
+using DataSHIELD”</em>. It is a single, <strong>end-to-end federated analysis</strong> that you can
+re-run from scratch: it stands up a <strong>local three-site DataSHIELD federation</strong> over
+<strong>OMOP CDM</strong> data, explores what each site holds, extracts one tailored
+person-level table by <strong>fusing three OMOP tables on each server</strong>, describes it,
+and finally fits a <strong>federated logistic regression</strong> — all without a single
+patient-level row ever leaving a site.</p>
 <p>Every result you see was produced by <strong>executing the code live against the three
-sites</strong> while this book was rendered. Nothing is pre-baked: the histograms, the
-prevalence tables and the GLM iteration trace are the genuine output of the run.</p>
+sites</strong> while this book was rendered. Nothing is pre-baked: the counts, the
+prevalence tables, the histograms and the GLM iteration trace are the genuine
+output of the run.</p>
+<div id="why-a-simulated-federation" class="section level2 unnumbered hasAnchor">
+<h2>Why a <em>simulated</em> federation<a href="index.html#why-a-simulated-federation" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>In a real DataSHIELD study the data stays where it lives: each research centre
+hosts its own server and the patient-level records <strong>never leave the institution</strong>
+— that is the entire point. That real data therefore cannot be handed to you to
+reproduce the analysis.</p>
+<p>So this book does the next best thing. On your own machine it <strong>simulates three
+research centres</strong> — <code>aphrc</code>, <code>dgh</code> and <code>iressef</code> — each running an independent
+Opal + Rock server backed by its own OMOP CDM database. The data is fully
+<strong>synthetic</strong> (see <a href="index.html#the-dataset-ohdsi-gibleed">The dataset</a> below) and is
+<strong>sharded by person</strong> across the three sites, so each “centre” holds a disjoint set
+of patients, exactly as three real institutions would. The analysis then runs
+across all three as if they were remote — the client only ever sees
+disclosure-checked aggregates.</p>
+<p><strong>Part I</strong> of this book walks you through building that federation, one step per
+chapter. <strong>Part II</strong> is the analysis itself.</p>
+</div>
 <div id="the-federation" class="section level2 unnumbered hasAnchor">
 <h2>The federation<a href="index.html#the-federation" class="anchor-section" aria-label="Anchor link to header"></a></h2>
-<p>The synthetic OHDSI <strong>GiBleed</strong> cohort (2 694 persons) is <strong>sharded by
-person</strong> across three independent sites — <code>aphrc</code>, <code>dgh</code>, <code>iressef</code> — so every
-person and all of their records live on exactly one site. The client sees only
-disclosure-checked aggregates; the one person-level table we extract is analysed
-<em>in place</em> on each server with standard <code>dsBaseClient</code>.</p>
-<pre><code>                      DataSHIELD client (this R session)
-               DSI · DSOpal · dsBaseClient · dsOMOPClient
-                                  │  login(profile = &quot;omop&quot;)
-        ┌─────────────────────────┼─────────────────────────┐
-   ┌────▼────┐                ┌────▼────┐                ┌────▼────┐
-   │  aphrc  │                │   dgh   │                │ iressef │   Opal + Rock
-   │ person  │                │ person  │                │ person  │   &quot;omop&quot; profile
-   │  %3==0  │                │  %3==1  │                │  %3==2  │   = dsOMOP image
-   └────┬────┘                └────┬────┘                └────┬────┘
-        │ resource omop_demo.gibleed (format omop.dbi.db)     │
-   ┌────▼────┐                ┌────▼────┐                ┌────▼────┐
-   │PostgreSQL│               │PostgreSQL│               │PostgreSQL│  OMOP CDM 5.3
-   └─────────┘                └─────────┘                └─────────┘</code></pre>
+<div class="figure" style="text-align: center"><span style="display:block;" id="fig:federation-diagram"></span>
+<div class="grViz html-widget html-fill-item" id="htmlwidget-d1d34ee73de3fa3bf2cd" style="width:85%;height:403.2px;"></div>
+<script type="application/json" data-for="htmlwidget-d1d34ee73de3fa3bf2cd">{"x":{"diagram":"\ndigraph federation {\n  graph [rankdir = TB, fontname = \"Helvetica\", bgcolor = \"transparent\", nodesep = 0.5, ranksep = 0.75]\n  node  [fontname = \"Helvetica\", fontsize = 10]\n  edge  [fontname = \"Helvetica\", fontsize = 9, color = \"#666666\"]\n\n  client [shape = box, style = \"rounded,filled\", fillcolor = \"#1f6feb\", fontcolor = \"white\", margin = \"0.25,0.14\",\n          label = \"DataSHIELD client (this R session)\\nDSI · DSOpal · dsBaseClient · dsOMOPClient\"]\n\n  subgraph cluster_aphrc {\n    label = \"aphrc    person_id % 3 = 0\"; labeljust = \"l\"; fontsize = 10; style = \"rounded,filled\"; fillcolor = \"#f6f8fa\"; color = \"#cfd7df\";\n    a_opal [shape = box, style = \"rounded,filled\", fillcolor = \"#dbeafe\", label = \"Opal + Rock\\nomop profile = dsOMOP image\"]\n    a_pg   [shape = cylinder, style = filled, fillcolor = \"#fef3c7\", label = \"PostgreSQL\\nOMOP CDM 5.3\"]\n    a_opal -> a_pg [label = \"resource\\nomop_demo.gibleed\"]\n  }\n  subgraph cluster_dgh {\n    label = \"dgh    person_id % 3 = 1\"; labeljust = \"l\"; fontsize = 10; style = \"rounded,filled\"; fillcolor = \"#f6f8fa\"; color = \"#cfd7df\";\n    d_opal [shape = box, style = \"rounded,filled\", fillcolor = \"#dbeafe\", label = \"Opal + Rock\\nomop profile = dsOMOP image\"]\n    d_pg   [shape = cylinder, style = filled, fillcolor = \"#fef3c7\", label = \"PostgreSQL\\nOMOP CDM 5.3\"]\n    d_opal -> d_pg [label = \"resource\\nomop_demo.gibleed\"]\n  }\n  subgraph cluster_iressef {\n    label = \"iressef    person_id % 3 = 2\"; labeljust = \"l\"; fontsize = 10; style = \"rounded,filled\"; fillcolor = \"#f6f8fa\"; color = \"#cfd7df\";\n    i_opal [shape = box, style = \"rounded,filled\", fillcolor = \"#dbeafe\", label = \"Opal + Rock\\nomop profile = dsOMOP image\"]\n    i_pg   [shape = cylinder, style = filled, fillcolor = \"#fef3c7\", label = \"PostgreSQL\\nOMOP CDM 5.3\"]\n    i_opal -> i_pg [label = \"resource\\nomop_demo.gibleed\"]\n  }\n\n  client -> a_opal\n  client -> d_opal [label = \"login(profile = omop)\"]\n  client -> i_opal\n}\n","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script>
+<p class="caption">
+Figure 0.1: The simulated three-site federation. One DataSHIELD client logs into three independent Opal + Rock sites (the dsOMOP omop profile); each site is backed by its own OMOP CDM PostgreSQL holding a person-disjoint shard of the GiBleed cohort.
+</p>
+</div>
+<p>Each site is an independent Opal + Rock stack: Opal handles authentication and the
+resource catalogue, while Rock is the R server that actually runs the federated
+computations. Our <code>omop</code> Rock profile bundles <strong>dsOMOP v2</strong>, the layer that turns a
+PostgreSQL OMOP CDM into DataSHIELD-ready tables. The one person-level table we
+extract is analysed <em>in place</em> on each server with standard <code>dsBaseClient</code>.</p>
+</div>
+<div id="the-dataset-ohdsi-gibleed" class="section level2 unnumbered hasAnchor">
+<h2>The dataset: OHDSI GiBleed<a href="index.html#the-dataset-ohdsi-gibleed" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>The synthetic data is the OHDSI <strong>GiBleed</strong> demonstration cohort (<strong>2 694
+persons</strong>), distributed by the OHDSI community in the
+<a href="https://github.com/OHDSI/EunomiaDatasets">EunomiaDatasets</a> repository under the
+Apache-2.0 licence. It is a small, fully synthetic OMOP CDM <strong>v5.3</strong> dataset built
+for teaching and testing — it contains <strong>no real patients</strong>, which is precisely why
+we can publish and re-distribute it here for a reproducibility exercise.</p>
+<p>Step 3 downloads a pinned copy, loads it into each site’s PostgreSQL, and shards it
+by <code>person_id % 3</code> so each site keeps one third of the persons (and <em>all</em> of their
+records). The vocabulary tables (<code>concept</code>, <code>vocabulary</code>, …) carry no <code>person_id</code>
+and are replicated to every site so each can resolve concept names locally.</p>
 </div>
 <div id="the-study" class="section level2 unnumbered hasAnchor">
 <h2>The study<a href="index.html#the-study" class="anchor-section" aria-label="Anchor link to header"></a></h2>
-<p>From the catalogue exploration in Chapter <a href="explore.html#explore">1</a> we design a
+<p>From the catalogue exploration in Chapter <a href="explore.html#explore">6</a> we design a
 clinically coherent question and answer it federally:</p>
 <blockquote>
 <p><strong>Is a prior history of peptic ulcer — adjusting for age, sex and NSAID
@@ -248,80 +313,51 @@ exposure — associated with gastrointestinal haemorrhage?</strong></p>
 </blockquote>
 <p>To answer it we fuse three OMOP tables into one person-level analysis frame:
 <code>person</code> (demographics), <code>condition_occurrence</code> (the GI-bleed outcome and the
-peptic-ulcer predictor) and <code>drug_exposure</code> (NSAID exposure). The chapters follow
-the natural arc of the analysis:</p>
+peptic-ulcer predictor) and <code>drug_exposure</code> (NSAID exposure). Part II follows the
+natural arc of the analysis:</p>
 <ol style="list-style-type: decimal">
-<li><strong>Explore</strong> the catalogue (Chapter <a href="explore.html#explore">1</a>) — what tables, variables
+<li><strong>Explore</strong> the catalogue (Chapter <a href="explore.html#explore">6</a>) — what tables, variables
 and concepts each site exposes.</li>
-<li><strong>Extract</strong> (Chapter <a href="extract.html#extract">2</a>) — one server-side person-level frame
+<li><strong>Extract</strong> (Chapter <a href="extract.html#extract">7</a>) — one server-side person-level frame
 built by fusing three tables, with named features.</li>
-<li><strong>Observe</strong> (Chapter <a href="observe.html#observe">3</a>) — federated summaries and <code>dsBaseClient</code>
+<li><strong>Observe</strong> (Chapter <a href="observe.html#observe">8</a>) — federated summaries and <code>dsBaseClient</code>
 plots of the extracted variables.</li>
-<li><strong>Model</strong> (Chapter <a href="model.html#model">4</a>) — a federated logistic GLM, with its live
+<li><strong>Model</strong> (Chapter <a href="model.html#model">9</a>) — a federated logistic GLM, with its live
 training trace, plus a study-level meta-analysis.</li>
 </ol>
 </div>
-<div id="reproducing-this-book" class="section level2 unnumbered hasAnchor">
-<h2>Reproducing this book<a href="index.html#reproducing-this-book" class="anchor-section" aria-label="Anchor link to header"></a></h2>
-<p>Stand up the federation with the five repository steps, then render the book:</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="index.html#cb2-1" tabindex="-1"></a><span class="fu">bash</span> 1_setup/install_easy_opal.sh <span class="kw">&amp;&amp;</span> <span class="bu">source</span> .venv/bin/activate</span>
-<span id="cb2-2"><a href="index.html#cb2-2" tabindex="-1"></a><span class="fu">bash</span> 2_opal_stacks/setup_sites.sh</span>
-<span id="cb2-3"><a href="index.html#cb2-3" tabindex="-1"></a><span class="fu">bash</span> 3_databases/setup_databases.sh</span>
-<span id="cb2-4"><a href="index.html#cb2-4" tabindex="-1"></a><span class="fu">bash</span> 4_resources/setup_resources.sh</span>
-<span id="cb2-5"><a href="index.html#cb2-5" tabindex="-1"></a><span class="fu">bash</span> 5_client/setup_client.sh</span>
-<span id="cb2-6"><a href="index.html#cb2-6" tabindex="-1"></a><span class="ex">Rscript</span> <span class="at">-e</span> <span class="st">&#39;bookdown::render_book(&quot;book/index.Rmd&quot;)&#39;</span></span></code></pre></div>
-<p>Connection parameters (site URLs, the resource path and the <strong>public demo
-credentials</strong>) are read from the gitignored <code>sites.env</code> that steps 2–4 write, so
-there is nothing to configure by hand.</p>
-</div>
-<div id="connecting" class="section level2 unnumbered hasAnchor">
-<h2>Connecting<a href="index.html#connecting" class="anchor-section" aria-label="Anchor link to header"></a></h2>
-<p>We log the DataSHIELD client into the three sites and attach the OMOP CDM
-resource on each. This single connection stays open for the whole book — every
-later chapter runs against it.</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="index.html#cb3-1" tabindex="-1"></a><span class="fu">library</span>(DSI); <span class="fu">library</span>(DSOpal); <span class="fu">library</span>(dsBaseClient); <span class="fu">library</span>(dsOMOPClient)</span>
-<span id="cb3-2"><a href="index.html#cb3-2" tabindex="-1"></a></span>
-<span id="cb3-3"><a href="index.html#cb3-3" tabindex="-1"></a><span class="co"># Locate sites.env by walking up from the book directory to the repo root.</span></span>
-<span id="cb3-4"><a href="index.html#cb3-4" tabindex="-1"></a>find_up <span class="ot">&lt;-</span> <span class="cf">function</span>(f, <span class="at">d =</span> <span class="fu">getwd</span>()) {</span>
-<span id="cb3-5"><a href="index.html#cb3-5" tabindex="-1"></a>  <span class="cf">repeat</span> {</span>
-<span id="cb3-6"><a href="index.html#cb3-6" tabindex="-1"></a>    p <span class="ot">&lt;-</span> <span class="fu">file.path</span>(d, f); <span class="cf">if</span> (<span class="fu">file.exists</span>(p)) <span class="fu">return</span>(p)</span>
-<span id="cb3-7"><a href="index.html#cb3-7" tabindex="-1"></a>    up <span class="ot">&lt;-</span> <span class="fu">dirname</span>(d); <span class="cf">if</span> (<span class="fu">identical</span>(up, d)) <span class="fu">stop</span>(f, <span class="st">&quot; not found&quot;</span>); d <span class="ot">&lt;-</span> up</span>
-<span id="cb3-8"><a href="index.html#cb3-8" tabindex="-1"></a>  }</span>
-<span id="cb3-9"><a href="index.html#cb3-9" tabindex="-1"></a>}</span>
-<span id="cb3-10"><a href="index.html#cb3-10" tabindex="-1"></a>read_env <span class="ot">&lt;-</span> <span class="cf">function</span>(path) {</span>
-<span id="cb3-11"><a href="index.html#cb3-11" tabindex="-1"></a>  ln <span class="ot">&lt;-</span> <span class="fu">trimws</span>(<span class="fu">readLines</span>(path, <span class="at">warn =</span> <span class="cn">FALSE</span>))</span>
-<span id="cb3-12"><a href="index.html#cb3-12" tabindex="-1"></a>  ln <span class="ot">&lt;-</span> ln[<span class="fu">nzchar</span>(ln) <span class="sc">&amp;</span> <span class="sc">!</span><span class="fu">startsWith</span>(ln, <span class="st">&quot;#&quot;</span>)]</span>
-<span id="cb3-13"><a href="index.html#cb3-13" tabindex="-1"></a>  e <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
-<span id="cb3-14"><a href="index.html#cb3-14" tabindex="-1"></a>  <span class="cf">for</span> (kv <span class="cf">in</span> <span class="fu">regmatches</span>(ln, <span class="fu">regexec</span>(<span class="st">&quot;^([A-Za-z_][A-Za-z0-9_]*)=(.*)$&quot;</span>, ln)))</span>
-<span id="cb3-15"><a href="index.html#cb3-15" tabindex="-1"></a>    <span class="cf">if</span> (<span class="fu">length</span>(kv) <span class="sc">==</span> <span class="dv">3</span><span class="dt">L</span>) e[[kv[<span class="dv">2</span>]]] <span class="ot">&lt;-</span> kv[<span class="dv">3</span>]</span>
-<span id="cb3-16"><a href="index.html#cb3-16" tabindex="-1"></a>  e</span>
-<span id="cb3-17"><a href="index.html#cb3-17" tabindex="-1"></a>}</span>
-<span id="cb3-18"><a href="index.html#cb3-18" tabindex="-1"></a>cfg <span class="ot">&lt;-</span> <span class="fu">read_env</span>(<span class="fu">Sys.getenv</span>(<span class="st">&quot;SITES_ENV&quot;</span>, <span class="at">unset =</span> <span class="fu">find_up</span>(<span class="st">&quot;sites.env&quot;</span>)))</span>
-<span id="cb3-19"><a href="index.html#cb3-19" tabindex="-1"></a></span>
-<span id="cb3-20"><a href="index.html#cb3-20" tabindex="-1"></a>builder <span class="ot">&lt;-</span> DSI<span class="sc">::</span><span class="fu">newDSLoginBuilder</span>()</span>
-<span id="cb3-21"><a href="index.html#cb3-21" tabindex="-1"></a><span class="cf">for</span> (S <span class="cf">in</span> <span class="fu">sub</span>(<span class="st">&quot;_OPAL_URL$&quot;</span>, <span class="st">&quot;&quot;</span>, <span class="fu">grep</span>(<span class="st">&quot;_OPAL_URL$&quot;</span>, <span class="fu">names</span>(cfg), <span class="at">value =</span> <span class="cn">TRUE</span>)))</span>
-<span id="cb3-22"><a href="index.html#cb3-22" tabindex="-1"></a>  builder<span class="sc">$</span><span class="fu">append</span>(<span class="at">server =</span> <span class="fu">tolower</span>(S), <span class="at">url =</span> cfg[[<span class="fu">paste0</span>(S, <span class="st">&quot;_OPAL_URL&quot;</span>)]],</span>
-<span id="cb3-23"><a href="index.html#cb3-23" tabindex="-1"></a>                 <span class="at">user =</span> cfg<span class="sc">$</span>OPAL_USER, <span class="at">password =</span> cfg<span class="sc">$</span>OPAL_PASSWORD,</span>
-<span id="cb3-24"><a href="index.html#cb3-24" tabindex="-1"></a>                 <span class="at">resource =</span> cfg<span class="sc">$</span>OPAL_RESOURCE_PATH,</span>
-<span id="cb3-25"><a href="index.html#cb3-25" tabindex="-1"></a>                 <span class="at">driver =</span> <span class="st">&quot;OpalDriver&quot;</span>, <span class="at">profile =</span> cfg<span class="sc">$</span>OPAL_PROFILE)</span>
-<span id="cb3-26"><a href="index.html#cb3-26" tabindex="-1"></a>conns <span class="ot">&lt;-</span> DSI<span class="sc">::</span><span class="fu">datashield.login</span>(<span class="at">logins =</span> builder<span class="sc">$</span><span class="fu">build</span>())</span>
-<span id="cb3-27"><a href="index.html#cb3-27" tabindex="-1"></a></span>
-<span id="cb3-28"><a href="index.html#cb3-28" tabindex="-1"></a><span class="co"># Attach the OMOP CDM resource on every server and initialise dsOMOP.</span></span>
-<span id="cb3-29"><a href="index.html#cb3-29" tabindex="-1"></a><span class="fu">ds.omop.connect</span>(<span class="at">resource =</span> cfg<span class="sc">$</span>OPAL_RESOURCE_PATH, <span class="at">symbol =</span> <span class="st">&quot;omop&quot;</span>, <span class="at">conns =</span> conns)</span></code></pre></div>
-<p>The client is now connected to all three sites, with a live dsOMOP handle
-(<code>omop</code>) on each:</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="index.html#cb4-1" tabindex="-1"></a><span class="fu">names</span>(conns)</span>
-<span id="cb4-2"><a href="index.html#cb4-2" tabindex="-1"></a><span class="co">#&gt; [1] &quot;aphrc&quot;   &quot;dgh&quot;     &quot;iressef&quot;</span></span></code></pre></div>
+<div id="reproducing-it-yourself" class="section level2 unnumbered hasAnchor">
+<h2>Reproducing it yourself<a href="index.html#reproducing-it-yourself" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>Part I builds the federation in five steps that mirror the repository’s numbered
+folders, then opens the live connection the analysis chapters use. Each chapter
+shows the <strong>real commands</strong> and links the exact script that runs them:</p>
+<ol style="list-style-type: decimal">
+<li><strong>Prerequisites &amp; easy-opal</strong> (Chapter <a href="setup-prerequisites.html#setup-prerequisites">1</a>) — Docker,
+Python and R; installing the <code>easy-opal</code> CLI.</li>
+<li><strong>The three sites</strong> (Chapter <a href="setup-sites.html#setup-sites">2</a>) — declaring the <code>aphrc</code>,
+<code>dgh</code>, <code>iressef</code> Opal + Rock stacks and adding the dsOMOP <code>omop</code> profile.</li>
+<li><strong>The databases</strong> (Chapter <a href="setup-databases.html#setup-databases">3</a>) — a PostgreSQL OMOP CDM per
+site, seeded and sharded from GiBleed.</li>
+<li><strong>The resources</strong> (Chapter <a href="setup-resources.html#setup-resources">4</a>) — the dsOMOP resource that
+points each Rock session at its database.</li>
+<li><strong>Connecting</strong> (Chapter <a href="setup-connect.html#setup-connect">5</a>) — logging the DataSHIELD client
+into all three sites; this live connection feeds every chapter in Part II.</li>
+</ol>
+<p>If you just want the whole thing to run, the repository README has a five-command
+quick start; the chapters that follow explain what each command does and why.</p>
 
 </div>
 </div>
+
+
+
             </section>
 
           </div>
         </div>
       </div>
 
-<a href="explore.html" class="navigation navigation-next navigation-unique" aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+<a href="setup-prerequisites.html" class="navigation navigation-next navigation-unique" aria-label="Next page"><i class="fa fa-angle-right"></i></a>
     </div>
   </div>
 <script src="libs/gitbook-2.6.7/js/app.min.js"></script>

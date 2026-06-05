@@ -1,8 +1,8 @@
 #!/usr/bin/env Rscript
 # Step 5 — Federated analysis across the three sites with dsOMOP + DataSHIELD.
 #
-# Reads ../sites.env, logs the DataSHIELD client into all sites (Rock profile
-# "omop"), attaches the OMOP CDM resource created in step 4, and then:
+# Logs the DataSHIELD client into all three sites (Rock profile "omop"),
+# attaches the OMOP CDM resource created in step 4, and then:
 #   A. explores the schema (tables / columns),
 #   B. counts rows & persons per site and pooled  — the GiBleed cohort is
 #      sharded by person across the sites, so the pooled person count is the
@@ -31,44 +31,27 @@ suppressPackageStartupMessages({
   library(DSI); library(DSOpal); library(dsBaseClient); library(dsOMOPClient)
 })
 
-# --- locate + parse sites.env ----------------------------------------------
-script_path <- (function() {
-  a <- commandArgs(FALSE); f <- sub("^--file=", "", a[grepl("^--file=", a)])
-  if (length(f)) normalizePath(f) else NA_character_
-})()
-repo_root <- if (!is.na(script_path)) dirname(dirname(script_path)) else getwd()
-sites_env <- Sys.getenv("SITES_ENV", unset = file.path(repo_root, "sites.env"))
-if (!file.exists(sites_env))
-  stop("sites.env not found at ", sites_env, " — run steps 2-4 first.", call. = FALSE)
-
-read_env <- function(path) {
-  lines <- trimws(readLines(path, warn = FALSE))
-  lines <- lines[nzchar(lines) & !startsWith(lines, "#")]
-  m <- regmatches(lines, regexec("^([A-Za-z_][A-Za-z0-9_]*)=(.*)$", lines))
-  env <- list(); for (kv in m) if (length(kv) == 3L) env[[kv[2]]] <- kv[3]; env
-}
-cfg <- read_env(sites_env)
-req <- function(k) { v <- cfg[[k]]
-  if (is.null(v) || !nzchar(v)) stop("Missing '", k, "' in ", sites_env,
-    " — re-run the earlier steps.", call. = FALSE); v }
-
-opal_user    <- req("OPAL_USER")
-opal_pass    <- req("OPAL_PASSWORD")
-opal_profile <- if (!is.null(cfg$OPAL_PROFILE) && nzchar(cfg$OPAL_PROFILE)) cfg$OPAL_PROFILE else "omop"
-resource     <- req("OPAL_RESOURCE_PATH")          # e.g. "omop_demo.gibleed" (from step 4)
-
-url_keys <- grep("_OPAL_URL$", names(cfg), value = TRUE)
-if (!length(url_keys)) stop("No <SITE>_OPAL_URL in ", sites_env, call. = FALSE)
-sites <- sub("_OPAL_URL$", "", url_keys)
+# --- fixed connection details (hardcoded; see steps 2-4) --------------------
+# The same localhost ports / public-demo credentials the earlier steps set up.
+# If you changed a port in step 2, change the matching one here too.
+sites <- list(
+  aphrc   = "http://localhost:48080",
+  dgh     = "http://localhost:48081",
+  iressef = "http://localhost:48082"
+)
+opal_user    <- "administrator"
+opal_pass    <- "password"
+opal_profile <- "omop"                      # Rock profile added in step 2
+resource     <- "omop_demo.gibleed"         # project.resource created in step 4
 
 # --- log in to every site (profile "omop") ---------------------------------
 banner <- function(t) cat("\n", strrep("=", 70), "\n== ", t, "\n", strrep("=", 70), "\n", sep = "")
 banner(sprintf("Logging in to %d site(s): %s", length(sites),
-               paste(tolower(sites), collapse = ", ")))
+               paste(names(sites), collapse = ", ")))
 
 builder <- DSI::newDSLoginBuilder()
-for (S in sites) {
-  builder$append(server = tolower(S), url = cfg[[paste0(S, "_OPAL_URL")]],
+for (site in names(sites)) {
+  builder$append(server = site, url = sites[[site]],
                  user = opal_user, password = opal_pass,
                  resource = resource, driver = "OpalDriver", profile = opal_profile)
 }

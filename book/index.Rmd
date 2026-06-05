@@ -1,8 +1,7 @@
 ---
 title: "Federated Analysis using DataSHIELD"
 subtitle: "A live, three-site OMOP CDM workflow with dsOMOP v2"
-author: "David Sarrat González · Michael Ochola"
-date: "Rendered live against the federation on `r format(Sys.Date(), '%d %B %Y')`"
+author: "David Sarrat González, Michael Ochola"
 site: bookdown::bookdown_site
 documentclass: book
 github-repo: APHRC-DSE/Federated-Analysis-using-DataSHIELD-I
@@ -24,39 +23,95 @@ options(width = 90)
 
 # Overview {-}
 
-This book is a **single, end-to-end federated analysis**. It connects to a
-**local three-site DataSHIELD federation** built over **OMOP CDM** data, explores
-what each site holds, extracts one tailored person-level table by **fusing three
-OMOP tables on the server**, describes it, and finally fits a **federated logistic
-regression** — all without a single patient-level row ever leaving a site.
+This book is the **reproducibility companion** to the paper *"Federated Analysis
+using DataSHIELD"*. It is a single, **end-to-end federated analysis** that you can
+re-run from scratch: it stands up a **local three-site DataSHIELD federation** over
+**OMOP CDM** data, explores what each site holds, extracts one tailored
+person-level table by **fusing three OMOP tables on each server**, describes it,
+and finally fits a **federated logistic regression** — all without a single
+patient-level row ever leaving a site.
 
 Every result you see was produced by **executing the code live against the three
-sites** while this book was rendered. Nothing is pre-baked: the histograms, the
-prevalence tables and the GLM iteration trace are the genuine output of the run.
+sites** while this book was rendered. Nothing is pre-baked: the counts, the
+prevalence tables, the histograms and the GLM iteration trace are the genuine
+output of the run.
+
+## Why a *simulated* federation {-}
+
+In a real DataSHIELD study the data stays where it lives: each research centre
+hosts its own server and the patient-level records **never leave the institution**
+— that is the entire point. That real data therefore cannot be handed to you to
+reproduce the analysis.
+
+So this book does the next best thing. On your own machine it **simulates three
+research centres** — `aphrc`, `dgh` and `iressef` — each running an independent
+Opal + Rock server backed by its own OMOP CDM database. The data is fully
+**synthetic** (see [The dataset](#the-dataset-ohdsi-gibleed) below) and is
+**sharded by person** across the three sites, so each "centre" holds a disjoint set
+of patients, exactly as three real institutions would. The analysis then runs
+across all three as if they were remote — the client only ever sees
+disclosure-checked aggregates.
+
+**Part I** of this book walks you through building that federation, one step per
+chapter. **Part II** is the analysis itself.
 
 ## The federation {-}
 
-The synthetic OHDSI **GiBleed** cohort (2&nbsp;694 persons) is **sharded by
-person** across three independent sites — `aphrc`, `dgh`, `iressef` — so every
-person and all of their records live on exactly one site. The client sees only
-disclosure-checked aggregates; the one person-level table we extract is analysed
-*in place* on each server with standard `dsBaseClient`.
+```{r federation-diagram, echo = FALSE, fig.cap = "The simulated three-site federation. One DataSHIELD client logs into three independent Opal + Rock sites (the dsOMOP omop profile); each site is backed by its own OMOP CDM PostgreSQL holding a person-disjoint shard of the GiBleed cohort."}
+DiagrammeR::grViz('
+digraph federation {
+  graph [rankdir = TB, fontname = "Helvetica", bgcolor = "transparent", nodesep = 0.5, ranksep = 0.75]
+  node  [fontname = "Helvetica", fontsize = 10]
+  edge  [fontname = "Helvetica", fontsize = 9, color = "#666666"]
 
+  client [shape = box, style = "rounded,filled", fillcolor = "#1f6feb", fontcolor = "white", margin = "0.25,0.14",
+          label = "DataSHIELD client (this R session)\\nDSI · DSOpal · dsBaseClient · dsOMOPClient"]
+
+  subgraph cluster_aphrc {
+    label = "aphrc    person_id % 3 = 0"; labeljust = "l"; fontsize = 10; style = "rounded,filled"; fillcolor = "#f6f8fa"; color = "#cfd7df";
+    a_opal [shape = box, style = "rounded,filled", fillcolor = "#dbeafe", label = "Opal + Rock\\nomop profile = dsOMOP image"]
+    a_pg   [shape = cylinder, style = filled, fillcolor = "#fef3c7", label = "PostgreSQL\\nOMOP CDM 5.3"]
+    a_opal -> a_pg [label = "resource\\nomop_demo.gibleed"]
+  }
+  subgraph cluster_dgh {
+    label = "dgh    person_id % 3 = 1"; labeljust = "l"; fontsize = 10; style = "rounded,filled"; fillcolor = "#f6f8fa"; color = "#cfd7df";
+    d_opal [shape = box, style = "rounded,filled", fillcolor = "#dbeafe", label = "Opal + Rock\\nomop profile = dsOMOP image"]
+    d_pg   [shape = cylinder, style = filled, fillcolor = "#fef3c7", label = "PostgreSQL\\nOMOP CDM 5.3"]
+    d_opal -> d_pg [label = "resource\\nomop_demo.gibleed"]
+  }
+  subgraph cluster_iressef {
+    label = "iressef    person_id % 3 = 2"; labeljust = "l"; fontsize = 10; style = "rounded,filled"; fillcolor = "#f6f8fa"; color = "#cfd7df";
+    i_opal [shape = box, style = "rounded,filled", fillcolor = "#dbeafe", label = "Opal + Rock\\nomop profile = dsOMOP image"]
+    i_pg   [shape = cylinder, style = filled, fillcolor = "#fef3c7", label = "PostgreSQL\\nOMOP CDM 5.3"]
+    i_opal -> i_pg [label = "resource\\nomop_demo.gibleed"]
+  }
+
+  client -> a_opal
+  client -> d_opal [label = "login(profile = omop)"]
+  client -> i_opal
+}
+')
 ```
-                      DataSHIELD client (this R session)
-               DSI · DSOpal · dsBaseClient · dsOMOPClient
-                                  │  login(profile = "omop")
-        ┌─────────────────────────┼─────────────────────────┐
-   ┌────▼────┐                ┌────▼────┐                ┌────▼────┐
-   │  aphrc  │                │   dgh   │                │ iressef │   Opal + Rock
-   │ person  │                │ person  │                │ person  │   "omop" profile
-   │  %3==0  │                │  %3==1  │                │  %3==2  │   = dsOMOP image
-   └────┬────┘                └────┬────┘                └────┬────┘
-        │ resource omop_demo.gibleed (format omop.dbi.db)     │
-   ┌────▼────┐                ┌────▼────┐                ┌────▼────┐
-   │PostgreSQL│               │PostgreSQL│               │PostgreSQL│  OMOP CDM 5.3
-   └─────────┘                └─────────┘                └─────────┘
-```
+
+Each site is an independent Opal + Rock stack: Opal handles authentication and the
+resource catalogue, while Rock is the R server that actually runs the federated
+computations. Our `omop` Rock profile bundles **dsOMOP v2**, the layer that turns a
+PostgreSQL OMOP CDM into DataSHIELD-ready tables. The one person-level table we
+extract is analysed *in place* on each server with standard `dsBaseClient`.
+
+## The dataset: OHDSI GiBleed {-}
+
+The synthetic data is the OHDSI **GiBleed** demonstration cohort (**2 694
+persons**), distributed by the OHDSI community in the
+[EunomiaDatasets](https://github.com/OHDSI/EunomiaDatasets) repository under the
+Apache-2.0 licence. It is a small, fully synthetic OMOP CDM **v5.3** dataset built
+for teaching and testing — it contains **no real patients**, which is precisely why
+we can publish and re-distribute it here for a reproducibility exercise.
+
+Step 3 downloads a pinned copy, loads it into each site's PostgreSQL, and shards it
+by `person_id % 3` so each site keeps one third of the persons (and *all* of their
+records). The vocabulary tables (`concept`, `vocabulary`, …) carry no `person_id`
+and are replicated to every site so each can resolve concept names locally.
 
 ## The study {-}
 
@@ -68,8 +123,8 @@ clinically coherent question and answer it federally:
 
 To answer it we fuse three OMOP tables into one person-level analysis frame:
 `person` (demographics), `condition_occurrence` (the GI-bleed outcome and the
-peptic-ulcer predictor) and `drug_exposure` (NSAID exposure). The chapters follow
-the natural arc of the analysis:
+peptic-ulcer predictor) and `drug_exposure` (NSAID exposure). Part II follows the
+natural arc of the analysis:
 
 1. **Explore** the catalogue (Chapter \@ref(explore)) — what tables, variables
    and concepts each site exposes.
@@ -80,64 +135,22 @@ the natural arc of the analysis:
 4. **Model** (Chapter \@ref(model)) — a federated logistic GLM, with its live
    training trace, plus a study-level meta-analysis.
 
-## Reproducing this book {-}
+## Reproducing it yourself {-}
 
-Stand up the federation with the five repository steps, then render the book:
+Part I builds the federation in five steps that mirror the repository's numbered
+folders, then opens the live connection the analysis chapters use. Each chapter
+shows the **real commands** and links the exact script that runs them:
 
-```bash
-bash 1_setup/install_easy_opal.sh && source .venv/bin/activate
-bash 2_opal_stacks/setup_sites.sh
-bash 3_databases/setup_databases.sh
-bash 4_resources/setup_resources.sh
-bash 5_client/setup_client.sh
-Rscript -e 'bookdown::render_book("book/index.Rmd")'
-```
+1. **Prerequisites & easy-opal** (Chapter \@ref(setup-prerequisites)) — Docker,
+   Python and R; installing the `easy-opal` CLI.
+2. **The three sites** (Chapter \@ref(setup-sites)) — declaring the `aphrc`,
+   `dgh`, `iressef` Opal + Rock stacks and adding the dsOMOP `omop` profile.
+3. **The databases** (Chapter \@ref(setup-databases)) — a PostgreSQL OMOP CDM per
+   site, seeded and sharded from GiBleed.
+4. **The resources** (Chapter \@ref(setup-resources)) — the dsOMOP resource that
+   points each Rock session at its database.
+5. **Connecting** (Chapter \@ref(setup-connect)) — logging the DataSHIELD client
+   into all three sites; this live connection feeds every chapter in Part II.
 
-Connection parameters (site URLs, the resource path and the **public demo
-credentials**) are read from the gitignored `sites.env` that steps 2–4 write, so
-there is nothing to configure by hand.
-
-## Connecting {-}
-
-We log the DataSHIELD client into the three sites and attach the OMOP CDM
-resource on each. This single connection stays open for the whole book — every
-later chapter runs against it.
-
-```{r login, results = "hide"}
-library(DSI); library(DSOpal); library(dsBaseClient); library(dsOMOPClient)
-
-# Locate sites.env by walking up from the book directory to the repo root.
-find_up <- function(f, d = getwd()) {
-  repeat {
-    p <- file.path(d, f); if (file.exists(p)) return(p)
-    up <- dirname(d); if (identical(up, d)) stop(f, " not found"); d <- up
-  }
-}
-read_env <- function(path) {
-  ln <- trimws(readLines(path, warn = FALSE))
-  ln <- ln[nzchar(ln) & !startsWith(ln, "#")]
-  e <- list()
-  for (kv in regmatches(ln, regexec("^([A-Za-z_][A-Za-z0-9_]*)=(.*)$", ln)))
-    if (length(kv) == 3L) e[[kv[2]]] <- kv[3]
-  e
-}
-cfg <- read_env(Sys.getenv("SITES_ENV", unset = find_up("sites.env")))
-
-builder <- DSI::newDSLoginBuilder()
-for (S in sub("_OPAL_URL$", "", grep("_OPAL_URL$", names(cfg), value = TRUE)))
-  builder$append(server = tolower(S), url = cfg[[paste0(S, "_OPAL_URL")]],
-                 user = cfg$OPAL_USER, password = cfg$OPAL_PASSWORD,
-                 resource = cfg$OPAL_RESOURCE_PATH,
-                 driver = "OpalDriver", profile = cfg$OPAL_PROFILE)
-conns <- DSI::datashield.login(logins = builder$build())
-
-# Attach the OMOP CDM resource on every server and initialise dsOMOP.
-ds.omop.connect(resource = cfg$OPAL_RESOURCE_PATH, symbol = "omop", conns = conns)
-```
-
-The client is now connected to all three sites, with a live dsOMOP handle
-(`omop`) on each:
-
-```{r connected}
-names(conns)
-```
+If you just want the whole thing to run, the repository README has a five-command
+quick start; the chapters that follow explain what each command does and why.

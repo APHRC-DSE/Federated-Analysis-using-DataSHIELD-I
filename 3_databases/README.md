@@ -54,38 +54,25 @@ the same Docker network as Rock with **known** credentials. easy-opal's managed 
 auto-generates its password, which would make step 4's resource definition
 non-reproducible; forcing `postgres`/`postgres` here keeps it turnkey.
 
-## Configuration (environment variables)
+## Configuration
+
+The credentials, database name, schema, network alias and host ports are
+**hardcoded constants** near the top of `setup_databases.sh` (`postgres`/`postgres`,
+db `omop`, schema `cdm`, alias `omopdb`, host ports `45432` / `45433` / `45434`).
+The host ports are published for inspection only — Rock always reaches Postgres
+through the `omopdb` alias, never a host port. If a host port is taken, the script
+stops with a clear message; edit `PG_PORTS` and re-run. A couple of values stay
+overridable via the environment:
 
 | Var | Default | Purpose |
 |-----|---------|---------|
 | `PG_VERSION` | `16` | PostgreSQL image tag. |
-| `PG_USER` / `PG_PASSWORD` | `postgres` / `postgres` | DB credentials (intentional for this public demo). |
-| `PG_DB` | `omop` | Database name. |
-| `PG_SCHEMA` | `cdm` | Schema the CDM tables live in. |
-| `PG_ALIAS` | `omopdb` | Docker network alias the resource points at. |
-| `PG_PORT_BASE` | `45432` | First host port to publish (inspection only). |
 | `GIBLEED_URL` / `DDL_URL` | pinned | Synthetic data + CDM DDL sources (override to re-pin). |
-
-## What it writes to `sites.env`
-
-A PostgreSQL block is appended (and refreshed on re-run) for step 4 to read:
-
-```
-PG_USER=postgres
-PG_PASSWORD=postgres
-PG_DATABASE=omop
-PG_SCHEMA=cdm
-PG_HOST_ALIAS=omopdb
-PG_INTERNAL_PORT=5432
-APHRC_PG_PORT=45432       # host port — inspection only; Rock uses the alias
-DGH_PG_PORT=45433
-IRESSEF_PG_PORT=45434
-```
 
 ## Inspect
 
 ```bash
-# host port from sites.env (e.g. APHRC_PG_PORT)
+# fixed host port (PG_PORTS — aphrc is 45432)
 PGPASSWORD=postgres psql -h localhost -p 45432 -U postgres -d omop \
   -c 'select count(*) from cdm.person;'
 ```

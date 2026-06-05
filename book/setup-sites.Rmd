@@ -1,0 +1,98 @@
+# Standing up the three sites {#setup-sites}
+
+Now we declare the three simulated research centres — **`aphrc`**, **`dgh`** and
+**`iressef`** — each an independent Opal + Rock + MongoDB stack managed by
+`easy-opal`. Running the whole step is one command:
+
+```bash
+bash 2_opal_stacks/setup_sites.sh
+```
+
+The rest of this chapter explains exactly what that script does, because this is
+the heart of the federation. The full script:
+[`2_opal_stacks/setup_sites.sh`](https://github.com/APHRC-DSE/Federated-Analysis-using-DataSHIELD-I/blob/main/2_opal_stacks/setup_sites.sh).
+
+## The fixed ports and password
+
+We give each site a **fixed localhost port** and use the public-demo admin password
+**`password`**. These values are hardcoded near the top of the script and reused,
+unchanged, by every later step and by this book:
+
+| Site | Opal URL | Admin login |
+|------|----------|-------------|
+| aphrc   | `http://localhost:48080` | `administrator` / `password` |
+| dgh     | `http://localhost:48081` | `administrator` / `password` |
+| iressef | `http://localhost:48082` | `administrator` / `password` |
+
+> **You can change any of these.** If port `48080` (etc.) is already taken on your
+> machine, edit `OPAL_PORTS` at the top of the script; if you want a real password,
+> edit `ADMIN_PASSWORD`. Just remember to make the **same** change in steps 3–5 and
+> in the connection chapter, since those values are hardcoded there too. The script
+> does a pre-flight check and stops with a clear message if a port is in use.
+
+SSL is intentionally off (plain HTTP): everything is on `localhost`, so HTTP keeps
+the client reproducible with no certificates to manage.
+
+## What easy-opal does per site
+
+For each site the script runs the same four `easy-opal` commands. Taking `aphrc`
+on port `48080` as the example:
+
+**1. Create an isolated instance.** Each site is a separate easy-opal *instance*,
+so the three stacks run side by side without clashing:
+
+```bash
+easy-opal instance create aphrc
+```
+
+**2. Set up Opal + MongoDB** on the fixed port, over HTTP, with the admin password.
+Opal and MongoDB versions are pinned for reproducibility:
+
+```bash
+easy-opal -i aphrc setup \
+  --stack-name aphrc --ssl-strategy none --host localhost \
+  --http-port 48080 --password password \
+  --opal-version 5.5.1 --mongo-version 8.2.4 --yes
+```
+
+**3. Add the dsOMOP Rock profile.** This is what makes the site *OMOP-aware*. We
+register our Rock image as a second profile named **`omop`**, alongside the default
+`rock` profile. The DataSHIELD client logs into this `omop` profile, which bundles
+**dsOMOP v2**:
+
+```bash
+easy-opal -i aphrc profile add \
+  --image davidsarrat/rock-dsomop-dswb-reproducibility --tag 2.0.0 \
+  --name omop --yes
+```
+
+**4. Restart** so the new profile goes live:
+
+```bash
+easy-opal -i aphrc restart
+```
+
+The script repeats these four commands for `dgh` (port 48081) and `iressef`
+(port 48082).
+
+> On **Apple Silicon** the script forces `linux/amd64` for the image pull only, so
+> the `amd64`-only dsOMOP image resolves and then runs emulated. The multi-arch
+> Opal/MongoDB images keep running natively.
+
+## Using your own image
+
+`davidsarrat/rock-dsomop-dswb-reproducibility:2.0.0` is published and public, so
+nothing is required here. To build and push your own dsOMOP Rock image instead (see
+[`docker/rock-dsomop-dswb-reproducibility/`](https://github.com/APHRC-DSE/Federated-Analysis-using-DataSHIELD-I/tree/main/docker/rock-dsomop-dswb-reproducibility)),
+just point `IMAGE` at it:
+
+```bash
+IMAGE=youruser/rock-dsomop-dswb-reproducibility bash 2_opal_stacks/setup_sites.sh
+```
+
+## Verifying
+
+When the script finishes it prints the three URLs. Open any one (e.g.
+<http://localhost:48080>), log in as `administrator` / `password`, and under
+**Administration → Profiles** you should see both `rock` and `omop`. Next we give
+each site a database to read.

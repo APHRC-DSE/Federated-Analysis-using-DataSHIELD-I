@@ -3,14 +3,14 @@
 This step tells each Opal site **where its OMOP data lives** by creating a
 DataSHIELD **resource** that the dsOMOP server package (running in the `omop`
 Rock profile) knows how to open. It uses the Opal REST API through R's
-[`opalr`](https://cran.r-project.org/package=opalr) package and reads everything
-it needs from **`../sites.env`** (written by steps 2 and 3).
+[`opalr`](https://cran.r-project.org/package=opalr) package; all connection
+details (site URLs, DB credentials) are **hardcoded** in `create_resources.R`,
+matching the fixed values from steps 2 and 3.
 
 ## Prerequisites
 
 - **Steps 2 and 3 done** — the three sites are up and each has its own seeded
-  PostgreSQL on the site's Docker network (`../sites.env` exists with the
-  `*_OPAL_URL` and `PG_*` entries).
+  PostgreSQL on the site's Docker network.
 - **R available** (`Rscript` on `PATH`). `opalr` is installed automatically on
   first run if it is missing. Get R from <https://cran.r-project.org/>.
 
@@ -23,22 +23,14 @@ it needs from **`../sites.env`** (written by steps 2 and 3).
 bash 4_resources/setup_resources.sh
 ```
 
-Override the project or resource name if you like:
-
-```bash
-OPAL_PROJECT=omop_demo OPAL_RESOURCE=gibleed \
-  bash 4_resources/setup_resources.sh
-```
-
 ## What it does, per site
 
-1. **Ensures a resource-only Opal project** (default `omop_demo`). No storage
-   database is attached — dsOMOP reads through the resource, not Opal tables.
-2. **(Re)creates one OMOP CDM resource** (default name `gibleed`) of dsOMOP v2
-   format **`omop.dbi.db`**, pointing the Rock session at that site's PostgreSQL.
+1. **Ensures a resource-only Opal project** (`omop_demo`). No storage database is
+   attached — dsOMOP reads through the resource, not Opal tables.
+2. **(Re)creates one OMOP CDM resource** (name `gibleed`) of dsOMOP v2 format
+   **`omop.dbi.db`**, pointing the Rock session at that site's PostgreSQL.
 
-The chosen resource path is written back to `../sites.env` as
-`OPAL_RESOURCE_PATH` (e.g. `omop_demo.gibleed`) so step 5 picks it up.
+The resource path is the fixed `omop_demo.gibleed`, which step 5 logs into directly.
 
 No DataSHIELD privacy-control level is set here — see
 [Privacy and disclosure control](#privacy-and-disclosure-control) below.
@@ -91,21 +83,18 @@ The only thing that actually gates extraction is that dsOMOP's **assign methods
 must be published on the Rock `omop` profile** — which the dsOMOP image and
 easy-opal handle when the profile is created in step 2. Nothing to set here.
 
-## Configuration (environment variables)
+## Configuration
 
-| Var | Default | Purpose |
-|-----|---------|---------|
-| `OPAL_PROJECT` | `omop_demo` | Opal project that holds the resource. |
-| `OPAL_RESOURCE` | `gibleed` | Resource name (same on every site). |
-| `SITES_ENV` | `../sites.env` | Where to read site URLs + DB settings from. |
-
-Connection details (`PG_HOST_ALIAS`, `PG_INTERNAL_PORT`, `PG_DATABASE`,
-`PG_SCHEMA`, `PG_USER`, `PG_PASSWORD`) and the site URLs are **read from
-`sites.env`**, not set here.
+Everything is **hardcoded** near the top of `create_resources.R`: the three site
+URLs, the Opal credentials (`administrator` / `password`), the PostgreSQL
+connection details (`omopdb:5432`, db `omop`, schema `cdm`, `postgres` / `postgres`)
+and the project/resource names (`omop_demo` / `gibleed`). Edit them there if you
+changed a port or name in steps 2–3.
 
 ## Verify
 
-Open any site URL from `sites.env`, log in as `administrator` / `password`, open
+Open any site URL (e.g. <http://localhost:48080>), log in as `administrator` /
+`password`, open
 project **`omop_demo` → Resources**, and confirm a `gibleed` resource of type
 `omop.dbi.db`. Or from R:
 

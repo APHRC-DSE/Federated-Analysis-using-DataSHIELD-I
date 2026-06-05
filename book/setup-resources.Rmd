@@ -1,0 +1,75 @@
+# Registering the dsOMOP resources {#setup-resources}
+
+The databases exist, but Opal does not yet know about them. This step creates, on
+each site, a DataSHIELD **resource** that tells the dsOMOP server package *where the
+OMOP data lives and how to open it*. It talks to the Opal REST API through R's
+[`opalr`](https://cran.r-project.org/package=opalr) package — no Docker needed here.
+
+```bash
+bash 4_resources/setup_resources.sh
+```
+
+That thin wrapper installs `opalr` if needed and runs the R script that does the
+work:
+[`4_resources/create_resources.R`](https://github.com/APHRC-DSE/Federated-Analysis-using-DataSHIELD-I/blob/main/4_resources/create_resources.R).
+For each site it ensures a resource-only project **`omop_demo`** and (re)creates one
+resource named **`gibleed`** — the path `omop_demo.gibleed` the client logs into.
+
+## The dsOMOP v2 resource format
+
+> ⚠️ The public dsOMOP **README still documents the old v1 format** (`omop.cdm.db`,
+> `opal.resource_extension_create(...)`). **dsOMOP 2.0.0 does not use that.** What
+> follows matches the actual 2.0.0 source.
+
+A v2 resource is an ordinary `resourcer` resource that the dsOMOP resolver matches
+**by its format, `omop.dbi.db`**. All the connection details ride inside the URL,
+base64url-encoded so Opal's R URL parser never has to cope with a `?`, `&` or `=`:
+
+```
+omop+dbi:///B64:<base64url( JSON )>
+
+JSON = {"dbms":"postgresql","host":"omopdb","port":5432,
+        "database":"omop","cdm_schema":"cdm","vocabulary_schema":"cdm"}
+```
+
+Two consequences worth highlighting:
+
+- **`host`/`port` are Docker-internal.** They are the alias `omopdb` and the
+  in-container port `5432` from the previous chapter — *not* a published host port.
+  The same resource definition is therefore valid on every site; each Rock session
+  resolves `omopdb` to its own database.
+- **Credentials are not in the URL.** The DB user/password (`postgres`/`postgres`)
+  are stored separately as the resource's `identity` / `secret`.
+
+In R, the script builds that URL and creates the resource roughly like this (site
+URLs and credentials are hardcoded to match steps 2–3):
+
+```r
+library(opalr)
+o <- opal.login("administrator", "password", "http://localhost:48080")
+opal.resource_create(
+  o, "omop_demo", name = "gibleed",
+  url = "omop+dbi:///B64:eyJkYm1zIjoicG9zdGdyZXNxbCIs..."),  # the encoded JSON above
+  format   = "omop.dbi.db",
+  identity = "postgres", secret = "postgres")
+opal.logout(o)
+```
+
+## A note on disclosure control
+
+No DataSHIELD `privacyControlLevel` is set here, and it would make no difference if
+it were: **dsOMOP v2 does not read that option.** The
+`permissive`/`banana`/`avocado`/… hierarchy is a *dsBase* mechanism. dsOMOP enforces
+its **own** statistical disclosure control on every response — the standard
+`nfilter.*` thresholds plus a **mandatory, non-disableable identifier strip** — so
+its operations, *including extraction*, behave the same at every level. The only
+prerequisite for extraction is that dsOMOP's assign methods are published on the
+`omop` profile, which the image and easy-opal already handled in
+Chapter&nbsp;\@ref(setup-sites).
+
+## Verifying
+
+Open any site (e.g. <http://localhost:48080>), log in as `administrator` /
+`password`, and under project **`omop_demo` → Resources** you should see a `gibleed`
+resource of type `omop.dbi.db`. With all three sites carrying that resource, we are
+ready to connect.

@@ -1,0 +1,96 @@
+# Seeding the OMOP databases {#setup-databases}
+
+Each site now needs its **own** OMOP CDM database. This step gives every site a
+PostgreSQL container holding a person-disjoint slice of the OHDSI **GiBleed**
+cohort. One command does it all:
+
+```bash
+bash 3_databases/setup_databases.sh
+```
+
+The full script:
+[`3_databases/setup_databases.sh`](https://github.com/APHRC-DSE/Federated-Analysis-using-DataSHIELD-I/blob/main/3_databases/setup_databases.sh).
+
+## Where the data comes from
+
+The script downloads two **pinned, Apache-2.0** sources from OHDSI and caches them
+under `3_databases/.cache/`:
+
+- the **GiBleed** synthetic CSVs (OMOP CDM 5.3) — from
+  [`OHDSI/EunomiaDatasets`](https://github.com/OHDSI/EunomiaDatasets) at commit
+  `3efd533`;
+- the **OMOP CDM 5.3 DDL** for PostgreSQL — from
+  [`OHDSI/CommonDataModel`](https://github.com/OHDSI/CommonDataModel) at commit
+  `d83d48c`.
+
+Pinning to exact commits is what makes the load byte-for-byte identical on every
+machine.
+
+## A self-managed PostgreSQL per site
+
+For each site the script starts a fresh PostgreSQL 16 container and **attaches it to
+that site's Docker network** with the alias `omopdb`. Taking `aphrc` as the example:
+
+```bash
+docker run -d --name omopdb-aphrc \
+  --network <aphrc-network> --network-alias omopdb \
+  -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=omop \
+  -p 45432:5432 \
+  postgres:16
+```
+
+Two things matter here:
+
+- **The network alias `omopdb`.** Inside the site's Docker network the Rock server
+  reaches its database at **`omopdb:5432`** — a Docker-internal address that does
+  not depend on any host port. That is why the *same* resource definition (next
+  chapter) is valid on every site.
+- **The host port `45432` is for you, not Rock.** It is published only so you can
+  inspect the data from your laptop with `psql` or a GUI. The three inspection
+  ports are `45432` / `45433` / `45434`; edit `PG_PORTS` in the script if one is
+  taken.
+
+> We use `postgres` / `postgres` and database `omop` (public-demo values, hardcoded
+> in the script). easy-opal *can* manage a database for you, but it auto-generates a
+> password — which would make the next step's resource non-reproducible. A
+> self-managed container with known credentials keeps the whole thing turnkey.
+
+Then the script creates the `cdm` schema, loads the CDM 5.3 DDL, and `\copy`s every
+GiBleed CSV into its table.
+
+## Sharding by person
+
+This is what makes it a *federation* rather than three copies. After loading, the
+script keeps on each site only the persons whose `person_id` falls in that site's
+residue class, and deletes their rows from every person-linked table:
+
+```sql
+DELETE FROM cdm.<table> WHERE person_id % 3 <> <site index>;
+```
+
+So a person — and **all** of their records — lives on exactly one site:
+
+| Site | Keeps `person_id % 3 ==` | Persons |
+|------|--------------------------|---------|
+| aphrc   | 0 | 889 |
+| dgh     | 1 | 878 |
+| iressef | 2 | 927 |
+| **pooled** | | **2 694** |
+
+Vocabulary and metadata tables (`concept`, `vocabulary`, `location`, …) carry no
+`person_id`, so they are **replicated** to all three sites — each one can resolve
+concept names locally without ever sharing a patient.
+
+## Inspecting a site
+
+The split is deterministic, so you can verify it directly against a site's
+inspection port:
+
+```bash
+PGPASSWORD=postgres psql -h localhost -p 45432 -U postgres -d omop \
+  -c 'select count(*) from cdm.person;'   # aphrc -> 889
+```
+
+Re-running the script recreates each `omopdb-<site>` container and its volume from
+scratch, so you always get a clean, identical load. Next we tell Opal where this
+database lives.

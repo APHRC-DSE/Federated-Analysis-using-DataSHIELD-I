@@ -5,7 +5,7 @@
 #   - starts a self-managed PostgreSQL container "omopdb-<site>" (postgres/postgres),
 #   - attaches it to that site's easy-opal Docker network with the network alias
 #     "omopdb", so the site's Rock "omop" profile resolves it as host "omopdb:5432"
-#     (a Docker-internal address — independent of whichever host port was free),
+#     (a Docker-internal address — independent of whichever host port is published),
 #   - creates the OMOP CDM v5.3 schema and loads the OHDSI **GiBleed** synthetic
 #     dataset (2694 persons),
 #   - shards the data across the three sites by person: a person and ALL of their
@@ -20,9 +20,10 @@
 # auto-generates its password; here we force postgres/postgres (intentional, public
 # demo) so step 4's resource definition is fully reproducible.
 #
-# Host ports are published only so a human can inspect the data with psql/a GUI;
-# Rock never uses them. The chosen ports + shared credentials are appended to
-# ../sites.env for step 4 (resources) to read.
+# Ports and credentials are HARDCODED below — the same fixed values steps 4, 5 and
+# the book use. The host ports (45432/45433/45434) are published ONLY so a human can
+# inspect the data with psql / a GUI; Rock never uses them (it goes through the
+# "omopdb" alias). If one of those host ports is taken, edit PG_PORTS and re-run.
 #
 # Data provenance (pinned for reproducibility):
 #   - GiBleed CDM 5.3 CSVs : OHDSI/EunomiaDatasets @ 3efd533  (Apache-2.0)
@@ -36,26 +37,23 @@
 #   bash 3_databases/setup_databases.sh
 set -euo pipefail
 
+# --- fixed configuration (edit if a host port is taken) --------------------
 SITES=(aphrc dgh iressef)
+PG_PORTS=(45432 45433 45434)             # one localhost inspection port per site, same order as SITES
+PROFILE_NAME="omop"                      # Rock profile from step 2 (used to find each site's container)
 
 PG_VERSION="${PG_VERSION:-16}"           # PostgreSQL image tag (multi-arch: native on arm64 too)
-PG_USER="${PG_USER:-postgres}"
-PG_PASSWORD="${PG_PASSWORD:-postgres}"   # intentional for this public demo
-PG_DB="${PG_DB:-omop}"
-PG_SCHEMA="${PG_SCHEMA:-cdm}"
-PG_ALIAS="${PG_ALIAS:-omopdb}"           # docker network alias the Rock 'omop' profile resolves
-
-PG_PORT_BASE="${PG_PORT_BASE:-45432}"    # first candidate host port (inspection only)
-PG_PORT_STEP="${PG_PORT_STEP:-10}"
-PG_PORT_TRIES="${PG_PORT_TRIES:-50}"
+PG_USER="postgres"
+PG_PASSWORD="postgres"                   # intentional for this public demo
+PG_DB="omop"
+PG_SCHEMA="cdm"
+PG_ALIAS="omopdb"                        # docker network alias the Rock 'omop' profile resolves
 
 # Pinned synthetic-data + schema sources.
 GIBLEED_URL="${GIBLEED_URL:-https://raw.githubusercontent.com/OHDSI/EunomiaDatasets/3efd533eb95a41a56d5b0758b0d7c8fa57e1303e/datasets/GiBleed/GiBleed_5.3.zip}"
 DDL_URL="${DDL_URL:-https://raw.githubusercontent.com/OHDSI/CommonDataModel/d83d48c2ba1b641879c33958903f630318421cb8/inst/ddl/5.3/postgresql/OMOPCDM_postgresql_5.3_ddl.sql}"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-SITES_ENV="$REPO_ROOT/sites.env"
 CACHE="$SCRIPT_DIR/.cache"
 
 # --- preconditions ---------------------------------------------------------
@@ -66,33 +64,17 @@ fi
 for tool in curl unzip; do
   command -v "$tool" >/dev/null 2>&1 || { echo "ERROR: '$tool' is required but not found." >&2; exit 1; }
 done
-if [ ! -f "$SITES_ENV" ]; then
-  echo "ERROR: $SITES_ENV not found. Run step 2 first: bash 2_opal_stacks/setup_sites.sh" >&2
-  exit 1
-fi
-# Rock profile name from step 2 (used to find each site's Rock container). Read it
-# directly rather than sourcing sites.env, so a prior run's PG_* lines can't override
-# this invocation's settings.
-OPAL_PROFILE="$(grep -E '^OPAL_PROFILE=' "$SITES_ENV" | tail -1 | cut -d= -f2-)"
-OPAL_PROFILE="${OPAL_PROFILE:-omop}"
 
-# --- find a free contiguous block of host ports (same probe as step 2) -----
+# --- pre-flight: the fixed host ports must be free -------------------------
+# /dev/tcp connect succeeds => something is listening => port is in use.
 port_free() { ! (exec 3<>"/dev/tcp/127.0.0.1/$1") 2>/dev/null; }
-find_block() {
-  local base="$1" count="$2" step="$3" tries="$4" try b k ok
-  for ((try = 0; try < tries; try++)); do
-    b=$((base + try * step)); ok=1
-    for ((k = 0; k < count; k++)); do
-      port_free $((b + k)) || { ok=0; break; }
-    done
-    [ "$ok" -eq 1 ] && { echo "$b"; return 0; }
-  done
-  return 1
-}
-if ! PG_BLOCK_BASE="$(find_block "$PG_PORT_BASE" "${#SITES[@]}" "$PG_PORT_STEP" "$PG_PORT_TRIES")"; then
-  echo "ERROR: no ${#SITES[@]} free contiguous ports near $PG_PORT_BASE (tried $PG_PORT_TRIES blocks)." >&2
-  exit 1
-fi
+for i in "${!SITES[@]}"; do
+  if ! port_free "${PG_PORTS[$i]}"; then
+    echo "ERROR: host port ${PG_PORTS[$i]} (for site '${SITES[$i]}') is already in use." >&2
+    echo "       Edit PG_PORTS at the top of this script to a free port, then re-run." >&2
+    exit 1
+  fi
+done
 
 # --- fetch + prepare the data (cached under .cache/) -----------------------
 mkdir -p "$CACHE"
@@ -107,36 +89,21 @@ DDL_FILE="$CACHE/ddl_${PG_SCHEMA}.sql"
 # Substitute the schema placeholder once; reused by every site.
 sed "s/@cdmDatabaseSchema/${PG_SCHEMA}/g" "$DDL_RAW" > "$DDL_FILE"
 
-echo "==> PostgreSQL host ports: ${PG_BLOCK_BASE}..$((PG_BLOCK_BASE + ${#SITES[@]} - 1))  (inspection only)"
-
-# --- refresh the step-3 block in sites.env ---------------------------------
-MARK="# === step 3 (databases) — appended by 3_databases/setup_databases.sh ==="
-# Drop any previous step-3 block (everything from the marker onward) so re-runs don't duplicate.
-awk -v m="$MARK" 'index($0,m){exit} {print}' "$SITES_ENV" > "$SITES_ENV.tmp" && mv "$SITES_ENV.tmp" "$SITES_ENV"
-{
-  echo ""
-  echo "$MARK"
-  echo "PG_USER=${PG_USER}"
-  echo "PG_PASSWORD=${PG_PASSWORD}"
-  echo "PG_DATABASE=${PG_DB}"
-  echo "PG_SCHEMA=${PG_SCHEMA}"
-  echo "PG_HOST_ALIAS=${PG_ALIAS}"      # host the dsOMOP resource points at (Docker-internal)
-  echo "PG_INTERNAL_PORT=5432"
-} >> "$SITES_ENV"
+echo "==> PostgreSQL host ports: ${PG_PORTS[*]}  (inspection only)"
 
 # --- seed each site --------------------------------------------------------
 idx=0
 for site in "${SITES[@]}"; do
-  port=$((PG_BLOCK_BASE + idx))
+  port="${PG_PORTS[$idx]}"
   PGC="omopdb-${site}"
-  ROCKC="${site}-${OPAL_PROFILE}"
+  ROCKC="${site}-${PROFILE_NAME}"
   echo
   echo "==> [${site}] (keeps persons where person_id % 3 == ${idx})"
 
   # Discover the site's Docker network from its running Rock container.
   net="$(docker inspect -f '{{range $k,$v := .NetworkSettings.Networks}}{{println $k}}{{end}}' "$ROCKC" 2>/dev/null | awk 'NF{print; exit}')"
   if [ -z "$net" ]; then
-    echo "ERROR: container '$ROCKC' not found / has no network. Is step 2 done with profile '$OPAL_PROFILE'?" >&2
+    echo "ERROR: container '$ROCKC' not found / has no network. Is step 2 done with profile '$PROFILE_NAME'?" >&2
     exit 1
   fi
 
@@ -192,12 +159,10 @@ for site in "${SITES[@]}"; do
     -c "SELECT count(*) FROM ${PG_SCHEMA}.person;")"
   echo "    ${site}: ${n_persons} persons"
 
-  key="$(echo "$site" | tr '[:lower:]' '[:upper:]')_PG_PORT"
-  echo "${key}=${port}" >> "$SITES_ENV"
   idx=$((idx + 1))
 done
 
 echo
-echo "==> All databases seeded. Appended PostgreSQL settings to ${SITES_ENV}."
-echo "Inspect a site, e.g.:  PGPASSWORD=${PG_PASSWORD} psql -h localhost -p ${PG_BLOCK_BASE} -U ${PG_USER} -d ${PG_DB} -c 'select count(*) from ${PG_SCHEMA}.person;'"
+echo "==> All databases seeded."
+echo "Inspect a site, e.g.:  PGPASSWORD=${PG_PASSWORD} psql -h localhost -p ${PG_PORTS[0]} -U ${PG_USER} -d ${PG_DB} -c 'select count(*) from ${PG_SCHEMA}.person;'"
 echo "Next: create the Opal projects + dsOMOP resources (step 4)."

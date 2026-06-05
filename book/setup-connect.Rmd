@@ -1,0 +1,74 @@
+# Connecting the DataSHIELD client {#setup-connect}
+
+The federation is built. Now we switch hats from *server administrator* to
+*analyst*: we log the DataSHIELD client into all three sites and attach the OMOP
+resource on each. **This single connection stays open for the rest of the book** —
+every chapter in Part II runs against the `conns` and `omop` handles created here.
+
+## Installing the client packages
+
+The client needs four R packages. Step 5's installer pins them (in particular
+`dsOMOPClient` to its `2.0.0` tag):
+
+```bash
+Rscript 5_client/install_client.R     # or: bash 5_client/setup_client.sh
+```
+
+[`5_client/install_client.R`](https://github.com/APHRC-DSE/Federated-Analysis-using-DataSHIELD-I/blob/main/5_client/install_client.R)
+pulls `DSI` and `DSOpal` from CRAN, `dsBaseClient` from the DataSHIELD repository,
+and `dsOMOPClient` 2.0.0 from GitHub:
+
+| Package | Role |
+|---------|------|
+| `DSI` | The DataSHIELD interface — login, assign, aggregate. |
+| `DSOpal` | The Opal driver for `DSI`. |
+| `dsBaseClient` | The base DataSHIELD analysis functions (`ds.*`). |
+| `dsOMOPClient` | The client side of dsOMOP — `ds.omop.*`. |
+
+## Logging in
+
+We describe the three sites with a login builder — one `append()` per site — and
+log in. The connection details are the fixed values from the previous chapters:
+URLs `4808{0,1,2}`, `administrator` / `password`, the resource `omop_demo.gibleed`,
+and the Rock profile **`omop`** (the one carrying dsOMOP):
+
+```{r login, results = "hide"}
+library(DSI); library(DSOpal); library(dsBaseClient); library(dsOMOPClient)
+
+sites <- list(
+  aphrc   = "http://localhost:48080",
+  dgh     = "http://localhost:48081",
+  iressef = "http://localhost:48082"
+)
+
+builder <- DSI::newDSLoginBuilder()
+for (site in names(sites))
+  builder$append(server = site, url = sites[[site]],
+                 user = "administrator", password = "password",
+                 resource = "omop_demo.gibleed",
+                 driver = "OpalDriver", profile = "omop")
+
+conns <- DSI::datashield.login(logins = builder$build())
+```
+
+> If you changed a port or the password back in Chapter&nbsp;\@ref(setup-sites),
+> change the matching value here too.
+
+## Attaching the OMOP resource
+
+`datashield.login` opened the sessions; now `ds.omop.connect` attaches the OMOP CDM
+resource on **every** server and initialises dsOMOP, binding a live handle to the
+symbol `omop`:
+
+```{r connect, results = "hide"}
+ds.omop.connect(resource = "omop_demo.gibleed", symbol = "omop", conns = conns)
+```
+
+The client is now connected to all three sites, each with a live dsOMOP handle:
+
+```{r connected}
+names(conns)
+```
+
+That is the whole federation, live. Part II uses it to explore the catalogue,
+extract a fused person-level table, describe it, and fit a federated model.

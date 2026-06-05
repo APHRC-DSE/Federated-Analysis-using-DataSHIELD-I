@@ -4,18 +4,18 @@
 
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <title>Chapter 7 Extracting a fused person-level table | Federated Analysis using DataSHIELD</title>
+  <title>Chapter 4 Registering the dsOMOP resources | Federated Analysis using DataSHIELD</title>
   <meta name="description" content="A reproducible, end-to-end federated analysis over OMOP CDM data with DataSHIELD and dsOMOP v2. Every figure and table on these pages is the genuine result of executing the code against a live three-site federation." />
   <meta name="generator" content="bookdown 0.46 and GitBook 2.6.7" />
 
-  <meta property="og:title" content="Chapter 7 Extracting a fused person-level table | Federated Analysis using DataSHIELD" />
+  <meta property="og:title" content="Chapter 4 Registering the dsOMOP resources | Federated Analysis using DataSHIELD" />
   <meta property="og:type" content="book" />
   
   <meta property="og:description" content="A reproducible, end-to-end federated analysis over OMOP CDM data with DataSHIELD and dsOMOP v2. Every figure and table on these pages is the genuine result of executing the code against a live three-site federation." />
   <meta name="github-repo" content="APHRC-DSE/Federated-Analysis-using-DataSHIELD-I" />
 
   <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="Chapter 7 Extracting a fused person-level table | Federated Analysis using DataSHIELD" />
+  <meta name="twitter:title" content="Chapter 4 Registering the dsOMOP resources | Federated Analysis using DataSHIELD" />
   
   <meta name="twitter:description" content="A reproducible, end-to-end federated analysis over OMOP CDM data with DataSHIELD and dsOMOP v2. Every figure and table on these pages is the genuine result of executing the code against a live three-site federation." />
   
@@ -29,8 +29,8 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black" />
   
   
-<link rel="prev" href="explore.html"/>
-<link rel="next" href="observe.html"/>
+<link rel="prev" href="setup-databases.html"/>
+<link rel="next" href="setup-connect.html"/>
 <script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6/dist/fuse.min.js"></script>
 <link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
@@ -240,99 +240,70 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
           <div class="page-inner">
 
             <section class="normal" id="section-">
-<div id="extract" class="section level1 hasAnchor" number="7">
-<h1><span class="header-section-number">Chapter 7</span> Extracting a fused person-level table<a href="extract.html#extract" class="anchor-section" aria-label="Anchor link to header"></a></h1>
-<p>dsOMOP’s <strong>plan DSL</strong> lets you request <em>exactly</em> the features you want — drawn
-from several OMOP tables — and materialises a single person-level data frame on
-each server. The fusion happens in place; nothing patient-level is transferred.
-We then hand off to standard <code>dsBaseClient</code> to confirm the extract landed as an
-ordinary server-side data frame.</p>
-<div id="the-concepts-to-extract" class="section level2 hasAnchor" number="7.1">
-<h2><span class="header-section-number">7.1</span> The concepts to extract<a href="extract.html#the-concepts-to-extract" class="anchor-section" aria-label="Anchor link to header"></a></h2>
-<p>These are the OMOP concept ids the catalogue pointed us to — the outcome and its
-antecedent condition, and the NSAID ingredient set:</p>
-<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb28-1"><a href="extract.html#cb28-1" tabindex="-1"></a>NSAID <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="at">aspirin   =</span> <span class="dv">19059056</span>, <span class="at">celecoxib =</span> <span class="dv">1118084</span>, <span class="at">ibuprofen =</span> <span class="dv">19078461</span>,</span>
-<span id="cb28-2"><a href="extract.html#cb28-2" tabindex="-1"></a>           <span class="at">naproxen  =</span> <span class="dv">1115171</span>,  <span class="at">diclofenac =</span> <span class="dv">1124300</span>)</span>
-<span id="cb28-3"><a href="extract.html#cb28-3" tabindex="-1"></a>GI_BLEED     <span class="ot">&lt;-</span> <span class="dv">192671</span></span>
-<span id="cb28-4"><a href="extract.html#cb28-4" tabindex="-1"></a>PEPTIC_ULCER <span class="ot">&lt;-</span> <span class="dv">4027663</span></span></code></pre></div>
-</div>
-<div id="building-the-plan" class="section level2 hasAnchor" number="7.2">
-<h2><span class="header-section-number">7.2</span> Building the plan<a href="extract.html#building-the-plan" class="anchor-section" aria-label="Anchor link to header"></a></h2>
-<p>We declare one <strong>person-level</strong> output that fuses three tables. Each feature is
-<em>named</em> — the name on the left of <code>=</code> becomes the output column — so nothing
-leaks out as an opaque <code>x&lt;concept_id&gt;</code> column. Two feature constructors do the
-clinical work:</p>
+<div id="setup-resources" class="section level1 hasAnchor" number="4">
+<h1><span class="header-section-number">Chapter 4</span> Registering the dsOMOP resources<a href="setup-resources.html#setup-resources" class="anchor-section" aria-label="Anchor link to header"></a></h1>
+<p>The databases exist, but Opal does not yet know about them. This step creates, on
+each site, a DataSHIELD <strong>resource</strong> that tells the dsOMOP server package <em>where the
+OMOP data lives and how to open it</em>. It talks to the Opal REST API through R’s
+<a href="https://cran.r-project.org/package=opalr"><code>opalr</code></a> package — no Docker needed here.</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb14-1"><a href="setup-resources.html#cb14-1" tabindex="-1"></a><span class="fu">bash</span> 4_resources/setup_resources.sh</span></code></pre></div>
+<p>That thin wrapper installs <code>opalr</code> if needed and runs the R script that does the
+work:
+<a href="https://github.com/APHRC-DSE/Federated-Analysis-using-DataSHIELD-I/blob/main/4_resources/create_resources.R"><code>4_resources/create_resources.R</code></a>.
+For each site it ensures a resource-only project <strong><code>omop_demo</code></strong> and (re)creates one
+resource named <strong><code>gibleed</code></strong> — the path <code>omop_demo.gibleed</code> the client logs into.</p>
+<div id="the-dsomop-v2-resource-format" class="section level2 hasAnchor" number="4.1">
+<h2><span class="header-section-number">4.1</span> The dsOMOP v2 resource format<a href="setup-resources.html#the-dsomop-v2-resource-format" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<blockquote>
+<p>⚠️ The public dsOMOP <strong>README still documents the old v1 format</strong> (<code>omop.cdm.db</code>,
+<code>opal.resource_extension_create(...)</code>). <strong>dsOMOP 2.0.0 does not use that.</strong> What
+follows matches the actual 2.0.0 source.</p>
+</blockquote>
+<p>A v2 resource is an ordinary <code>resourcer</code> resource that the dsOMOP resolver matches
+<strong>by its format, <code>omop.dbi.db</code></strong>. All the connection details ride inside the URL,
+base64url-encoded so Opal’s R URL parser never has to cope with a <code>?</code>, <code>&amp;</code> or <code>=</code>:</p>
+<pre><code>omop+dbi:///B64:&lt;base64url( JSON )&gt;
+
+JSON = {&quot;dbms&quot;:&quot;postgresql&quot;,&quot;host&quot;:&quot;omopdb&quot;,&quot;port&quot;:5432,
+        &quot;database&quot;:&quot;omop&quot;,&quot;cdm_schema&quot;:&quot;cdm&quot;,&quot;vocabulary_schema&quot;:&quot;cdm&quot;}</code></pre>
+<p>Two consequences worth highlighting:</p>
 <ul>
-<li><code>omop.feature.boolean(set)</code> — a single <strong>“any of the set”</strong> flag: <code>TRUE</code> when
-the person has a record for <em>any</em> concept in the set. <code>nsaid</code> is <code>TRUE</code> for a
-person with <em>any</em> of the five NSAIDs; <code>diclofenac</code> is the flag for one agent.</li>
-<li><code>omop.feature.count(set)</code> — the <strong>total number of records</strong> across the set,
-giving <code>nsaid_n</code>, a continuous measure of NSAID burden.</li>
+<li><strong><code>host</code>/<code>port</code> are Docker-internal.</strong> They are the alias <code>omopdb</code> and the
+in-container port <code>5432</code> from the previous chapter — <em>not</em> a published host port.
+The same resource definition is therefore valid on every site; each Rock session
+resolves <code>omopdb</code> to its own database.</li>
+<li><strong>Credentials are not in the URL.</strong> The DB user/password (<code>postgres</code>/<code>postgres</code>)
+are stored separately as the resource’s <code>identity</code> / <code>secret</code>.</li>
 </ul>
-<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb29-1"><a href="extract.html#cb29-1" tabindex="-1"></a>plan <span class="ot">&lt;-</span> <span class="fu">ds.omop.plan</span>()</span>
-<span id="cb29-2"><a href="extract.html#cb29-2" tabindex="-1"></a>plan <span class="ot">&lt;-</span> <span class="fu">ds.omop.plan.person_level</span>(</span>
-<span id="cb29-3"><a href="extract.html#cb29-3" tabindex="-1"></a>  plan, <span class="at">name =</span> <span class="st">&quot;study&quot;</span>,</span>
-<span id="cb29-4"><a href="extract.html#cb29-4" tabindex="-1"></a>  <span class="at">tables =</span> <span class="fu">list</span>(</span>
-<span id="cb29-5"><a href="extract.html#cb29-5" tabindex="-1"></a>    <span class="at">person =</span> <span class="fu">c</span>(<span class="at">sex =</span> <span class="st">&quot;gender_concept_id&quot;</span>, <span class="at">birth_year =</span> <span class="st">&quot;year_of_birth&quot;</span>),</span>
-<span id="cb29-6"><a href="extract.html#cb29-6" tabindex="-1"></a>    <span class="at">condition_occurrence =</span> <span class="fu">list</span>(</span>
-<span id="cb29-7"><a href="extract.html#cb29-7" tabindex="-1"></a>      <span class="at">features =</span> <span class="fu">list</span>(</span>
-<span id="cb29-8"><a href="extract.html#cb29-8" tabindex="-1"></a>        <span class="at">gi_bleed     =</span> <span class="fu">omop.feature.boolean</span>(GI_BLEED),</span>
-<span id="cb29-9"><a href="extract.html#cb29-9" tabindex="-1"></a>        <span class="at">peptic_ulcer =</span> <span class="fu">omop.feature.boolean</span>(PEPTIC_ULCER)),</span>
-<span id="cb29-10"><a href="extract.html#cb29-10" tabindex="-1"></a>      <span class="at">concept_set =</span> <span class="fu">c</span>(GI_BLEED, PEPTIC_ULCER)),</span>
-<span id="cb29-11"><a href="extract.html#cb29-11" tabindex="-1"></a>    <span class="at">drug_exposure =</span> <span class="fu">list</span>(</span>
-<span id="cb29-12"><a href="extract.html#cb29-12" tabindex="-1"></a>      <span class="at">features =</span> <span class="fu">list</span>(</span>
-<span id="cb29-13"><a href="extract.html#cb29-13" tabindex="-1"></a>        <span class="at">diclofenac =</span> <span class="fu">omop.feature.boolean</span>(NSAID[<span class="st">&quot;diclofenac&quot;</span>]),</span>
-<span id="cb29-14"><a href="extract.html#cb29-14" tabindex="-1"></a>        <span class="at">nsaid      =</span> <span class="fu">omop.feature.boolean</span>(<span class="fu">unname</span>(NSAID)),</span>
-<span id="cb29-15"><a href="extract.html#cb29-15" tabindex="-1"></a>        <span class="at">nsaid_n    =</span> <span class="fu">omop.feature.count</span>(<span class="fu">unname</span>(NSAID))),</span>
-<span id="cb29-16"><a href="extract.html#cb29-16" tabindex="-1"></a>      <span class="at">concept_set =</span> <span class="fu">unname</span>(NSAID))))</span>
-<span id="cb29-17"><a href="extract.html#cb29-17" tabindex="-1"></a></span>
-<span id="cb29-18"><a href="extract.html#cb29-18" tabindex="-1"></a><span class="co"># Translate concept ids to readable names (e.g. sex → female/male) and harmonise</span></span>
-<span id="cb29-19"><a href="extract.html#cb29-19" tabindex="-1"></a><span class="co"># the concept-coded columns into federation-aligned factors.</span></span>
-<span id="cb29-20"><a href="extract.html#cb29-20" tabindex="-1"></a>plan <span class="ot">&lt;-</span> <span class="fu">ds.omop.plan.options</span>(plan, <span class="at">translate_concepts =</span> <span class="cn">TRUE</span>, <span class="at">factor_concepts =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
-<p><code>ds.omop.plan.preview()</code> resolves the plan against the schema without
-materialising data — a cheap dry run before committing:</p>
-<div class="sourceCode" id="cb30"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb30-1"><a href="extract.html#cb30-1" tabindex="-1"></a><span class="fu">invisible</span>(<span class="fu">ds.omop.plan.preview</span>(plan, <span class="at">symbol =</span> <span class="st">&quot;omop&quot;</span>, <span class="at">conns =</span> conns))</span></code></pre></div>
+<p>In R, the script builds that URL and creates the resource roughly like this (site
+URLs and credentials are hardcoded to match steps 2–3):</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="setup-resources.html#cb16-1" tabindex="-1"></a><span class="fu">library</span>(opalr)</span>
+<span id="cb16-2"><a href="setup-resources.html#cb16-2" tabindex="-1"></a>o <span class="ot">&lt;-</span> <span class="fu">opal.login</span>(<span class="st">&quot;administrator&quot;</span>, <span class="st">&quot;password&quot;</span>, <span class="st">&quot;http://localhost:48080&quot;</span>)</span>
+<span id="cb16-3"><a href="setup-resources.html#cb16-3" tabindex="-1"></a><span class="fu">opal.resource_create</span>(</span>
+<span id="cb16-4"><a href="setup-resources.html#cb16-4" tabindex="-1"></a>  o, <span class="st">&quot;omop_demo&quot;</span>, <span class="at">name =</span> <span class="st">&quot;gibleed&quot;</span>,</span>
+<span id="cb16-5"><a href="setup-resources.html#cb16-5" tabindex="-1"></a>  <span class="at">url =</span> <span class="st">&quot;omop+dbi:///B64:eyJkYm1zIjoicG9zdGdyZXNxbCIs...&quot;</span>),  <span class="co"># the encoded JSON above</span></span>
+<span id="cb16-6"><a href="setup-resources.html#cb16-6" tabindex="-1"></a>  format   <span class="ot">=</span> <span class="st">&quot;omop.dbi.db&quot;</span>,</span>
+<span id="cb16-7"><a href="setup-resources.html#cb16-7" tabindex="-1"></a>  identity <span class="ot">=</span> <span class="st">&quot;postgres&quot;</span>, secret <span class="ot">=</span> <span class="st">&quot;postgres&quot;</span><span class="er">)</span></span>
+<span id="cb16-8"><a href="setup-resources.html#cb16-8" tabindex="-1"></a><span class="fu">opal.logout</span>(o)</span></code></pre></div>
 </div>
-<div id="executing-on-the-server" class="section level2 hasAnchor" number="7.3">
-<h2><span class="header-section-number">7.3</span> Executing on the server<a href="extract.html#executing-on-the-server" class="anchor-section" aria-label="Anchor link to header"></a></h2>
-<p><code>ds.omop.plan.execute()</code> runs the plan on each site and binds the resulting
-person-level frame to the symbol <code>D</code>:</p>
-<div class="sourceCode" id="cb31"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb31-1"><a href="extract.html#cb31-1" tabindex="-1"></a><span class="fu">ds.omop.plan.execute</span>(plan, <span class="at">out =</span> <span class="fu">c</span>(<span class="at">study =</span> <span class="st">&quot;D&quot;</span>), <span class="at">symbol =</span> <span class="st">&quot;omop&quot;</span>, <span class="at">conns =</span> conns)</span></code></pre></div>
+<div id="a-note-on-disclosure-control" class="section level2 hasAnchor" number="4.2">
+<h2><span class="header-section-number">4.2</span> A note on disclosure control<a href="setup-resources.html#a-note-on-disclosure-control" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>No DataSHIELD <code>privacyControlLevel</code> is set here, and it would make no difference if
+it were: <strong>dsOMOP v2 does not read that option.</strong> The
+<code>permissive</code>/<code>banana</code>/<code>avocado</code>/… hierarchy is a <em>dsBase</em> mechanism. dsOMOP enforces
+its <strong>own</strong> statistical disclosure control on every response — the standard
+<code>nfilter.*</code> thresholds plus a <strong>mandatory, non-disableable identifier strip</strong> — so
+its operations, <em>including extraction</em>, behave the same at every level. The only
+prerequisite for extraction is that dsOMOP’s assign methods are published on the
+<code>omop</code> profile, which the image and easy-opal already handled in
+Chapter <a href="setup-sites.html#setup-sites">2</a>.</p>
 </div>
-<div id="confirming-the-fused-frame" class="section level2 hasAnchor" number="7.4">
-<h2><span class="header-section-number">7.4</span> Confirming the fused frame<a href="extract.html#confirming-the-fused-frame" class="anchor-section" aria-label="Anchor link to header"></a></h2>
-<p>The columns are exactly the named features we asked for — across three tables —
-and <strong>no identifier column came along</strong> (dsOMOP strips person ids before the
-frame ever enters the DataSHIELD session):</p>
-<div class="sourceCode" id="cb32"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb32-1"><a href="extract.html#cb32-1" tabindex="-1"></a><span class="fu">ds.colnames</span>(<span class="st">&quot;D&quot;</span>)</span>
-<span id="cb32-2"><a href="extract.html#cb32-2" tabindex="-1"></a><span class="co">#&gt; $aphrc</span></span>
-<span id="cb32-3"><a href="extract.html#cb32-3" tabindex="-1"></a><span class="co">#&gt; [1] &quot;sex&quot;          &quot;birth_year&quot;   &quot;gi_bleed&quot;     &quot;peptic_ulcer&quot; &quot;diclofenac&quot;  </span></span>
-<span id="cb32-4"><a href="extract.html#cb32-4" tabindex="-1"></a><span class="co">#&gt; [6] &quot;nsaid&quot;        &quot;nsaid_n&quot;     </span></span>
-<span id="cb32-5"><a href="extract.html#cb32-5" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb32-6"><a href="extract.html#cb32-6" tabindex="-1"></a><span class="co">#&gt; $dgh</span></span>
-<span id="cb32-7"><a href="extract.html#cb32-7" tabindex="-1"></a><span class="co">#&gt; [1] &quot;sex&quot;          &quot;birth_year&quot;   &quot;gi_bleed&quot;     &quot;peptic_ulcer&quot; &quot;diclofenac&quot;  </span></span>
-<span id="cb32-8"><a href="extract.html#cb32-8" tabindex="-1"></a><span class="co">#&gt; [6] &quot;nsaid&quot;        &quot;nsaid_n&quot;     </span></span>
-<span id="cb32-9"><a href="extract.html#cb32-9" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb32-10"><a href="extract.html#cb32-10" tabindex="-1"></a><span class="co">#&gt; $iressef</span></span>
-<span id="cb32-11"><a href="extract.html#cb32-11" tabindex="-1"></a><span class="co">#&gt; [1] &quot;sex&quot;          &quot;birth_year&quot;   &quot;gi_bleed&quot;     &quot;peptic_ulcer&quot; &quot;diclofenac&quot;  </span></span>
-<span id="cb32-12"><a href="extract.html#cb32-12" tabindex="-1"></a><span class="co">#&gt; [6] &quot;nsaid&quot;        &quot;nsaid_n&quot;</span></span></code></pre></div>
-<p>Its dimensions, pooled across the three sites, recover the <strong>full cohort of
-2 694 persons</strong> with seven feature columns:</p>
-<div class="sourceCode" id="cb33"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb33-1"><a href="extract.html#cb33-1" tabindex="-1"></a><span class="fu">ds.dim</span>(<span class="st">&quot;D&quot;</span>, <span class="at">type =</span> <span class="st">&quot;combine&quot;</span>)</span>
-<span id="cb33-2"><a href="extract.html#cb33-2" tabindex="-1"></a><span class="co">#&gt; $`dimensions of D in combined studies`</span></span>
-<span id="cb33-3"><a href="extract.html#cb33-3" tabindex="-1"></a><span class="co">#&gt; [1] 2694    7</span></span></code></pre></div>
-<p>This full-cohort count is not an accident. When a person has <em>no</em> NSAID record,
-or no peptic ulcer, the fused boolean/count features for that person are filled
-with <strong>0</strong>, not <code>NA</code> — so persons are never silently dropped from the cohort by
-the cross-table join. An absent event means “did not occur”, which is exactly
-what a <code>0</code> encodes.</p>
-<p><code>ds.summary()</code> confirms <code>D</code> is an ordinary server-side <code>data.frame</code> — this is the
-hand-off point from the OMOP layer to the standard DataSHIELD toolchain:</p>
-<div class="sourceCode" id="cb34"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb34-1"><a href="extract.html#cb34-1" tabindex="-1"></a><span class="fu">ds.summary</span>(<span class="st">&quot;D&quot;</span>)[[<span class="dv">1</span>]]<span class="sc">$</span>class</span>
-<span id="cb34-2"><a href="extract.html#cb34-2" tabindex="-1"></a><span class="co">#&gt; [1] &quot;data.frame&quot;</span></span>
-<span id="cb34-3"><a href="extract.html#cb34-3" tabindex="-1"></a><span class="fu">ds.summary</span>(<span class="st">&quot;D&quot;</span>)[[<span class="dv">1</span>]]<span class="sc">$</span><span class="st">`</span><span class="at">number of columns</span><span class="st">`</span></span>
-<span id="cb34-4"><a href="extract.html#cb34-4" tabindex="-1"></a><span class="co">#&gt; [1] 7</span></span></code></pre></div>
-<p>The extract is now a federated data frame. The next chapter describes it.</p>
+<div id="verifying-1" class="section level2 hasAnchor" number="4.3">
+<h2><span class="header-section-number">4.3</span> Verifying<a href="setup-resources.html#verifying-1" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>Open any site (e.g. <a href="http://localhost:48080" class="uri">http://localhost:48080</a>), log in as <code>administrator</code> /
+<code>password</code>, and under project <strong><code>omop_demo</code> → Resources</strong> you should see a <code>gibleed</code>
+resource of type <code>omop.dbi.db</code>. With all three sites carrying that resource, we are
+ready to connect.</p>
 
 </div>
 </div>
@@ -341,8 +312,8 @@ hand-off point from the OMOP layer to the standard DataSHIELD toolchain:</p>
           </div>
         </div>
       </div>
-<a href="explore.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
-<a href="observe.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+<a href="setup-databases.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="setup-connect.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
     </div>
   </div>
 <script src="libs/gitbook-2.6.7/js/app.min.js"></script>

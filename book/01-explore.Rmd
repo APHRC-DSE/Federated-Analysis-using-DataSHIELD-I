@@ -1,3 +1,5 @@
+# (PART) The federated analysis {-}
+
 # Exploring the catalogue {#explore}
 
 Before extracting anything we explore the federation with dsOMOP's **aggregate**

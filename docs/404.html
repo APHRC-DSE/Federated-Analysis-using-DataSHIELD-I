@@ -20,7 +20,7 @@
   <meta name="twitter:description" content="A reproducible, end-to-end federated analysis over OMOP CDM data with DataSHIELD and dsOMOP v2. Every figure and table on these pages is the genuine result of executing the code against a live three-site federation." />
   
 
-<meta name="author" content="David Sarrat González · Michael Ochola" />
+<meta name="author" content="David Sarrat González, Michael Ochola" />
 
 
 
@@ -51,6 +51,11 @@
 <link href="libs/anchor-sections-1.1.0/anchor-sections.css" rel="stylesheet" />
 <link href="libs/anchor-sections-1.1.0/anchor-sections-hash.css" rel="stylesheet" />
 <script src="libs/anchor-sections-1.1.0/anchor-sections.js"></script>
+<link href="libs/htmltools-fill-0.5.9/fill.css" rel="stylesheet" />
+<script src="libs/htmlwidgets-1.6.4/htmlwidgets.js"></script>
+<script src="libs/viz-1.8.2/viz.js"></script>
+<link href="libs/DiagrammeR-styles-0.2/styles.css" rel="stylesheet" />
+<script src="libs/grViz-binding-1.0.12/grViz.js"></script>
 
 
 <style type="text/css">
@@ -141,45 +146,79 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <li class="divider"></li>
 <li class="chapter" data-level="" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i>Overview</a>
 <ul>
+<li class="chapter" data-level="" data-path="index.html"><a href="index.html#why-a-simulated-federation"><i class="fa fa-check"></i>Why a <em>simulated</em> federation</a></li>
 <li class="chapter" data-level="" data-path="index.html"><a href="index.html#the-federation"><i class="fa fa-check"></i>The federation</a></li>
+<li class="chapter" data-level="" data-path="index.html"><a href="index.html#the-dataset-ohdsi-gibleed"><i class="fa fa-check"></i>The dataset: OHDSI GiBleed</a></li>
 <li class="chapter" data-level="" data-path="index.html"><a href="index.html#the-study"><i class="fa fa-check"></i>The study</a></li>
-<li class="chapter" data-level="" data-path="index.html"><a href="index.html#reproducing-this-book"><i class="fa fa-check"></i>Reproducing this book</a></li>
-<li class="chapter" data-level="" data-path="index.html"><a href="index.html#connecting"><i class="fa fa-check"></i>Connecting</a></li>
+<li class="chapter" data-level="" data-path="index.html"><a href="index.html#reproducing-it-yourself"><i class="fa fa-check"></i>Reproducing it yourself</a></li>
 </ul></li>
-<li class="chapter" data-level="1" data-path="explore.html"><a href="explore.html"><i class="fa fa-check"></i><b>1</b> Exploring the catalogue</a>
+<li class="part"><span><b>I Reproducing the federation</b></span></li>
+<li class="chapter" data-level="1" data-path="setup-prerequisites.html"><a href="setup-prerequisites.html"><i class="fa fa-check"></i><b>1</b> Prerequisites and installing easy-opal</a>
 <ul>
-<li class="chapter" data-level="1.1" data-path="explore.html"><a href="explore.html#what-tables-does-each-site-expose"><i class="fa fa-check"></i><b>1.1</b> What tables does each site expose?</a></li>
-<li class="chapter" data-level="1.2" data-path="explore.html"><a href="explore.html#what-variables-live-in-a-table"><i class="fa fa-check"></i><b>1.2</b> What variables live in a table?</a></li>
-<li class="chapter" data-level="1.3" data-path="explore.html"><a href="explore.html#how-big-is-each-table-per-site-and-pooled"><i class="fa fa-check"></i><b>1.3</b> How big is each table, per site and pooled?</a></li>
-<li class="chapter" data-level="1.4" data-path="explore.html"><a href="explore.html#which-clinical-concepts-are-most-prevalent"><i class="fa fa-check"></i><b>1.4</b> Which clinical concepts are most prevalent?</a></li>
-<li class="chapter" data-level="1.5" data-path="explore.html"><a href="explore.html#the-study-this-suggests"><i class="fa fa-check"></i><b>1.5</b> The study this suggests</a></li>
+<li class="chapter" data-level="1.1" data-path="setup-prerequisites.html"><a href="setup-prerequisites.html#what-you-need"><i class="fa fa-check"></i><b>1.1</b> What you need</a></li>
+<li class="chapter" data-level="1.2" data-path="setup-prerequisites.html"><a href="setup-prerequisites.html#installing-easy-opal-step-1"><i class="fa fa-check"></i><b>1.2</b> Installing easy-opal (step 1)</a></li>
 </ul></li>
-<li class="chapter" data-level="2" data-path="extract.html"><a href="extract.html"><i class="fa fa-check"></i><b>2</b> Extracting a fused person-level table</a>
+<li class="chapter" data-level="2" data-path="setup-sites.html"><a href="setup-sites.html"><i class="fa fa-check"></i><b>2</b> Standing up the three sites</a>
 <ul>
-<li class="chapter" data-level="2.1" data-path="extract.html"><a href="extract.html#the-concepts-to-extract"><i class="fa fa-check"></i><b>2.1</b> The concepts to extract</a></li>
-<li class="chapter" data-level="2.2" data-path="extract.html"><a href="extract.html#building-the-plan"><i class="fa fa-check"></i><b>2.2</b> Building the plan</a></li>
-<li class="chapter" data-level="2.3" data-path="extract.html"><a href="extract.html#executing-on-the-server"><i class="fa fa-check"></i><b>2.3</b> Executing on the server</a></li>
-<li class="chapter" data-level="2.4" data-path="extract.html"><a href="extract.html#confirming-the-fused-frame"><i class="fa fa-check"></i><b>2.4</b> Confirming the fused frame</a></li>
+<li class="chapter" data-level="2.1" data-path="setup-sites.html"><a href="setup-sites.html#the-fixed-ports-and-password"><i class="fa fa-check"></i><b>2.1</b> The fixed ports and password</a></li>
+<li class="chapter" data-level="2.2" data-path="setup-sites.html"><a href="setup-sites.html#what-easy-opal-does-per-site"><i class="fa fa-check"></i><b>2.2</b> What easy-opal does per site</a></li>
+<li class="chapter" data-level="2.3" data-path="setup-sites.html"><a href="setup-sites.html#using-your-own-image"><i class="fa fa-check"></i><b>2.3</b> Using your own image</a></li>
+<li class="chapter" data-level="2.4" data-path="setup-sites.html"><a href="setup-sites.html#verifying"><i class="fa fa-check"></i><b>2.4</b> Verifying</a></li>
 </ul></li>
-<li class="chapter" data-level="3" data-path="observe.html"><a href="observe.html"><i class="fa fa-check"></i><b>3</b> Observing the extracted variables</a>
+<li class="chapter" data-level="3" data-path="setup-databases.html"><a href="setup-databases.html"><i class="fa fa-check"></i><b>3</b> Seeding the OMOP databases</a>
 <ul>
-<li class="chapter" data-level="3.1" data-path="observe.html"><a href="observe.html#a-derived-feature-age"><i class="fa fa-check"></i><b>3.1</b> A derived feature: age</a></li>
-<li class="chapter" data-level="3.2" data-path="observe.html"><a href="observe.html#prevalence-over-the-full-cohort"><i class="fa fa-check"></i><b>3.2</b> Prevalence over the full cohort</a>
-<ul>
-<li class="chapter" data-level="3.2.1" data-path="observe.html"><a href="observe.html#a-finding-hiding-in-the-data"><i class="fa fa-check"></i><b>3.2.1</b> A finding hiding in the data</a></li>
+<li class="chapter" data-level="3.1" data-path="setup-databases.html"><a href="setup-databases.html#where-the-data-comes-from"><i class="fa fa-check"></i><b>3.1</b> Where the data comes from</a></li>
+<li class="chapter" data-level="3.2" data-path="setup-databases.html"><a href="setup-databases.html#a-self-managed-postgresql-per-site"><i class="fa fa-check"></i><b>3.2</b> A self-managed PostgreSQL per site</a></li>
+<li class="chapter" data-level="3.3" data-path="setup-databases.html"><a href="setup-databases.html#sharding-by-person"><i class="fa fa-check"></i><b>3.3</b> Sharding by person</a></li>
+<li class="chapter" data-level="3.4" data-path="setup-databases.html"><a href="setup-databases.html#inspecting-a-site"><i class="fa fa-check"></i><b>3.4</b> Inspecting a site</a></li>
 </ul></li>
-<li class="chapter" data-level="3.3" data-path="observe.html"><a href="observe.html#pooled-summaries-of-the-continuous-features"><i class="fa fa-check"></i><b>3.3</b> Pooled summaries of the continuous features</a></li>
-<li class="chapter" data-level="3.4" data-path="observe.html"><a href="observe.html#federated-plots"><i class="fa fa-check"></i><b>3.4</b> Federated plots</a></li>
-<li class="chapter" data-level="3.5" data-path="observe.html"><a href="observe.html#the-key-association-previewed"><i class="fa fa-check"></i><b>3.5</b> The key association, previewed</a></li>
-</ul></li>
-<li class="chapter" data-level="4" data-path="model.html"><a href="model.html"><i class="fa fa-check"></i><b>4</b> Modelling: a federated logistic GLM</a>
+<li class="chapter" data-level="4" data-path="setup-resources.html"><a href="setup-resources.html"><i class="fa fa-check"></i><b>4</b> Registering the dsOMOP resources</a>
 <ul>
-<li class="chapter" data-level="4.1" data-path="model.html"><a href="model.html#assembling-the-modelling-frame"><i class="fa fa-check"></i><b>4.1</b> Assembling the modelling frame</a></li>
-<li class="chapter" data-level="4.2" data-path="model.html"><a href="model.html#fitting-the-model-with-its-live-training-trace"><i class="fa fa-check"></i><b>4.2</b> Fitting the model (with its live training trace)</a></li>
-<li class="chapter" data-level="4.3" data-path="model.html"><a href="model.html#reading-the-result"><i class="fa fa-check"></i><b>4.3</b> Reading the result</a></li>
-<li class="chapter" data-level="4.4" data-path="model.html"><a href="model.html#the-same-model-study-level"><i class="fa fa-check"></i><b>4.4</b> The same model, study-level</a></li>
-<li class="chapter" data-level="4.5" data-path="model.html"><a href="model.html#disconnect"><i class="fa fa-check"></i><b>4.5</b> Disconnect</a></li>
-<li class="chapter" data-level="4.6" data-path="model.html"><a href="model.html#in-summary"><i class="fa fa-check"></i><b>4.6</b> In summary</a></li>
+<li class="chapter" data-level="4.1" data-path="setup-resources.html"><a href="setup-resources.html#the-dsomop-v2-resource-format"><i class="fa fa-check"></i><b>4.1</b> The dsOMOP v2 resource format</a></li>
+<li class="chapter" data-level="4.2" data-path="setup-resources.html"><a href="setup-resources.html#a-note-on-disclosure-control"><i class="fa fa-check"></i><b>4.2</b> A note on disclosure control</a></li>
+<li class="chapter" data-level="4.3" data-path="setup-resources.html"><a href="setup-resources.html#verifying-1"><i class="fa fa-check"></i><b>4.3</b> Verifying</a></li>
+</ul></li>
+<li class="chapter" data-level="5" data-path="setup-connect.html"><a href="setup-connect.html"><i class="fa fa-check"></i><b>5</b> Connecting the DataSHIELD client</a>
+<ul>
+<li class="chapter" data-level="5.1" data-path="setup-connect.html"><a href="setup-connect.html#installing-the-client-packages"><i class="fa fa-check"></i><b>5.1</b> Installing the client packages</a></li>
+<li class="chapter" data-level="5.2" data-path="setup-connect.html"><a href="setup-connect.html#logging-in"><i class="fa fa-check"></i><b>5.2</b> Logging in</a></li>
+<li class="chapter" data-level="5.3" data-path="setup-connect.html"><a href="setup-connect.html#attaching-the-omop-resource"><i class="fa fa-check"></i><b>5.3</b> Attaching the OMOP resource</a></li>
+</ul></li>
+<li class="part"><span><b>II The federated analysis</b></span></li>
+<li class="chapter" data-level="6" data-path="explore.html"><a href="explore.html"><i class="fa fa-check"></i><b>6</b> Exploring the catalogue</a>
+<ul>
+<li class="chapter" data-level="6.1" data-path="explore.html"><a href="explore.html#what-tables-does-each-site-expose"><i class="fa fa-check"></i><b>6.1</b> What tables does each site expose?</a></li>
+<li class="chapter" data-level="6.2" data-path="explore.html"><a href="explore.html#what-variables-live-in-a-table"><i class="fa fa-check"></i><b>6.2</b> What variables live in a table?</a></li>
+<li class="chapter" data-level="6.3" data-path="explore.html"><a href="explore.html#how-big-is-each-table-per-site-and-pooled"><i class="fa fa-check"></i><b>6.3</b> How big is each table, per site and pooled?</a></li>
+<li class="chapter" data-level="6.4" data-path="explore.html"><a href="explore.html#which-clinical-concepts-are-most-prevalent"><i class="fa fa-check"></i><b>6.4</b> Which clinical concepts are most prevalent?</a></li>
+<li class="chapter" data-level="6.5" data-path="explore.html"><a href="explore.html#the-study-this-suggests"><i class="fa fa-check"></i><b>6.5</b> The study this suggests</a></li>
+</ul></li>
+<li class="chapter" data-level="7" data-path="extract.html"><a href="extract.html"><i class="fa fa-check"></i><b>7</b> Extracting a fused person-level table</a>
+<ul>
+<li class="chapter" data-level="7.1" data-path="extract.html"><a href="extract.html#the-concepts-to-extract"><i class="fa fa-check"></i><b>7.1</b> The concepts to extract</a></li>
+<li class="chapter" data-level="7.2" data-path="extract.html"><a href="extract.html#building-the-plan"><i class="fa fa-check"></i><b>7.2</b> Building the plan</a></li>
+<li class="chapter" data-level="7.3" data-path="extract.html"><a href="extract.html#executing-on-the-server"><i class="fa fa-check"></i><b>7.3</b> Executing on the server</a></li>
+<li class="chapter" data-level="7.4" data-path="extract.html"><a href="extract.html#confirming-the-fused-frame"><i class="fa fa-check"></i><b>7.4</b> Confirming the fused frame</a></li>
+</ul></li>
+<li class="chapter" data-level="8" data-path="observe.html"><a href="observe.html"><i class="fa fa-check"></i><b>8</b> Observing the extracted variables</a>
+<ul>
+<li class="chapter" data-level="8.1" data-path="observe.html"><a href="observe.html#a-derived-feature-age"><i class="fa fa-check"></i><b>8.1</b> A derived feature: age</a></li>
+<li class="chapter" data-level="8.2" data-path="observe.html"><a href="observe.html#prevalence-over-the-full-cohort"><i class="fa fa-check"></i><b>8.2</b> Prevalence over the full cohort</a>
+<ul>
+<li class="chapter" data-level="8.2.1" data-path="observe.html"><a href="observe.html#a-finding-hiding-in-the-data"><i class="fa fa-check"></i><b>8.2.1</b> A finding hiding in the data</a></li>
+</ul></li>
+<li class="chapter" data-level="8.3" data-path="observe.html"><a href="observe.html#pooled-summaries-of-the-continuous-features"><i class="fa fa-check"></i><b>8.3</b> Pooled summaries of the continuous features</a></li>
+<li class="chapter" data-level="8.4" data-path="observe.html"><a href="observe.html#federated-plots"><i class="fa fa-check"></i><b>8.4</b> Federated plots</a></li>
+<li class="chapter" data-level="8.5" data-path="observe.html"><a href="observe.html#the-key-association-previewed"><i class="fa fa-check"></i><b>8.5</b> The key association, previewed</a></li>
+</ul></li>
+<li class="chapter" data-level="9" data-path="model.html"><a href="model.html"><i class="fa fa-check"></i><b>9</b> Modelling: a federated logistic GLM</a>
+<ul>
+<li class="chapter" data-level="9.1" data-path="model.html"><a href="model.html#assembling-the-modelling-frame"><i class="fa fa-check"></i><b>9.1</b> Assembling the modelling frame</a></li>
+<li class="chapter" data-level="9.2" data-path="model.html"><a href="model.html#fitting-the-model-with-its-live-training-trace"><i class="fa fa-check"></i><b>9.2</b> Fitting the model (with its live training trace)</a></li>
+<li class="chapter" data-level="9.3" data-path="model.html"><a href="model.html#reading-the-result"><i class="fa fa-check"></i><b>9.3</b> Reading the result</a></li>
+<li class="chapter" data-level="9.4" data-path="model.html"><a href="model.html#the-same-model-study-level"><i class="fa fa-check"></i><b>9.4</b> The same model, study-level</a></li>
+<li class="chapter" data-level="9.5" data-path="model.html"><a href="model.html#disconnect"><i class="fa fa-check"></i><b>9.5</b> Disconnect</a></li>
+<li class="chapter" data-level="9.6" data-path="model.html"><a href="model.html#in-summary"><i class="fa fa-check"></i><b>9.6</b> In summary</a></li>
 </ul></li>
 <li class="divider"></li>
 <li><a href="https://github.com/APHRC-DSE/Federated-Analysis-using-DataSHIELD-I" target="blank">Reproducibility package</a></li>

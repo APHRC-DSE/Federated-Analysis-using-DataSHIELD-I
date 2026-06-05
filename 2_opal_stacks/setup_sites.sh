@@ -2,19 +2,18 @@
 # Step 2 — Stand up the three federated Opal + Rock sites with easy-opal.
 #
 # Creates three independent easy-opal instances — aphrc, dgh, iressef — each:
-#   - Opal + MongoDB, served over HTTP on an uncommon, auto-selected free port.
-#     SSL is intentionally off: everything is localhost, so plain HTTP keeps the
-#     client reproducible on any machine (no certs, no ssl_verifypeer dance).
-#     Set OPAL_SSL=self-signed for HTTPS instead.
+#   - Opal + MongoDB, served over plain HTTP on a fixed localhost port
+#     (48080 / 48081 / 48082). SSL is intentionally off: everything is on
+#     localhost, so plain HTTP keeps the client reproducible (no certs).
 #   - the upstream default Rock profile ("rock") left in place, plus our dsOMOP
 #     image added as a second profile named "omop" — the one the DataSHIELD
 #     client logs into (profile = "omop").
 #   - the Opal admin password forced to "password" (intentional, public demo).
 #
-# The Opal URLs actually chosen are written to ../sites.env so every later step
-# (resources, client) reads them instead of depending on which port was free.
-# The dsOMOP resource itself reaches Postgres over the Docker network (step 3),
-# so it never needs a host port.
+# Ports and credentials are HARDCODED below — no sites.env, no auto-probing. If
+# one of the ports is already taken on your machine, edit OPAL_PORTS and re-run.
+# The later steps (3, 4, 5) and the book use the SAME fixed values, so if you
+# change a port here, change it there too.
 #
 # Prerequisites:
 #   - Step 1 done: easy-opal installed in ../.venv (or otherwise on PATH).
@@ -24,19 +23,24 @@
 #     (built & pushed from docker/rock-dsomop-dswb-reproducibility/).
 #
 # Usage:
-#   bash 2_opal_stacks/setup_sites.sh                                 # uses the published image
+#   bash 2_opal_stacks/setup_sites.sh                                              # published image
 #   IMAGE=youruser/rock-dsomop-dswb-reproducibility bash 2_opal_stacks/setup_sites.sh   # your own
 set -euo pipefail
 
+# --- fixed configuration (edit if a port is taken) -------------------------
 SITES=(aphrc dgh iressef)
+OPAL_PORTS=(48080 48081 48082)           # one localhost HTTP port per site, same order as SITES
 
 IMAGE="${IMAGE:-davidsarrat/rock-dsomop-dswb-reproducibility}"   # published image; override to use your own
 TAG="${TAG:-2.0.0}"
-PROFILE_NAME="${PROFILE_NAME:-omop}"     # client logs in with profile = this
-ADMIN_PASSWORD="${ADMIN_PASSWORD:-password}"
-OPAL_SSL="${OPAL_SSL:-none}"             # "none" => HTTP ; "self-signed" => HTTPS
+PROFILE_NAME="omop"                      # Rock profile the client logs into (profile = this)
+ADMIN_PASSWORD="password"                # intentional, public demo password
 OPAL_VERSION="${OPAL_VERSION:-5.5.1}"    # pinned for reproducibility; override via env to upgrade
 MONGO_VERSION="${MONGO_VERSION:-8.2.4}"
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+EO_HOME="${EASY_OPAL_HOME:-$HOME/.easy-opal}"
 
 # The dsOMOP image is published for linux/amd64 only. On an arm64 host (Apple
 # Silicon) a plain pull asks for a linux/arm64 manifest that does not exist, so
@@ -47,15 +51,6 @@ PULL_PLATFORM=""
 case "$(uname -m)" in
   arm64 | aarch64) PULL_PLATFORM="linux/amd64" ;;
 esac
-
-PORT_BASE="${PORT_BASE:-48080}"          # first candidate port (uncommon on purpose)
-PORT_STEP="${PORT_STEP:-10}"             # gap between candidate blocks on fallback
-PORT_TRIES="${PORT_TRIES:-50}"
-
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-SITES_ENV="$REPO_ROOT/sites.env"
-EO_HOME="${EASY_OPAL_HOME:-$HOME/.easy-opal}"
 
 # --- preconditions ---------------------------------------------------------
 if [ -f "$REPO_ROOT/.venv/bin/activate" ]; then
@@ -70,57 +65,33 @@ if ! docker info >/dev/null 2>&1; then
   echo "ERROR: Docker is not running. Start Docker and retry." >&2
   exit 1
 fi
-# --- find a free contiguous block of ports ---------------------------------
+
+# --- pre-flight: the fixed ports must be free ------------------------------
 # /dev/tcp connect succeeds => something is listening => port is in use.
 port_free() { ! (exec 3<>"/dev/tcp/127.0.0.1/$1") 2>/dev/null; }
+for i in "${!SITES[@]}"; do
+  if ! port_free "${OPAL_PORTS[$i]}"; then
+    echo "ERROR: port ${OPAL_PORTS[$i]} (for site '${SITES[$i]}') is already in use." >&2
+    echo "       Edit OPAL_PORTS at the top of this script (and match it in steps 3-5" >&2
+    echo "       and the book) to a free port, then re-run." >&2
+    exit 1
+  fi
+done
 
-find_block() {
-  local base="$1" count="$2" step="$3" tries="$4" try b k ok
-  for ((try = 0; try < tries; try++)); do
-    b=$((base + try * step)); ok=1
-    for ((k = 0; k < count; k++)); do
-      port_free $((b + k)) || { ok=0; break; }
-    done
-    [ "$ok" -eq 1 ] && { echo "$b"; return 0; }
-  done
-  return 1
-}
-
-if ! BLOCK_BASE="$(find_block "$PORT_BASE" "${#SITES[@]}" "$PORT_STEP" "$PORT_TRIES")"; then
-  echo "ERROR: no ${#SITES[@]} free contiguous ports near $PORT_BASE (tried $PORT_TRIES blocks)." >&2
-  exit 1
-fi
-
-scheme="http"; [ "$OPAL_SSL" != "none" ] && scheme="https"
-echo "==> Opal ports: ${BLOCK_BASE}..$((BLOCK_BASE + ${#SITES[@]} - 1)) (${scheme})"
-
-# --- write the shared config header ----------------------------------------
-{
-  echo "# Generated by 2_opal_stacks/setup_sites.sh — do not edit by hand."
-  echo "OPAL_USER=administrator"
-  echo "OPAL_PASSWORD=${ADMIN_PASSWORD}"
-  echo "OPAL_PROFILE=${PROFILE_NAME}"
-} > "$SITES_ENV"
+echo "==> Opal sites: ${SITES[*]} on http://localhost:{${OPAL_PORTS[*]}}"
 
 # --- bring up each site ----------------------------------------------------
-i=0
-for site in "${SITES[@]}"; do
-  port=$((BLOCK_BASE + i))
-  echo "==> [${site}] setup on ${scheme}://localhost:${port}"
+for i in "${!SITES[@]}"; do
+  site="${SITES[$i]}"
+  port="${OPAL_PORTS[$i]}"
+  echo "==> [${site}] setup on http://localhost:${port}"
 
   [ -d "$EO_HOME/instances/$site" ] || easy-opal instance create "$site"
 
-  if [ "$OPAL_SSL" = "none" ]; then
-    easy-opal -i "$site" setup \
-      --stack-name "$site" --ssl-strategy none --host localhost \
-      --http-port "$port" --password "$ADMIN_PASSWORD" \
-      --opal-version "$OPAL_VERSION" --mongo-version "$MONGO_VERSION" --yes
-  else
-    easy-opal -i "$site" setup \
-      --stack-name "$site" --ssl-strategy "$OPAL_SSL" --host localhost \
-      --port "$port" --password "$ADMIN_PASSWORD" \
-      --opal-version "$OPAL_VERSION" --mongo-version "$MONGO_VERSION" --yes
-  fi
+  easy-opal -i "$site" setup \
+    --stack-name "$site" --ssl-strategy none --host localhost \
+    --http-port "$port" --password "$ADMIN_PASSWORD" \
+    --opal-version "$OPAL_VERSION" --mongo-version "$MONGO_VERSION" --yes
 
   echo "==> [${site}] add dsOMOP profile '${PROFILE_NAME}' (${IMAGE}:${TAG})"
   DOCKER_DEFAULT_PLATFORM="$PULL_PLATFORM" \
@@ -133,15 +104,13 @@ for site in "${SITES[@]}"; do
     exit 1
   fi
   easy-opal -i "$site" restart
-
-  key="$(echo "$site" | tr '[:lower:]' '[:upper:]')_OPAL_URL"
-  echo "${key}=${scheme}://localhost:${port}" >> "$SITES_ENV"
-  i=$((i + 1))
 done
 
 echo
-echo "==> All sites up. Wrote ${SITES_ENV}:"
-cat "$SITES_ENV"
+echo "==> All sites up:"
+for i in "${!SITES[@]}"; do
+  printf '    %-8s http://localhost:%s\n' "${SITES[$i]}" "${OPAL_PORTS[$i]}"
+done
 echo
 echo "Login: administrator / ${ADMIN_PASSWORD}   (profile: ${PROFILE_NAME})"
 echo "Next: seed the OMOP databases (step 3), then create resources (step 4)."
