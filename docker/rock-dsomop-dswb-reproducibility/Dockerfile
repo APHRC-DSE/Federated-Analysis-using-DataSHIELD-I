@@ -14,8 +14,8 @@ FROM ${ROCK_BASE}
 
 # Git ref (tag or commit SHA) in isglobal-brge/dsOMOP to install.
 # Pinned to the v2.0.0 release. Equivalent commit:
-#   fe566b98f30b2daebce0d6acfffbeadcf166b031
-# Before the tag exists you can build with --build-arg DSOMOP_REF=<sha>.
+#   a93f0dec965bb91deac8b4e70bb36272c696713b
+# Pass --build-arg DSOMOP_REF=<sha> to pin an exact commit instead of the tag.
 ARG DSOMOP_REF=2.0.0
 
 ENV ROCK_LIB=/var/lib/rock/R/library

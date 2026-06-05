@@ -30,11 +30,11 @@ docker login
 IMAGE=youruser/rock-dsomop-dswb-reproducibility ./build_and_push.sh
 ```
 
-The default tag is `2.0.0` and it pins `DSOMOP_REF=2.0.0` (the dsOMOP git tag).
-Until that tag exists, build against the commit instead:
+The default tag is `2.0.0` and it pins `DSOMOP_REF=2.0.0` (the dsOMOP git tag,
+which resolves to commit `a93f0de`). To pin an exact commit instead of the tag:
 
 ```bash
-IMAGE=youruser/rock-dsomop-dswb-reproducibility DSOMOP_REF=fe566b98f30b2daebce0d6acfffbeadcf166b031 ./build_and_push.sh
+IMAGE=youruser/rock-dsomop-dswb-reproducibility DSOMOP_REF=a93f0dec965bb91deac8b4e70bb36272c696713b ./build_and_push.sh
 ```
 
 ## Build arguments
