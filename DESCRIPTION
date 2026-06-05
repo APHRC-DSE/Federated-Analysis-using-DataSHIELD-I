@@ -3,7 +3,7 @@ Title: Federated Analysis using DataSHIELD — Reproducibility Package
 Version: 1.0.0
 Authors@R: c(
     person("David", "Sarrat González", role = c("aut", "cre"), email = "david.sarrat@isglobal.org"),
-    person("Michael", "Ochola", role = "aut"))
+    person("Michael", "Ochola", role = "aut", email = "mochola@aphrc.org"))
 Description: Reproducibility package for the methods paper "Federated Analysis
     using DataSHIELD". Stands up a fully local three-site federation and runs a
     real federated analysis over OMOP CDM data with DataSHIELD and dsOMOP v2.
