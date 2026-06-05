@@ -209,8 +209,27 @@ all three sites; every plot is disclosure-controlled on the server before
 anything is returned.</p>
 <div id="a-derived-feature-age" class="section level2 hasAnchor" number="3.1">
 <h2><span class="header-section-number">3.1</span> A derived feature: age<a href="observe.html#a-derived-feature-age" class="anchor-section" aria-label="Anchor link to header"></a></h2>
-<p>We turn <code>birth_year</code> into <code>age</code> as of 2020 with a single server-side expression:</p>
-<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="observe.html#cb19-1" tabindex="-1"></a><span class="fu">ds.make</span>(<span class="st">&quot;(2020 - D$birth_year)&quot;</span>, <span class="st">&quot;age&quot;</span>)</span></code></pre></div>
+<p>We turn <code>birth_year</code> into <code>age</code> as of 2020 with a single server-side expression.
+<code>ds.make()</code> reports back that the variable was created and passes its validity
+check on every site:</p>
+<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="observe.html#cb19-1" tabindex="-1"></a><span class="fu">ds.make</span>(<span class="st">&quot;(2020 - D$birth_year)&quot;</span>, <span class="st">&quot;age&quot;</span>)</span>
+<span id="cb19-2"><a href="observe.html#cb19-2" tabindex="-1"></a><span class="co">#&gt; $is.object.created</span></span>
+<span id="cb19-3"><a href="observe.html#cb19-3" tabindex="-1"></a><span class="co">#&gt; [1] &quot;A data object &lt;age&gt; has been created in all specified data sources&quot;</span></span>
+<span id="cb19-4"><a href="observe.html#cb19-4" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb19-5"><a href="observe.html#cb19-5" tabindex="-1"></a><span class="co">#&gt; $validity.check</span></span>
+<span id="cb19-6"><a href="observe.html#cb19-6" tabindex="-1"></a><span class="co">#&gt; [1] &quot;&lt;age&gt; appears valid in all sources&quot;</span></span></code></pre></div>
+<p>We then confirm the values are sensible — on the first site, <code>age</code> is numeric and
+its distribution sits in a plausible human range (the pooled view follows below):</p>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="observe.html#cb20-1" tabindex="-1"></a><span class="fu">ds.summary</span>(<span class="st">&quot;age&quot;</span>)[[<span class="dv">1</span>]]</span>
+<span id="cb20-2"><a href="observe.html#cb20-2" tabindex="-1"></a><span class="co">#&gt; $class</span></span>
+<span id="cb20-3"><a href="observe.html#cb20-3" tabindex="-1"></a><span class="co">#&gt; [1] &quot;numeric&quot;</span></span>
+<span id="cb20-4"><a href="observe.html#cb20-4" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb20-5"><a href="observe.html#cb20-5" tabindex="-1"></a><span class="co">#&gt; $length</span></span>
+<span id="cb20-6"><a href="observe.html#cb20-6" tabindex="-1"></a><span class="co">#&gt; [1] 889</span></span>
+<span id="cb20-7"><a href="observe.html#cb20-7" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb20-8"><a href="observe.html#cb20-8" tabindex="-1"></a><span class="co">#&gt; $`quantiles &amp; mean`</span></span>
+<span id="cb20-9"><a href="observe.html#cb20-9" tabindex="-1"></a><span class="co">#&gt;       5%      10%      25%      50%      75%      90%      95%     Mean </span></span>
+<span id="cb20-10"><a href="observe.html#cb20-10" tabindex="-1"></a><span class="co">#&gt; 41.00000 44.00000 50.00000 59.00000 69.00000 83.00000 98.00000 61.54106</span></span></code></pre></div>
 </div>
 <div id="prevalence-over-the-full-cohort" class="section level2 hasAnchor" number="3.2">
 <h2><span class="header-section-number">3.2</span> Prevalence over the full cohort<a href="observe.html#prevalence-over-the-full-cohort" class="anchor-section" aria-label="Anchor link to header"></a></h2>
@@ -218,52 +237,52 @@ anything is returned.</p>
 prevalences are over the <strong>whole 2 694-person cohort</strong>, not just the persons
 who happen to appear in a given event table. The outcome, gastrointestinal
 haemorrhage, affects 479 persons:</p>
-<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="observe.html#cb20-1" tabindex="-1"></a><span class="fu">ds.table</span>(<span class="st">&quot;D$gi_bleed&quot;</span>)<span class="sc">$</span>output.list<span class="sc">$</span>TABLES.COMBINED_all.sources_counts</span>
-<span id="cb20-2"><a href="observe.html#cb20-2" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb20-3"><a href="observe.html#cb20-3" tabindex="-1"></a><span class="co">#&gt;  Data in all studies were valid </span></span>
-<span id="cb20-4"><a href="observe.html#cb20-4" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb20-5"><a href="observe.html#cb20-5" tabindex="-1"></a><span class="co">#&gt; Study 1 :  No errors reported from this study</span></span>
-<span id="cb20-6"><a href="observe.html#cb20-6" tabindex="-1"></a><span class="co">#&gt; Study 2 :  No errors reported from this study</span></span>
-<span id="cb20-7"><a href="observe.html#cb20-7" tabindex="-1"></a><span class="co">#&gt; Study 3 :  No errors reported from this study</span></span>
-<span id="cb20-8"><a href="observe.html#cb20-8" tabindex="-1"></a><span class="co">#&gt; D$gi_bleed</span></span>
-<span id="cb20-9"><a href="observe.html#cb20-9" tabindex="-1"></a><span class="co">#&gt;    0    1   NA </span></span>
-<span id="cb20-10"><a href="observe.html#cb20-10" tabindex="-1"></a><span class="co">#&gt; 2215  479    0</span></span></code></pre></div>
-<p>Its antecedent, peptic ulcer, is more common (802 persons):</p>
-<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="observe.html#cb21-1" tabindex="-1"></a><span class="fu">ds.table</span>(<span class="st">&quot;D$peptic_ulcer&quot;</span>)<span class="sc">$</span>output.list<span class="sc">$</span>TABLES.COMBINED_all.sources_counts</span>
+<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="observe.html#cb21-1" tabindex="-1"></a><span class="fu">ds.table</span>(<span class="st">&quot;D$gi_bleed&quot;</span>)<span class="sc">$</span>output.list<span class="sc">$</span>TABLES.COMBINED_all.sources_counts</span>
 <span id="cb21-2"><a href="observe.html#cb21-2" tabindex="-1"></a><span class="co">#&gt; </span></span>
 <span id="cb21-3"><a href="observe.html#cb21-3" tabindex="-1"></a><span class="co">#&gt;  Data in all studies were valid </span></span>
 <span id="cb21-4"><a href="observe.html#cb21-4" tabindex="-1"></a><span class="co">#&gt; </span></span>
 <span id="cb21-5"><a href="observe.html#cb21-5" tabindex="-1"></a><span class="co">#&gt; Study 1 :  No errors reported from this study</span></span>
 <span id="cb21-6"><a href="observe.html#cb21-6" tabindex="-1"></a><span class="co">#&gt; Study 2 :  No errors reported from this study</span></span>
 <span id="cb21-7"><a href="observe.html#cb21-7" tabindex="-1"></a><span class="co">#&gt; Study 3 :  No errors reported from this study</span></span>
-<span id="cb21-8"><a href="observe.html#cb21-8" tabindex="-1"></a><span class="co">#&gt; D$peptic_ulcer</span></span>
+<span id="cb21-8"><a href="observe.html#cb21-8" tabindex="-1"></a><span class="co">#&gt; D$gi_bleed</span></span>
 <span id="cb21-9"><a href="observe.html#cb21-9" tabindex="-1"></a><span class="co">#&gt;    0    1   NA </span></span>
-<span id="cb21-10"><a href="observe.html#cb21-10" tabindex="-1"></a><span class="co">#&gt; 1892  802    0</span></span></code></pre></div>
-<p>Diclofenac exposure covers 850 persons:</p>
-<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="observe.html#cb22-1" tabindex="-1"></a><span class="fu">ds.table</span>(<span class="st">&quot;D$diclofenac&quot;</span>)<span class="sc">$</span>output.list<span class="sc">$</span>TABLES.COMBINED_all.sources_counts</span>
+<span id="cb21-10"><a href="observe.html#cb21-10" tabindex="-1"></a><span class="co">#&gt; 2215  479    0</span></span></code></pre></div>
+<p>Its antecedent, peptic ulcer, is more common (802 persons):</p>
+<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="observe.html#cb22-1" tabindex="-1"></a><span class="fu">ds.table</span>(<span class="st">&quot;D$peptic_ulcer&quot;</span>)<span class="sc">$</span>output.list<span class="sc">$</span>TABLES.COMBINED_all.sources_counts</span>
 <span id="cb22-2"><a href="observe.html#cb22-2" tabindex="-1"></a><span class="co">#&gt; </span></span>
 <span id="cb22-3"><a href="observe.html#cb22-3" tabindex="-1"></a><span class="co">#&gt;  Data in all studies were valid </span></span>
 <span id="cb22-4"><a href="observe.html#cb22-4" tabindex="-1"></a><span class="co">#&gt; </span></span>
 <span id="cb22-5"><a href="observe.html#cb22-5" tabindex="-1"></a><span class="co">#&gt; Study 1 :  No errors reported from this study</span></span>
 <span id="cb22-6"><a href="observe.html#cb22-6" tabindex="-1"></a><span class="co">#&gt; Study 2 :  No errors reported from this study</span></span>
 <span id="cb22-7"><a href="observe.html#cb22-7" tabindex="-1"></a><span class="co">#&gt; Study 3 :  No errors reported from this study</span></span>
-<span id="cb22-8"><a href="observe.html#cb22-8" tabindex="-1"></a><span class="co">#&gt; D$diclofenac</span></span>
+<span id="cb22-8"><a href="observe.html#cb22-8" tabindex="-1"></a><span class="co">#&gt; D$peptic_ulcer</span></span>
 <span id="cb22-9"><a href="observe.html#cb22-9" tabindex="-1"></a><span class="co">#&gt;    0    1   NA </span></span>
-<span id="cb22-10"><a href="observe.html#cb22-10" tabindex="-1"></a><span class="co">#&gt; 1844  850    0</span></span></code></pre></div>
-<div id="a-finding-hiding-in-the-data" class="section level3 hasAnchor" number="3.2.1">
-<h3><span class="header-section-number">3.2.1</span> A finding hiding in the data<a href="observe.html#a-finding-hiding-in-the-data" class="anchor-section" aria-label="Anchor link to header"></a></h3>
-<p>The “any NSAID” flag tells us something about how the cohort was built — <strong>every
-single person</strong> has at least one NSAID record:</p>
-<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="observe.html#cb23-1" tabindex="-1"></a><span class="fu">ds.table</span>(<span class="st">&quot;D$nsaid&quot;</span>)<span class="sc">$</span>output.list<span class="sc">$</span>TABLES.COMBINED_all.sources_counts</span>
+<span id="cb22-10"><a href="observe.html#cb22-10" tabindex="-1"></a><span class="co">#&gt; 1892  802    0</span></span></code></pre></div>
+<p>Diclofenac exposure covers 850 persons:</p>
+<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="observe.html#cb23-1" tabindex="-1"></a><span class="fu">ds.table</span>(<span class="st">&quot;D$diclofenac&quot;</span>)<span class="sc">$</span>output.list<span class="sc">$</span>TABLES.COMBINED_all.sources_counts</span>
 <span id="cb23-2"><a href="observe.html#cb23-2" tabindex="-1"></a><span class="co">#&gt; </span></span>
 <span id="cb23-3"><a href="observe.html#cb23-3" tabindex="-1"></a><span class="co">#&gt;  Data in all studies were valid </span></span>
 <span id="cb23-4"><a href="observe.html#cb23-4" tabindex="-1"></a><span class="co">#&gt; </span></span>
 <span id="cb23-5"><a href="observe.html#cb23-5" tabindex="-1"></a><span class="co">#&gt; Study 1 :  No errors reported from this study</span></span>
 <span id="cb23-6"><a href="observe.html#cb23-6" tabindex="-1"></a><span class="co">#&gt; Study 2 :  No errors reported from this study</span></span>
 <span id="cb23-7"><a href="observe.html#cb23-7" tabindex="-1"></a><span class="co">#&gt; Study 3 :  No errors reported from this study</span></span>
-<span id="cb23-8"><a href="observe.html#cb23-8" tabindex="-1"></a><span class="co">#&gt; D$nsaid</span></span>
-<span id="cb23-9"><a href="observe.html#cb23-9" tabindex="-1"></a><span class="co">#&gt;    1   NA </span></span>
-<span id="cb23-10"><a href="observe.html#cb23-10" tabindex="-1"></a><span class="co">#&gt; 2694    0</span></span></code></pre></div>
+<span id="cb23-8"><a href="observe.html#cb23-8" tabindex="-1"></a><span class="co">#&gt; D$diclofenac</span></span>
+<span id="cb23-9"><a href="observe.html#cb23-9" tabindex="-1"></a><span class="co">#&gt;    0    1   NA </span></span>
+<span id="cb23-10"><a href="observe.html#cb23-10" tabindex="-1"></a><span class="co">#&gt; 1844  850    0</span></span></code></pre></div>
+<div id="a-finding-hiding-in-the-data" class="section level3 hasAnchor" number="3.2.1">
+<h3><span class="header-section-number">3.2.1</span> A finding hiding in the data<a href="observe.html#a-finding-hiding-in-the-data" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>The “any NSAID” flag tells us something about how the cohort was built — <strong>every
+single person</strong> has at least one NSAID record:</p>
+<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="observe.html#cb24-1" tabindex="-1"></a><span class="fu">ds.table</span>(<span class="st">&quot;D$nsaid&quot;</span>)<span class="sc">$</span>output.list<span class="sc">$</span>TABLES.COMBINED_all.sources_counts</span>
+<span id="cb24-2"><a href="observe.html#cb24-2" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb24-3"><a href="observe.html#cb24-3" tabindex="-1"></a><span class="co">#&gt;  Data in all studies were valid </span></span>
+<span id="cb24-4"><a href="observe.html#cb24-4" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb24-5"><a href="observe.html#cb24-5" tabindex="-1"></a><span class="co">#&gt; Study 1 :  No errors reported from this study</span></span>
+<span id="cb24-6"><a href="observe.html#cb24-6" tabindex="-1"></a><span class="co">#&gt; Study 2 :  No errors reported from this study</span></span>
+<span id="cb24-7"><a href="observe.html#cb24-7" tabindex="-1"></a><span class="co">#&gt; Study 3 :  No errors reported from this study</span></span>
+<span id="cb24-8"><a href="observe.html#cb24-8" tabindex="-1"></a><span class="co">#&gt; D$nsaid</span></span>
+<span id="cb24-9"><a href="observe.html#cb24-9" tabindex="-1"></a><span class="co">#&gt;    1   NA </span></span>
+<span id="cb24-10"><a href="observe.html#cb24-10" tabindex="-1"></a><span class="co">#&gt; 2694    0</span></span></code></pre></div>
 <p>The flag is universal (2 694 / 2 694), so it carries no information for
 a model — it is collinear with the intercept. This is why we also extracted
 <code>nsaid_n</code> (how <em>many</em> NSAID records) and <code>diclofenac</code> (a <em>specific</em> agent): within
@@ -274,22 +293,22 @@ the informative ones.</p>
 </div>
 <div id="pooled-summaries-of-the-continuous-features" class="section level2 hasAnchor" number="3.3">
 <h2><span class="header-section-number">3.3</span> Pooled summaries of the continuous features<a href="observe.html#pooled-summaries-of-the-continuous-features" class="anchor-section" aria-label="Anchor link to header"></a></h2>
-<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="observe.html#cb24-1" tabindex="-1"></a><span class="fu">ds.mean</span>(<span class="st">&quot;age&quot;</span>, <span class="at">type =</span> <span class="st">&quot;combine&quot;</span>)<span class="sc">$</span>Global.Mean</span>
-<span id="cb24-2"><a href="observe.html#cb24-2" tabindex="-1"></a><span class="co">#&gt;                 EstimatedMean Nmissing Nvalid Ntotal</span></span>
-<span id="cb24-3"><a href="observe.html#cb24-3" tabindex="-1"></a><span class="co">#&gt; studiesCombined      61.93356        0   2694   2694</span></span>
-<span id="cb24-4"><a href="observe.html#cb24-4" tabindex="-1"></a><span class="fu">ds.mean</span>(<span class="st">&quot;D$nsaid_n&quot;</span>, <span class="at">type =</span> <span class="st">&quot;combine&quot;</span>)<span class="sc">$</span>Global.Mean</span>
-<span id="cb24-5"><a href="observe.html#cb24-5" tabindex="-1"></a><span class="co">#&gt;                 EstimatedMean Nmissing Nvalid Ntotal</span></span>
-<span id="cb24-6"><a href="observe.html#cb24-6" tabindex="-1"></a><span class="co">#&gt; studiesCombined      3.711952        0   2694   2694</span></span></code></pre></div>
+<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="observe.html#cb25-1" tabindex="-1"></a><span class="fu">ds.mean</span>(<span class="st">&quot;age&quot;</span>, <span class="at">type =</span> <span class="st">&quot;combine&quot;</span>)<span class="sc">$</span>Global.Mean</span>
+<span id="cb25-2"><a href="observe.html#cb25-2" tabindex="-1"></a><span class="co">#&gt;                 EstimatedMean Nmissing Nvalid Ntotal</span></span>
+<span id="cb25-3"><a href="observe.html#cb25-3" tabindex="-1"></a><span class="co">#&gt; studiesCombined      61.93356        0   2694   2694</span></span>
+<span id="cb25-4"><a href="observe.html#cb25-4" tabindex="-1"></a><span class="fu">ds.mean</span>(<span class="st">&quot;D$nsaid_n&quot;</span>, <span class="at">type =</span> <span class="st">&quot;combine&quot;</span>)<span class="sc">$</span>Global.Mean</span>
+<span id="cb25-5"><a href="observe.html#cb25-5" tabindex="-1"></a><span class="co">#&gt;                 EstimatedMean Nmissing Nvalid Ntotal</span></span>
+<span id="cb25-6"><a href="observe.html#cb25-6" tabindex="-1"></a><span class="co">#&gt; studiesCombined      3.711952        0   2694   2694</span></span></code></pre></div>
 <p>The pooled quantiles of age:</p>
-<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="observe.html#cb25-1" tabindex="-1"></a><span class="fu">ds.quantileMean</span>(<span class="st">&quot;age&quot;</span>, <span class="at">type =</span> <span class="st">&quot;combine&quot;</span>)</span>
-<span id="cb25-2"><a href="observe.html#cb25-2" tabindex="-1"></a><span class="co">#&gt;       5%      10%      25%      50%      75%      90%      95%     Mean </span></span>
-<span id="cb25-3"><a href="observe.html#cb25-3" tabindex="-1"></a><span class="co">#&gt; 41.00000 44.00000 50.00000 59.34410 70.35820 83.01819 97.05865 61.93356</span></span></code></pre></div>
+<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="observe.html#cb26-1" tabindex="-1"></a><span class="fu">ds.quantileMean</span>(<span class="st">&quot;age&quot;</span>, <span class="at">type =</span> <span class="st">&quot;combine&quot;</span>)</span>
+<span id="cb26-2"><a href="observe.html#cb26-2" tabindex="-1"></a><span class="co">#&gt;       5%      10%      25%      50%      75%      90%      95%     Mean </span></span>
+<span id="cb26-3"><a href="observe.html#cb26-3" tabindex="-1"></a><span class="co">#&gt; 41.00000 44.00000 50.00000 59.34410 70.35820 83.01819 97.05865 61.93356</span></span></code></pre></div>
 </div>
 <div id="federated-plots" class="section level2 hasAnchor" number="3.4">
 <h2><span class="header-section-number">3.4</span> Federated plots<a href="observe.html#federated-plots" class="anchor-section" aria-label="Anchor link to header"></a></h2>
 <p>A pooled histogram of age across the three sites — drawn from server-side
 binned counts, never individual rows:</p>
-<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="observe.html#cb26-1" tabindex="-1"></a><span class="fu">ds.histogram</span>(<span class="st">&quot;age&quot;</span>, <span class="at">type =</span> <span class="st">&quot;combine&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb27-1"><a href="observe.html#cb27-1" tabindex="-1"></a><span class="fu">ds.histogram</span>(<span class="st">&quot;age&quot;</span>, <span class="at">type =</span> <span class="st">&quot;combine&quot;</span>)</span></code></pre></div>
 <p><img src="federated-analysis-datashield_files/figure-html/hist-age-1.png" width="85%" style="display: block; margin: auto;" /></p>
 <pre><code>#&gt; $breaks
 #&gt;  [1]  32.75227  41.02255  49.29283  57.56311  65.83340  74.10368  82.37396  90.64424
@@ -320,7 +339,7 @@ binned counts, never individual rows:</p>
 #&gt; [1] &quot;histogram&quot;</code></pre>
 <p>And the distribution of NSAID burden (<code>nsaid_n</code>) — right-skewed, as drug-record
 counts usually are:</p>
-<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb28-1"><a href="observe.html#cb28-1" tabindex="-1"></a><span class="fu">ds.histogram</span>(<span class="st">&quot;D$nsaid_n&quot;</span>, <span class="at">type =</span> <span class="st">&quot;combine&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb29-1"><a href="observe.html#cb29-1" tabindex="-1"></a><span class="fu">ds.histogram</span>(<span class="st">&quot;D$nsaid_n&quot;</span>, <span class="at">type =</span> <span class="st">&quot;combine&quot;</span>)</span></code></pre></div>
 <p><img src="federated-analysis-datashield_files/figure-html/hist-nsaid-1.png" width="85%" style="display: block; margin: auto;" /></p>
 <pre><code>#&gt; $breaks
 #&gt;  [1]  0.9633019  2.2922630  3.6212240  4.9501851  6.2791462  7.6081072  8.9370683
@@ -351,7 +370,7 @@ counts usually are:</p>
 #&gt; [1] &quot;histogram&quot;</code></pre>
 <p>A federated heatmap shows the joint density of age and NSAID burden, with the
 server applying its own anonymisation to the binned surface:</p>
-<div class="sourceCode" id="cb30"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb30-1"><a href="observe.html#cb30-1" tabindex="-1"></a><span class="fu">ds.heatmapPlot</span>(<span class="at">x =</span> <span class="st">&quot;age&quot;</span>, <span class="at">y =</span> <span class="st">&quot;D$nsaid_n&quot;</span>, <span class="at">type =</span> <span class="st">&quot;combine&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb31"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb31-1"><a href="observe.html#cb31-1" tabindex="-1"></a><span class="fu">ds.heatmapPlot</span>(<span class="at">x =</span> <span class="st">&quot;age&quot;</span>, <span class="at">y =</span> <span class="st">&quot;D$nsaid_n&quot;</span>, <span class="at">type =</span> <span class="st">&quot;combine&quot;</span>)</span></code></pre></div>
 <p><img src="federated-analysis-datashield_files/figure-html/heatmap-1.png" width="85%" style="display: block; margin: auto;" /></p>
 </div>
 <div id="the-key-association-previewed" class="section level2 hasAnchor" number="3.5">
@@ -359,18 +378,18 @@ server applying its own anonymisation to the binned surface:</p>
 <p>Cross-tabulating the outcome against its antecedent already hints at the result
 the model will quantify — GI haemorrhage is markedly more frequent among persons
 with a peptic-ulcer history:</p>
-<div class="sourceCode" id="cb31"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb31-1"><a href="observe.html#cb31-1" tabindex="-1"></a><span class="fu">ds.table</span>(<span class="st">&quot;D$gi_bleed&quot;</span>, <span class="st">&quot;D$peptic_ulcer&quot;</span>)<span class="sc">$</span>output.list<span class="sc">$</span>TABLES.COMBINED_all.sources_counts</span>
-<span id="cb31-2"><a href="observe.html#cb31-2" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb31-3"><a href="observe.html#cb31-3" tabindex="-1"></a><span class="co">#&gt;  Data in all studies were valid </span></span>
-<span id="cb31-4"><a href="observe.html#cb31-4" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb31-5"><a href="observe.html#cb31-5" tabindex="-1"></a><span class="co">#&gt; Study 1 :  No errors reported from this study</span></span>
-<span id="cb31-6"><a href="observe.html#cb31-6" tabindex="-1"></a><span class="co">#&gt; Study 2 :  No errors reported from this study</span></span>
-<span id="cb31-7"><a href="observe.html#cb31-7" tabindex="-1"></a><span class="co">#&gt; Study 3 :  No errors reported from this study</span></span>
-<span id="cb31-8"><a href="observe.html#cb31-8" tabindex="-1"></a><span class="co">#&gt;           D$peptic_ulcer</span></span>
-<span id="cb31-9"><a href="observe.html#cb31-9" tabindex="-1"></a><span class="co">#&gt; D$gi_bleed    0   1 NA</span></span>
-<span id="cb31-10"><a href="observe.html#cb31-10" tabindex="-1"></a><span class="co">#&gt;         0  1679 536  0</span></span>
-<span id="cb31-11"><a href="observe.html#cb31-11" tabindex="-1"></a><span class="co">#&gt;         1   213 266  0</span></span>
-<span id="cb31-12"><a href="observe.html#cb31-12" tabindex="-1"></a><span class="co">#&gt;         NA    0   0  0</span></span></code></pre></div>
+<div class="sourceCode" id="cb32"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb32-1"><a href="observe.html#cb32-1" tabindex="-1"></a><span class="fu">ds.table</span>(<span class="st">&quot;D$gi_bleed&quot;</span>, <span class="st">&quot;D$peptic_ulcer&quot;</span>)<span class="sc">$</span>output.list<span class="sc">$</span>TABLES.COMBINED_all.sources_counts</span>
+<span id="cb32-2"><a href="observe.html#cb32-2" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb32-3"><a href="observe.html#cb32-3" tabindex="-1"></a><span class="co">#&gt;  Data in all studies were valid </span></span>
+<span id="cb32-4"><a href="observe.html#cb32-4" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb32-5"><a href="observe.html#cb32-5" tabindex="-1"></a><span class="co">#&gt; Study 1 :  No errors reported from this study</span></span>
+<span id="cb32-6"><a href="observe.html#cb32-6" tabindex="-1"></a><span class="co">#&gt; Study 2 :  No errors reported from this study</span></span>
+<span id="cb32-7"><a href="observe.html#cb32-7" tabindex="-1"></a><span class="co">#&gt; Study 3 :  No errors reported from this study</span></span>
+<span id="cb32-8"><a href="observe.html#cb32-8" tabindex="-1"></a><span class="co">#&gt;           D$peptic_ulcer</span></span>
+<span id="cb32-9"><a href="observe.html#cb32-9" tabindex="-1"></a><span class="co">#&gt; D$gi_bleed    0   1 NA</span></span>
+<span id="cb32-10"><a href="observe.html#cb32-10" tabindex="-1"></a><span class="co">#&gt;         0  1679 536  0</span></span>
+<span id="cb32-11"><a href="observe.html#cb32-11" tabindex="-1"></a><span class="co">#&gt;         1   213 266  0</span></span>
+<span id="cb32-12"><a href="observe.html#cb32-12" tabindex="-1"></a><span class="co">#&gt;         NA    0   0  0</span></span></code></pre></div>
 <p>The final chapter turns this into a federated logistic regression.</p>
 
 </div>

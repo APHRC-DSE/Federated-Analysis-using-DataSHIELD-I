@@ -7,10 +7,19 @@ anything is returned.
 
 ## A derived feature: age
 
-We turn `birth_year` into `age` as of 2020 with a single server-side expression:
+We turn `birth_year` into `age` as of 2020 with a single server-side expression.
+`ds.make()` reports back that the variable was created and passes its validity
+check on every site:
 
-```{r age, results = "hide"}
+```{r age}
 ds.make("(2020 - D$birth_year)", "age")
+```
+
+We then confirm the values are sensible — on the first site, `age` is numeric and
+its distribution sits in a plausible human range (the pooled view follows below):
+
+```{r age-check}
+ds.summary("age")[[1]]
 ```
 
 ## Prevalence over the full cohort

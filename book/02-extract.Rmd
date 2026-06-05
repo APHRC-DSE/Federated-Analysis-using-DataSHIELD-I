@@ -49,8 +49,9 @@ plan <- ds.omop.plan.person_level(
         nsaid_n    = omop.feature.count(unname(NSAID))),
       concept_set = unname(NSAID))))
 
-# Harmonise concept-coded columns (e.g. sex) into federation-aligned factors.
-plan <- ds.omop.plan.options(plan, factor_concepts = TRUE)
+# Translate concept ids to readable names (e.g. sex → female/male) and harmonise
+# the concept-coded columns into federation-aligned factors.
+plan <- ds.omop.plan.options(plan, translate_concepts = TRUE, factor_concepts = TRUE)
 ```
 
 `ds.omop.plan.preview()` resolves the plan against the schema without
@@ -97,7 +98,7 @@ hand-off point from the OMOP layer to the standard DataSHIELD toolchain:
 
 ```{r summary}
 ds.summary("D")[[1]]$class
-ds.summary("D")[[1]]$dimensions
+ds.summary("D")[[1]]$`number of columns`
 ```
 
 The extract is now a federated data frame. The next chapter describes it.

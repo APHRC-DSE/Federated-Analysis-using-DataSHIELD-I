@@ -247,8 +247,9 @@ giving <code>nsaid_n</code>, a continuous measure of NSAID burden.</li>
 <span id="cb13-15"><a href="extract.html#cb13-15" tabindex="-1"></a>        <span class="at">nsaid_n    =</span> <span class="fu">omop.feature.count</span>(<span class="fu">unname</span>(NSAID))),</span>
 <span id="cb13-16"><a href="extract.html#cb13-16" tabindex="-1"></a>      <span class="at">concept_set =</span> <span class="fu">unname</span>(NSAID))))</span>
 <span id="cb13-17"><a href="extract.html#cb13-17" tabindex="-1"></a></span>
-<span id="cb13-18"><a href="extract.html#cb13-18" tabindex="-1"></a><span class="co"># Harmonise concept-coded columns (e.g. sex) into federation-aligned factors.</span></span>
-<span id="cb13-19"><a href="extract.html#cb13-19" tabindex="-1"></a>plan <span class="ot">&lt;-</span> <span class="fu">ds.omop.plan.options</span>(plan, <span class="at">factor_concepts =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
+<span id="cb13-18"><a href="extract.html#cb13-18" tabindex="-1"></a><span class="co"># Translate concept ids to readable names (e.g. sex → female/male) and harmonise</span></span>
+<span id="cb13-19"><a href="extract.html#cb13-19" tabindex="-1"></a><span class="co"># the concept-coded columns into federation-aligned factors.</span></span>
+<span id="cb13-20"><a href="extract.html#cb13-20" tabindex="-1"></a>plan <span class="ot">&lt;-</span> <span class="fu">ds.omop.plan.options</span>(plan, <span class="at">translate_concepts =</span> <span class="cn">TRUE</span>, <span class="at">factor_concepts =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
 <p><code>ds.omop.plan.preview()</code> resolves the plan against the schema without
 materialising data — a cheap dry run before committing:</p>
 <div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="extract.html#cb14-1" tabindex="-1"></a><span class="fu">invisible</span>(<span class="fu">ds.omop.plan.preview</span>(plan, <span class="at">symbol =</span> <span class="st">&quot;omop&quot;</span>, <span class="at">conns =</span> conns))</span></code></pre></div>
@@ -290,8 +291,8 @@ what a <code>0</code> encodes.</p>
 hand-off point from the OMOP layer to the standard DataSHIELD toolchain:</p>
 <div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="extract.html#cb18-1" tabindex="-1"></a><span class="fu">ds.summary</span>(<span class="st">&quot;D&quot;</span>)[[<span class="dv">1</span>]]<span class="sc">$</span>class</span>
 <span id="cb18-2"><a href="extract.html#cb18-2" tabindex="-1"></a><span class="co">#&gt; [1] &quot;data.frame&quot;</span></span>
-<span id="cb18-3"><a href="extract.html#cb18-3" tabindex="-1"></a><span class="fu">ds.summary</span>(<span class="st">&quot;D&quot;</span>)[[<span class="dv">1</span>]]<span class="sc">$</span>dimensions</span>
-<span id="cb18-4"><a href="extract.html#cb18-4" tabindex="-1"></a><span class="co">#&gt; NULL</span></span></code></pre></div>
+<span id="cb18-3"><a href="extract.html#cb18-3" tabindex="-1"></a><span class="fu">ds.summary</span>(<span class="st">&quot;D&quot;</span>)[[<span class="dv">1</span>]]<span class="sc">$</span><span class="st">`</span><span class="at">number of columns</span><span class="st">`</span></span>
+<span id="cb18-4"><a href="extract.html#cb18-4" tabindex="-1"></a><span class="co">#&gt; [1] 7</span></span></code></pre></div>
 <p>The extract is now a federated data frame. The next chapter describes it.</p>
 
 </div>

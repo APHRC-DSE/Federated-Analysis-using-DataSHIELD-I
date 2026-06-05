@@ -213,80 +213,80 @@ three sites. No patient row ever leaves a server.</p>
 <p><code>ds.glm</code> needs numeric responses, so we cast the boolean features to 0/1 and bind
 them — together with the harmonised <code>sex</code> factor, the derived <code>age</code>, and the
 NSAID burden — into one frame <code>M</code>:</p>
-<div class="sourceCode" id="cb32"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb32-1"><a href="model.html#cb32-1" tabindex="-1"></a><span class="fu">ds.asNumeric</span>(<span class="st">&quot;D$gi_bleed&quot;</span>,     <span class="st">&quot;gi_bleed&quot;</span>)</span>
-<span id="cb32-2"><a href="model.html#cb32-2" tabindex="-1"></a><span class="fu">ds.asNumeric</span>(<span class="st">&quot;D$diclofenac&quot;</span>,   <span class="st">&quot;diclofenac&quot;</span>)</span>
-<span id="cb32-3"><a href="model.html#cb32-3" tabindex="-1"></a><span class="fu">ds.asNumeric</span>(<span class="st">&quot;D$peptic_ulcer&quot;</span>, <span class="st">&quot;peptic_ulcer&quot;</span>)</span>
-<span id="cb32-4"><a href="model.html#cb32-4" tabindex="-1"></a></span>
-<span id="cb32-5"><a href="model.html#cb32-5" tabindex="-1"></a><span class="fu">ds.dataFrame</span>(</span>
-<span id="cb32-6"><a href="model.html#cb32-6" tabindex="-1"></a>  <span class="fu">c</span>(<span class="st">&quot;gi_bleed&quot;</span>, <span class="st">&quot;D$sex&quot;</span>, <span class="st">&quot;age&quot;</span>, <span class="st">&quot;diclofenac&quot;</span>, <span class="st">&quot;D$nsaid_n&quot;</span>, <span class="st">&quot;peptic_ulcer&quot;</span>),</span>
-<span id="cb32-7"><a href="model.html#cb32-7" tabindex="-1"></a>  <span class="at">newobj =</span> <span class="st">&quot;M&quot;</span>)</span></code></pre></div>
-<div class="sourceCode" id="cb33"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb33-1"><a href="model.html#cb33-1" tabindex="-1"></a><span class="fu">ds.colnames</span>(<span class="st">&quot;M&quot;</span>)[[<span class="dv">1</span>]]</span>
-<span id="cb33-2"><a href="model.html#cb33-2" tabindex="-1"></a><span class="co">#&gt; [1] &quot;gi_bleed&quot;     &quot;sex&quot;          &quot;age&quot;          &quot;diclofenac&quot;   &quot;nsaid_n&quot;     </span></span>
-<span id="cb33-3"><a href="model.html#cb33-3" tabindex="-1"></a><span class="co">#&gt; [6] &quot;peptic_ulcer&quot;</span></span></code></pre></div>
+<div class="sourceCode" id="cb33"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb33-1"><a href="model.html#cb33-1" tabindex="-1"></a><span class="fu">ds.asNumeric</span>(<span class="st">&quot;D$gi_bleed&quot;</span>,     <span class="st">&quot;gi_bleed&quot;</span>)</span>
+<span id="cb33-2"><a href="model.html#cb33-2" tabindex="-1"></a><span class="fu">ds.asNumeric</span>(<span class="st">&quot;D$diclofenac&quot;</span>,   <span class="st">&quot;diclofenac&quot;</span>)</span>
+<span id="cb33-3"><a href="model.html#cb33-3" tabindex="-1"></a><span class="fu">ds.asNumeric</span>(<span class="st">&quot;D$peptic_ulcer&quot;</span>, <span class="st">&quot;peptic_ulcer&quot;</span>)</span>
+<span id="cb33-4"><a href="model.html#cb33-4" tabindex="-1"></a></span>
+<span id="cb33-5"><a href="model.html#cb33-5" tabindex="-1"></a><span class="fu">ds.dataFrame</span>(</span>
+<span id="cb33-6"><a href="model.html#cb33-6" tabindex="-1"></a>  <span class="fu">c</span>(<span class="st">&quot;gi_bleed&quot;</span>, <span class="st">&quot;D$sex&quot;</span>, <span class="st">&quot;age&quot;</span>, <span class="st">&quot;diclofenac&quot;</span>, <span class="st">&quot;D$nsaid_n&quot;</span>, <span class="st">&quot;peptic_ulcer&quot;</span>),</span>
+<span id="cb33-7"><a href="model.html#cb33-7" tabindex="-1"></a>  <span class="at">newobj =</span> <span class="st">&quot;M&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb34"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb34-1"><a href="model.html#cb34-1" tabindex="-1"></a><span class="fu">ds.colnames</span>(<span class="st">&quot;M&quot;</span>)[[<span class="dv">1</span>]]</span>
+<span id="cb34-2"><a href="model.html#cb34-2" tabindex="-1"></a><span class="co">#&gt; [1] &quot;gi_bleed&quot;     &quot;sex&quot;          &quot;age&quot;          &quot;diclofenac&quot;   &quot;nsaid_n&quot;     </span></span>
+<span id="cb34-3"><a href="model.html#cb34-3" tabindex="-1"></a><span class="co">#&gt; [6] &quot;peptic_ulcer&quot;</span></span></code></pre></div>
 </div>
 <div id="fitting-the-model-with-its-live-training-trace" class="section level2 hasAnchor" number="4.2">
 <h2><span class="header-section-number">4.2</span> Fitting the model (with its live training trace)<a href="model.html#fitting-the-model-with-its-live-training-trace" class="anchor-section" aria-label="Anchor link to header"></a></h2>
 <p><code>ds.glm</code> fits by <strong>iteratively re-weighted least squares</strong>, exchanging only
 aggregated sufficient statistics each round. The federation reports its progress
 every iteration — this is the genuine convergence trace from the live run:</p>
-<div class="sourceCode" id="cb34"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb34-1"><a href="model.html#cb34-1" tabindex="-1"></a>fit <span class="ot">&lt;-</span> <span class="fu">ds.glm</span>(</span>
-<span id="cb34-2"><a href="model.html#cb34-2" tabindex="-1"></a>  <span class="at">formula =</span> <span class="st">&quot;M$gi_bleed ~ M$sex + M$age + M$diclofenac + M$nsaid_n + M$peptic_ulcer&quot;</span>,</span>
-<span id="cb34-3"><a href="model.html#cb34-3" tabindex="-1"></a>  <span class="at">family  =</span> <span class="st">&quot;binomial&quot;</span>, <span class="at">datasources =</span> conns)</span>
-<span id="cb34-4"><a href="model.html#cb34-4" tabindex="-1"></a><span class="co">#&gt; Iteration 1...</span></span>
-<span id="cb34-5"><a href="model.html#cb34-5" tabindex="-1"></a><span class="co">#&gt; CURRENT DEVIANCE:      3734.67700885699</span></span>
-<span id="cb34-6"><a href="model.html#cb34-6" tabindex="-1"></a><span class="co">#&gt; Iteration 2...</span></span>
-<span id="cb34-7"><a href="model.html#cb34-7" tabindex="-1"></a><span class="co">#&gt; CURRENT DEVIANCE:      2402.84773061472</span></span>
-<span id="cb34-8"><a href="model.html#cb34-8" tabindex="-1"></a><span class="co">#&gt; Iteration 3...</span></span>
-<span id="cb34-9"><a href="model.html#cb34-9" tabindex="-1"></a><span class="co">#&gt; CURRENT DEVIANCE:      2344.91106777003</span></span>
-<span id="cb34-10"><a href="model.html#cb34-10" tabindex="-1"></a><span class="co">#&gt; Iteration 4...</span></span>
-<span id="cb34-11"><a href="model.html#cb34-11" tabindex="-1"></a><span class="co">#&gt; CURRENT DEVIANCE:      2343.48010937631</span></span>
-<span id="cb34-12"><a href="model.html#cb34-12" tabindex="-1"></a><span class="co">#&gt; Iteration 5...</span></span>
-<span id="cb34-13"><a href="model.html#cb34-13" tabindex="-1"></a><span class="co">#&gt; CURRENT DEVIANCE:      2343.47859539296</span></span>
-<span id="cb34-14"><a href="model.html#cb34-14" tabindex="-1"></a><span class="co">#&gt; Iteration 6...</span></span>
-<span id="cb34-15"><a href="model.html#cb34-15" tabindex="-1"></a><span class="co">#&gt; CURRENT DEVIANCE:      2343.47859539105</span></span>
-<span id="cb34-16"><a href="model.html#cb34-16" tabindex="-1"></a><span class="co">#&gt; SUMMARY OF MODEL STATE after iteration 6</span></span>
-<span id="cb34-17"><a href="model.html#cb34-17" tabindex="-1"></a><span class="co">#&gt; Current deviance 2343.47859539105 on 2688 degrees of freedom</span></span>
-<span id="cb34-18"><a href="model.html#cb34-18" tabindex="-1"></a><span class="co">#&gt; Convergence criterion TRUE (8.15548972641514e-13)</span></span>
-<span id="cb34-19"><a href="model.html#cb34-19" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb34-20"><a href="model.html#cb34-20" tabindex="-1"></a><span class="co">#&gt; beta: -2.1724568060342 -0.000526725272757233 0.00674726691578812 -0.00110142982525194 -0.0859587376367707 1.37487667184113</span></span>
-<span id="cb34-21"><a href="model.html#cb34-21" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb34-22"><a href="model.html#cb34-22" tabindex="-1"></a><span class="co">#&gt; Information matrix overall:</span></span>
-<span id="cb34-23"><a href="model.html#cb34-23" tabindex="-1"></a><span class="co">#&gt;                (Intercept)   M$sex8532       M$age M$diclofenac  M$nsaid_n M$peptic_ulcer</span></span>
-<span id="cb34-24"><a href="model.html#cb34-24" tabindex="-1"></a><span class="co">#&gt; (Intercept)       365.6699   185.20301   22734.622    100.45630  1322.2588      177.00793</span></span>
-<span id="cb34-25"><a href="model.html#cb34-25" tabindex="-1"></a><span class="co">#&gt; M$sex8532         185.2030   185.20301   11592.553     51.90948   679.5642       88.40518</span></span>
-<span id="cb34-26"><a href="model.html#cb34-26" tabindex="-1"></a><span class="co">#&gt; M$age           22734.6217 11592.55258 1508111.822   6286.98725 88291.8068    11028.42073</span></span>
-<span id="cb34-27"><a href="model.html#cb34-27" tabindex="-1"></a><span class="co">#&gt; M$diclofenac      100.4563    51.90948    6286.987    100.45630   371.1896       29.09972</span></span>
-<span id="cb34-28"><a href="model.html#cb34-28" tabindex="-1"></a><span class="co">#&gt; M$nsaid_n        1322.2588   679.56422   88291.807    371.18961  6102.6082      657.89954</span></span>
-<span id="cb34-29"><a href="model.html#cb34-29" tabindex="-1"></a><span class="co">#&gt; M$peptic_ulcer    177.0079    88.40518   11028.421     29.09972   657.8995      177.00793</span></span>
-<span id="cb34-30"><a href="model.html#cb34-30" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb34-31"><a href="model.html#cb34-31" tabindex="-1"></a><span class="co">#&gt; Score vector overall:</span></span>
-<span id="cb34-32"><a href="model.html#cb34-32" tabindex="-1"></a><span class="co">#&gt;                         [,1]</span></span>
-<span id="cb34-33"><a href="model.html#cb34-33" tabindex="-1"></a><span class="co">#&gt; (Intercept)    -7.312941e-10</span></span>
-<span id="cb34-34"><a href="model.html#cb34-34" tabindex="-1"></a><span class="co">#&gt; M$sex8532      -3.760867e-10</span></span>
-<span id="cb34-35"><a href="model.html#cb34-35" tabindex="-1"></a><span class="co">#&gt; M$age          -4.527624e-08</span></span>
-<span id="cb34-36"><a href="model.html#cb34-36" tabindex="-1"></a><span class="co">#&gt; M$diclofenac   -2.673826e-10</span></span>
-<span id="cb34-37"><a href="model.html#cb34-37" tabindex="-1"></a><span class="co">#&gt; M$nsaid_n      -3.187539e-09</span></span>
-<span id="cb34-38"><a href="model.html#cb34-38" tabindex="-1"></a><span class="co">#&gt; M$peptic_ulcer -1.896927e-11</span></span>
-<span id="cb34-39"><a href="model.html#cb34-39" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb34-40"><a href="model.html#cb34-40" tabindex="-1"></a><span class="co">#&gt; Current deviance: 2343.47859539105</span></span></code></pre></div>
+<div class="sourceCode" id="cb35"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb35-1"><a href="model.html#cb35-1" tabindex="-1"></a>fit <span class="ot">&lt;-</span> <span class="fu">ds.glm</span>(</span>
+<span id="cb35-2"><a href="model.html#cb35-2" tabindex="-1"></a>  <span class="at">formula =</span> <span class="st">&quot;M$gi_bleed ~ M$sex + M$age + M$diclofenac + M$nsaid_n + M$peptic_ulcer&quot;</span>,</span>
+<span id="cb35-3"><a href="model.html#cb35-3" tabindex="-1"></a>  <span class="at">family  =</span> <span class="st">&quot;binomial&quot;</span>, <span class="at">datasources =</span> conns)</span>
+<span id="cb35-4"><a href="model.html#cb35-4" tabindex="-1"></a><span class="co">#&gt; Iteration 1...</span></span>
+<span id="cb35-5"><a href="model.html#cb35-5" tabindex="-1"></a><span class="co">#&gt; CURRENT DEVIANCE:      3734.67700885699</span></span>
+<span id="cb35-6"><a href="model.html#cb35-6" tabindex="-1"></a><span class="co">#&gt; Iteration 2...</span></span>
+<span id="cb35-7"><a href="model.html#cb35-7" tabindex="-1"></a><span class="co">#&gt; CURRENT DEVIANCE:      2402.84773061472</span></span>
+<span id="cb35-8"><a href="model.html#cb35-8" tabindex="-1"></a><span class="co">#&gt; Iteration 3...</span></span>
+<span id="cb35-9"><a href="model.html#cb35-9" tabindex="-1"></a><span class="co">#&gt; CURRENT DEVIANCE:      2344.91106777003</span></span>
+<span id="cb35-10"><a href="model.html#cb35-10" tabindex="-1"></a><span class="co">#&gt; Iteration 4...</span></span>
+<span id="cb35-11"><a href="model.html#cb35-11" tabindex="-1"></a><span class="co">#&gt; CURRENT DEVIANCE:      2343.48010937631</span></span>
+<span id="cb35-12"><a href="model.html#cb35-12" tabindex="-1"></a><span class="co">#&gt; Iteration 5...</span></span>
+<span id="cb35-13"><a href="model.html#cb35-13" tabindex="-1"></a><span class="co">#&gt; CURRENT DEVIANCE:      2343.47859539296</span></span>
+<span id="cb35-14"><a href="model.html#cb35-14" tabindex="-1"></a><span class="co">#&gt; Iteration 6...</span></span>
+<span id="cb35-15"><a href="model.html#cb35-15" tabindex="-1"></a><span class="co">#&gt; CURRENT DEVIANCE:      2343.47859539105</span></span>
+<span id="cb35-16"><a href="model.html#cb35-16" tabindex="-1"></a><span class="co">#&gt; SUMMARY OF MODEL STATE after iteration 6</span></span>
+<span id="cb35-17"><a href="model.html#cb35-17" tabindex="-1"></a><span class="co">#&gt; Current deviance 2343.47859539105 on 2688 degrees of freedom</span></span>
+<span id="cb35-18"><a href="model.html#cb35-18" tabindex="-1"></a><span class="co">#&gt; Convergence criterion TRUE (8.15548972641514e-13)</span></span>
+<span id="cb35-19"><a href="model.html#cb35-19" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb35-20"><a href="model.html#cb35-20" tabindex="-1"></a><span class="co">#&gt; beta: -2.17298353130696 0.00052672527275702 0.00674726691578815 -0.00110142982525188 -0.0859587376367709 1.37487667184113</span></span>
+<span id="cb35-21"><a href="model.html#cb35-21" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb35-22"><a href="model.html#cb35-22" tabindex="-1"></a><span class="co">#&gt; Information matrix overall:</span></span>
+<span id="cb35-23"><a href="model.html#cb35-23" tabindex="-1"></a><span class="co">#&gt;                (Intercept)   M$sexmale       M$age M$diclofenac  M$nsaid_n M$peptic_ulcer</span></span>
+<span id="cb35-24"><a href="model.html#cb35-24" tabindex="-1"></a><span class="co">#&gt; (Intercept)       365.6699   180.46686   22734.622    100.45630  1322.2588      177.00793</span></span>
+<span id="cb35-25"><a href="model.html#cb35-25" tabindex="-1"></a><span class="co">#&gt; M$sexmale         180.4669   180.46686   11142.069     48.54682   642.6945       88.60275</span></span>
+<span id="cb35-26"><a href="model.html#cb35-26" tabindex="-1"></a><span class="co">#&gt; M$age           22734.6217 11142.06909 1508111.822   6286.98725 88291.8068    11028.42073</span></span>
+<span id="cb35-27"><a href="model.html#cb35-27" tabindex="-1"></a><span class="co">#&gt; M$diclofenac      100.4563    48.54682    6286.987    100.45630   371.1896       29.09972</span></span>
+<span id="cb35-28"><a href="model.html#cb35-28" tabindex="-1"></a><span class="co">#&gt; M$nsaid_n        1322.2588   642.69454   88291.807    371.18961  6102.6082      657.89954</span></span>
+<span id="cb35-29"><a href="model.html#cb35-29" tabindex="-1"></a><span class="co">#&gt; M$peptic_ulcer    177.0079    88.60275   11028.421     29.09972   657.8995      177.00793</span></span>
+<span id="cb35-30"><a href="model.html#cb35-30" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb35-31"><a href="model.html#cb35-31" tabindex="-1"></a><span class="co">#&gt; Score vector overall:</span></span>
+<span id="cb35-32"><a href="model.html#cb35-32" tabindex="-1"></a><span class="co">#&gt;                         [,1]</span></span>
+<span id="cb35-33"><a href="model.html#cb35-33" tabindex="-1"></a><span class="co">#&gt; (Intercept)    -7.331602e-10</span></span>
+<span id="cb35-34"><a href="model.html#cb35-34" tabindex="-1"></a><span class="co">#&gt; M$sexmale      -3.561182e-10</span></span>
+<span id="cb35-35"><a href="model.html#cb35-35" tabindex="-1"></a><span class="co">#&gt; M$age          -4.539100e-08</span></span>
+<span id="cb35-36"><a href="model.html#cb35-36" tabindex="-1"></a><span class="co">#&gt; M$diclofenac   -2.680922e-10</span></span>
+<span id="cb35-37"><a href="model.html#cb35-37" tabindex="-1"></a><span class="co">#&gt; M$nsaid_n      -3.194190e-09</span></span>
+<span id="cb35-38"><a href="model.html#cb35-38" tabindex="-1"></a><span class="co">#&gt; M$peptic_ulcer -1.896350e-11</span></span>
+<span id="cb35-39"><a href="model.html#cb35-39" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb35-40"><a href="model.html#cb35-40" tabindex="-1"></a><span class="co">#&gt; Current deviance: 2343.47859539105</span></span></code></pre></div>
 <p>The model converged in 6 iterations over the full 2694-person
 cohort. Here are the pooled coefficients, with standard errors, <em>p</em>-values and
 odds ratios:</p>
-<div class="sourceCode" id="cb35"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb35-1"><a href="model.html#cb35-1" tabindex="-1"></a><span class="fu">round</span>(fit<span class="sc">$</span>coefficients, <span class="dv">4</span>)</span>
-<span id="cb35-2"><a href="model.html#cb35-2" tabindex="-1"></a><span class="co">#&gt;                Estimate Std. Error z-value p-value low0.95CI.LP high0.95CI.LP   P_OR</span></span>
-<span id="cb35-3"><a href="model.html#cb35-3" tabindex="-1"></a><span class="co">#&gt; (Intercept)     -2.1725     0.2244 -9.6817  0.0000      -2.6122       -1.7327 0.1023</span></span>
-<span id="cb35-4"><a href="model.html#cb35-4" tabindex="-1"></a><span class="co">#&gt; M$sex8532       -0.0005     0.1047 -0.0050  0.9960      -0.2057        0.2046 0.9995</span></span>
-<span id="cb35-5"><a href="model.html#cb35-5" tabindex="-1"></a><span class="co">#&gt; M$age            0.0067     0.0039  1.7410  0.0817      -0.0008        0.0143 1.0068</span></span>
-<span id="cb35-6"><a href="model.html#cb35-6" tabindex="-1"></a><span class="co">#&gt; M$diclofenac    -0.0011     0.1208 -0.0091  0.9927      -0.2378        0.2356 0.9989</span></span>
-<span id="cb35-7"><a href="model.html#cb35-7" tabindex="-1"></a><span class="co">#&gt; M$nsaid_n       -0.0860     0.0329 -2.6157  0.0089      -0.1504       -0.0215 0.9176</span></span>
-<span id="cb35-8"><a href="model.html#cb35-8" tabindex="-1"></a><span class="co">#&gt; M$peptic_ulcer   1.3749     0.1080 12.7298  0.0000       1.1632        1.5866 3.9546</span></span>
-<span id="cb35-9"><a href="model.html#cb35-9" tabindex="-1"></a><span class="co">#&gt;                low0.95CI.P_OR high0.95CI.P_OR</span></span>
-<span id="cb35-10"><a href="model.html#cb35-10" tabindex="-1"></a><span class="co">#&gt; (Intercept)            0.0684          0.1502</span></span>
-<span id="cb35-11"><a href="model.html#cb35-11" tabindex="-1"></a><span class="co">#&gt; M$sex8532              0.8141          1.2270</span></span>
-<span id="cb35-12"><a href="model.html#cb35-12" tabindex="-1"></a><span class="co">#&gt; M$age                  0.9992          1.0144</span></span>
-<span id="cb35-13"><a href="model.html#cb35-13" tabindex="-1"></a><span class="co">#&gt; M$diclofenac           0.7884          1.2656</span></span>
-<span id="cb35-14"><a href="model.html#cb35-14" tabindex="-1"></a><span class="co">#&gt; M$nsaid_n              0.8604          0.9787</span></span>
-<span id="cb35-15"><a href="model.html#cb35-15" tabindex="-1"></a><span class="co">#&gt; M$peptic_ulcer         3.2001          4.8869</span></span></code></pre></div>
+<div class="sourceCode" id="cb36"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb36-1"><a href="model.html#cb36-1" tabindex="-1"></a><span class="fu">round</span>(fit<span class="sc">$</span>coefficients, <span class="dv">4</span>)</span>
+<span id="cb36-2"><a href="model.html#cb36-2" tabindex="-1"></a><span class="co">#&gt;                Estimate Std. Error z-value p-value low0.95CI.LP high0.95CI.LP   P_OR</span></span>
+<span id="cb36-3"><a href="model.html#cb36-3" tabindex="-1"></a><span class="co">#&gt; (Intercept)     -2.1730     0.2263 -9.6025  0.0000      -2.6165       -1.7295 0.1022</span></span>
+<span id="cb36-4"><a href="model.html#cb36-4" tabindex="-1"></a><span class="co">#&gt; M$sexmale        0.0005     0.1047  0.0050  0.9960      -0.2046        0.2057 1.0005</span></span>
+<span id="cb36-5"><a href="model.html#cb36-5" tabindex="-1"></a><span class="co">#&gt; M$age            0.0067     0.0039  1.7410  0.0817      -0.0008        0.0143 1.0068</span></span>
+<span id="cb36-6"><a href="model.html#cb36-6" tabindex="-1"></a><span class="co">#&gt; M$diclofenac    -0.0011     0.1208 -0.0091  0.9927      -0.2378        0.2356 0.9989</span></span>
+<span id="cb36-7"><a href="model.html#cb36-7" tabindex="-1"></a><span class="co">#&gt; M$nsaid_n       -0.0860     0.0329 -2.6157  0.0089      -0.1504       -0.0215 0.9176</span></span>
+<span id="cb36-8"><a href="model.html#cb36-8" tabindex="-1"></a><span class="co">#&gt; M$peptic_ulcer   1.3749     0.1080 12.7298  0.0000       1.1632        1.5866 3.9546</span></span>
+<span id="cb36-9"><a href="model.html#cb36-9" tabindex="-1"></a><span class="co">#&gt;                low0.95CI.P_OR high0.95CI.P_OR</span></span>
+<span id="cb36-10"><a href="model.html#cb36-10" tabindex="-1"></a><span class="co">#&gt; (Intercept)            0.0681          0.1507</span></span>
+<span id="cb36-11"><a href="model.html#cb36-11" tabindex="-1"></a><span class="co">#&gt; M$sexmale              0.8150          1.2283</span></span>
+<span id="cb36-12"><a href="model.html#cb36-12" tabindex="-1"></a><span class="co">#&gt; M$age                  0.9992          1.0144</span></span>
+<span id="cb36-13"><a href="model.html#cb36-13" tabindex="-1"></a><span class="co">#&gt; M$diclofenac           0.7884          1.2656</span></span>
+<span id="cb36-14"><a href="model.html#cb36-14" tabindex="-1"></a><span class="co">#&gt; M$nsaid_n              0.8604          0.9787</span></span>
+<span id="cb36-15"><a href="model.html#cb36-15" tabindex="-1"></a><span class="co">#&gt; M$peptic_ulcer         3.2001          4.8869</span></span></code></pre></div>
 </div>
 <div id="reading-the-result" class="section level2 hasAnchor" number="4.3">
 <h2><span class="header-section-number">4.3</span> Reading the result<a href="model.html#reading-the-result" class="anchor-section" aria-label="Anchor link to header"></a></h2>
@@ -308,24 +308,24 @@ combined federation. <code>ds.glmSLMA</code> instead fits the model <strong>sepa
 site</strong> and meta-combines the per-site estimates (study-level meta-analysis),
 sharing no individual-level statistic across sites. The two routes agree closely,
 which is the reassurance that the pooled fit is not driven by any single site:</p>
-<div class="sourceCode" id="cb36"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb36-1"><a href="model.html#cb36-1" tabindex="-1"></a>slma <span class="ot">&lt;-</span> <span class="fu">ds.glmSLMA</span>(</span>
-<span id="cb36-2"><a href="model.html#cb36-2" tabindex="-1"></a>  <span class="at">formula =</span> <span class="st">&quot;M$gi_bleed ~ M$sex + M$age + M$diclofenac + M$nsaid_n + M$peptic_ulcer&quot;</span>,</span>
-<span id="cb36-3"><a href="model.html#cb36-3" tabindex="-1"></a>  <span class="at">family  =</span> <span class="st">&quot;binomial&quot;</span>, <span class="at">datasources =</span> conns)</span>
-<span id="cb36-4"><a href="model.html#cb36-4" tabindex="-1"></a><span class="fu">round</span>(slma<span class="sc">$</span>SLMA.pooled.ests.matrix, <span class="dv">4</span>)</span>
-<span id="cb36-5"><a href="model.html#cb36-5" tabindex="-1"></a><span class="co">#&gt;                pooled.ML  se.ML pooled.REML se.REML pooled.FE  se.FE</span></span>
-<span id="cb36-6"><a href="model.html#cb36-6" tabindex="-1"></a><span class="co">#&gt; (Intercept)      -2.1754 0.2257     -2.1708  0.2552   -2.1754 0.2257</span></span>
-<span id="cb36-7"><a href="model.html#cb36-7" tabindex="-1"></a><span class="co">#&gt; M$sex8532        -0.0048 0.1050     -0.0048  0.1050   -0.0048 0.1050</span></span>
-<span id="cb36-8"><a href="model.html#cb36-8" tabindex="-1"></a><span class="co">#&gt; M$age             0.0069 0.0046      0.0068  0.0057    0.0071 0.0039</span></span>
-<span id="cb36-9"><a href="model.html#cb36-9" tabindex="-1"></a><span class="co">#&gt; M$diclofenac     -0.0004 0.1212     -0.0004  0.1212   -0.0004 0.1212</span></span>
-<span id="cb36-10"><a href="model.html#cb36-10" tabindex="-1"></a><span class="co">#&gt; M$nsaid_n        -0.0887 0.0332     -0.0887  0.0362   -0.0887 0.0332</span></span>
-<span id="cb36-11"><a href="model.html#cb36-11" tabindex="-1"></a><span class="co">#&gt; M$peptic_ulcer    1.3815 0.1085      1.3815  0.1085    1.3815 0.1085</span></span></code></pre></div>
+<div class="sourceCode" id="cb37"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb37-1"><a href="model.html#cb37-1" tabindex="-1"></a>slma <span class="ot">&lt;-</span> <span class="fu">ds.glmSLMA</span>(</span>
+<span id="cb37-2"><a href="model.html#cb37-2" tabindex="-1"></a>  <span class="at">formula =</span> <span class="st">&quot;M$gi_bleed ~ M$sex + M$age + M$diclofenac + M$nsaid_n + M$peptic_ulcer&quot;</span>,</span>
+<span id="cb37-3"><a href="model.html#cb37-3" tabindex="-1"></a>  <span class="at">family  =</span> <span class="st">&quot;binomial&quot;</span>, <span class="at">datasources =</span> conns)</span>
+<span id="cb37-4"><a href="model.html#cb37-4" tabindex="-1"></a><span class="fu">round</span>(slma<span class="sc">$</span>SLMA.pooled.ests.matrix, <span class="dv">4</span>)</span>
+<span id="cb37-5"><a href="model.html#cb37-5" tabindex="-1"></a><span class="co">#&gt;                pooled.ML  se.ML pooled.REML se.REML pooled.FE  se.FE</span></span>
+<span id="cb37-6"><a href="model.html#cb37-6" tabindex="-1"></a><span class="co">#&gt; (Intercept)      -2.1766 0.2277     -2.1766  0.2277   -2.1766 0.2277</span></span>
+<span id="cb37-7"><a href="model.html#cb37-7" tabindex="-1"></a><span class="co">#&gt; M$sexmale         0.0048 0.1050      0.0048  0.1050    0.0048 0.1050</span></span>
+<span id="cb37-8"><a href="model.html#cb37-8" tabindex="-1"></a><span class="co">#&gt; M$age             0.0069 0.0046      0.0068  0.0057    0.0071 0.0039</span></span>
+<span id="cb37-9"><a href="model.html#cb37-9" tabindex="-1"></a><span class="co">#&gt; M$diclofenac     -0.0004 0.1212     -0.0004  0.1212   -0.0004 0.1212</span></span>
+<span id="cb37-10"><a href="model.html#cb37-10" tabindex="-1"></a><span class="co">#&gt; M$nsaid_n        -0.0887 0.0332     -0.0887  0.0362   -0.0887 0.0332</span></span>
+<span id="cb37-11"><a href="model.html#cb37-11" tabindex="-1"></a><span class="co">#&gt; M$peptic_ulcer    1.3815 0.1085      1.3815  0.1085    1.3815 0.1085</span></span></code></pre></div>
 </div>
 <div id="disconnect" class="section level2 hasAnchor" number="4.5">
 <h2><span class="header-section-number">4.5</span> Disconnect<a href="model.html#disconnect" class="anchor-section" aria-label="Anchor link to header"></a></h2>
 <p>The analysis is complete, so we release the OMOP handles and log out of the
 federation:</p>
-<div class="sourceCode" id="cb37"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb37-1"><a href="model.html#cb37-1" tabindex="-1"></a><span class="fu">ds.omop.disconnect</span>(<span class="at">symbol =</span> <span class="st">&quot;omop&quot;</span>, <span class="at">conns =</span> conns)</span>
-<span id="cb37-2"><a href="model.html#cb37-2" tabindex="-1"></a>DSI<span class="sc">::</span><span class="fu">datashield.logout</span>(conns)</span></code></pre></div>
+<div class="sourceCode" id="cb38"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb38-1"><a href="model.html#cb38-1" tabindex="-1"></a><span class="fu">ds.omop.disconnect</span>(<span class="at">symbol =</span> <span class="st">&quot;omop&quot;</span>, <span class="at">conns =</span> conns)</span>
+<span id="cb38-2"><a href="model.html#cb38-2" tabindex="-1"></a>DSI<span class="sc">::</span><span class="fu">datashield.logout</span>(conns)</span></code></pre></div>
 </div>
 <div id="in-summary" class="section level2 hasAnchor" number="4.6">
 <h2><span class="header-section-number">4.6</span> In summary<a href="model.html#in-summary" class="anchor-section" aria-label="Anchor link to header"></a></h2>
