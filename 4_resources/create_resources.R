@@ -12,13 +12,14 @@
 # Extraction works at any level once dsOMOP's assign methods are published on the
 # Rock "omop" profile (handled by the image + easy-opal in step 2).
 #
-# How dsOMOP v2 resources work (this is NOT the stale README/v1 format):
+# How dsOMOP resources work:
 #   - The resolver in the Rock "omop" profile matches resources whose
 #     format == "omop.dbi.db".
-#   - All connection details travel in the resource URL, encoded so the Opal R
-#     URL parser cannot choke on them:
-#         omop+dbi:///B64:<base64url(JSON)>
-#     where JSON = {dbms, host, port, database, cdm_schema, vocabulary_schema}.
+#   - All connection details travel in a readable resource URL:
+#         omop+dbi:<dbms>://<host>:<port>/<database>?cdm_schema=...&vocabulary_schema=...
+#     Here we only give the CDM schema: the vocabulary schema defaults to it,
+#     and an omitted CDM schema would fall back to the engine's default
+#     (PostgreSQL: "public").
 #   - DB credentials are NOT in the URL; they are the resource's identity/secret.
 #   - host/port point at the PostgreSQL container over the site's Docker network
 #     (alias "omopdb", internal port 5432 — from step 3), so the same resource
@@ -65,24 +66,24 @@ project   <- "omop_demo"
 resource  <- "gibleed"
 
 # --- build the dsOMOP resource URL (matches dsOMOP 2.0.0 R/resource.R) ------
-make_omop_url <- function(dbms, host, port, database, cdm_schema,
+make_omop_url <- function(dbms, host, port, database, cdm_schema = NULL,
                           vocabulary_schema = NULL) {
-  config <- list(dbms = dbms, host = host, port = as.integer(port),
-                 database = database, cdm_schema = cdm_schema)
-  if (!is.null(vocabulary_schema)) config$vocabulary_schema <- vocabulary_schema
-  json <- as.character(jsonlite::toJSON(config, auto_unbox = TRUE))
-  b64 <- gsub("[\r\n]", "", jsonlite::base64_enc(charToRaw(json)))
-  b64 <- gsub("+", "-", b64, fixed = TRUE)   # base64url: + -> -
-  b64 <- gsub("/", "_", b64, fixed = TRUE)   #            / -> _
-  b64 <- gsub("=+$", "", b64)                # strip padding
-  paste0("omop+dbi:///B64:", b64)
+  url <- sprintf("omop+dbi:%s://%s:%d/%s", dbms, host, as.integer(port), database)
+  q <- character(0)
+  if (!is.null(cdm_schema))
+    q <- c(q, paste0("cdm_schema=", utils::URLencode(cdm_schema, reserved = TRUE)))
+  if (!is.null(vocabulary_schema))
+    q <- c(q, paste0("vocabulary_schema=", utils::URLencode(vocabulary_schema, reserved = TRUE)))
+  if (length(q) > 0) url <- paste0(url, "?", paste(q, collapse = "&"))
+  url
 }
 
 # Single schema in this demo: the vocabulary tables (concept, ...) live in the
-# same "cdm" schema, so vocabulary_schema == cdm_schema.
+# same "cdm" schema. We pass only cdm_schema; dsOMOP defaults the vocabulary
+# schema to it, so this is equivalent to setting both.
 omop_url <- make_omop_url(
   dbms = "postgresql", host = pg_host, port = pg_port,
-  database = pg_db, cdm_schema = pg_schema, vocabulary_schema = pg_schema
+  database = pg_db, cdm_schema = pg_schema
 )
 
 cat(sprintf("Resource on each site: project='%s' name='%s' format='omop.dbi.db'\n",

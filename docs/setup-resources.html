@@ -162,8 +162,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <ul>
 <li class="chapter" data-level="2.1" data-path="setup-sites.html"><a href="setup-sites.html#the-fixed-ports-and-password"><i class="fa fa-check"></i><b>2.1</b> The fixed ports and password</a></li>
 <li class="chapter" data-level="2.2" data-path="setup-sites.html"><a href="setup-sites.html#what-easy-opal-does-per-site"><i class="fa fa-check"></i><b>2.2</b> What easy-opal does per site</a></li>
-<li class="chapter" data-level="2.3" data-path="setup-sites.html"><a href="setup-sites.html#using-your-own-image"><i class="fa fa-check"></i><b>2.3</b> Using your own image</a></li>
-<li class="chapter" data-level="2.4" data-path="setup-sites.html"><a href="setup-sites.html#verifying"><i class="fa fa-check"></i><b>2.4</b> Verifying</a></li>
+<li class="chapter" data-level="2.3" data-path="setup-sites.html"><a href="setup-sites.html#verifying"><i class="fa fa-check"></i><b>2.3</b> Verifying</a></li>
 </ul></li>
 <li class="chapter" data-level="3" data-path="setup-databases.html"><a href="setup-databases.html"><i class="fa fa-check"></i><b>3</b> Seeding the OMOP databases</a>
 <ul>
@@ -174,7 +173,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </ul></li>
 <li class="chapter" data-level="4" data-path="setup-resources.html"><a href="setup-resources.html"><i class="fa fa-check"></i><b>4</b> Registering the dsOMOP resources</a>
 <ul>
-<li class="chapter" data-level="4.1" data-path="setup-resources.html"><a href="setup-resources.html#the-dsomop-v2-resource-format"><i class="fa fa-check"></i><b>4.1</b> The dsOMOP v2 resource format</a></li>
+<li class="chapter" data-level="4.1" data-path="setup-resources.html"><a href="setup-resources.html#the-resource-format"><i class="fa fa-check"></i><b>4.1</b> The resource format</a></li>
 <li class="chapter" data-level="4.2" data-path="setup-resources.html"><a href="setup-resources.html#a-note-on-disclosure-control"><i class="fa fa-check"></i><b>4.2</b> A note on disclosure control</a></li>
 <li class="chapter" data-level="4.3" data-path="setup-resources.html"><a href="setup-resources.html#verifying-1"><i class="fa fa-check"></i><b>4.3</b> Verifying</a></li>
 </ul></li>
@@ -246,26 +245,32 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 each site, a DataSHIELD <strong>resource</strong> that tells the dsOMOP server package <em>where the
 OMOP data lives and how to open it</em>. It talks to the Opal REST API through R’s
 <a href="https://cran.r-project.org/package=opalr"><code>opalr</code></a> package — no Docker needed here.</p>
-<div class="sourceCode" id="cb14"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb14-1"><a href="setup-resources.html#cb14-1" tabindex="-1"></a><span class="fu">bash</span> 4_resources/setup_resources.sh</span></code></pre></div>
+<div class="sourceCode" id="cb13"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb13-1"><a href="setup-resources.html#cb13-1" tabindex="-1"></a><span class="fu">bash</span> 4_resources/setup_resources.sh</span></code></pre></div>
 <p>That thin wrapper installs <code>opalr</code> if needed and runs the R script that does the
 work:
 <a href="https://github.com/APHRC-DSE/Federated-Analysis-using-DataSHIELD-I/blob/main/4_resources/create_resources.R"><code>4_resources/create_resources.R</code></a>.
 For each site it ensures a resource-only project <strong><code>omop_demo</code></strong> and (re)creates one
 resource named <strong><code>gibleed</code></strong> — the path <code>omop_demo.gibleed</code> the client logs into.</p>
-<div id="the-dsomop-v2-resource-format" class="section level2 hasAnchor" number="4.1">
-<h2><span class="header-section-number">4.1</span> The dsOMOP v2 resource format<a href="setup-resources.html#the-dsomop-v2-resource-format" class="anchor-section" aria-label="Anchor link to header"></a></h2>
-<blockquote>
-<p>⚠️ The public dsOMOP <strong>README still documents the old v1 format</strong> (<code>omop.cdm.db</code>,
-<code>opal.resource_extension_create(...)</code>). <strong>dsOMOP 2.0.0 does not use that.</strong> What
-follows matches the actual 2.0.0 source.</p>
-</blockquote>
-<p>A v2 resource is an ordinary <code>resourcer</code> resource that the dsOMOP resolver matches
-<strong>by its format, <code>omop.dbi.db</code></strong>. All the connection details ride inside the URL,
-base64url-encoded so Opal’s R URL parser never has to cope with a <code>?</code>, <code>&amp;</code> or <code>=</code>:</p>
-<pre><code>omop+dbi:///B64:&lt;base64url( JSON )&gt;
-
-JSON = {&quot;dbms&quot;:&quot;postgresql&quot;,&quot;host&quot;:&quot;omopdb&quot;,&quot;port&quot;:5432,
-        &quot;database&quot;:&quot;omop&quot;,&quot;cdm_schema&quot;:&quot;cdm&quot;,&quot;vocabulary_schema&quot;:&quot;cdm&quot;}</code></pre>
+<div id="the-resource-format" class="section level2 hasAnchor" number="4.1">
+<h2><span class="header-section-number">4.1</span> The resource format<a href="setup-resources.html#the-resource-format" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>A resource is an ordinary <code>resourcer</code> resource that the dsOMOP resolver matches
+<strong>by its format, <code>omop.dbi.db</code></strong>. All the connection details ride inside a readable
+URL — the engine, host, port and database, with any non-default schemas as query
+parameters:</p>
+<pre><code>omop+dbi:&lt;dbms&gt;://&lt;host&gt;:&lt;port&gt;/&lt;database&gt;?cdm_schema=...&amp;vocabulary_schema=...</code></pre>
+<p>For this demo each site’s resource is exactly:</p>
+<pre><code>omop+dbi:postgresql://omopdb:5432/omop?cdm_schema=cdm</code></pre>
+<p>The schema query parameters are <strong>optional</strong> and follow a simple rule:</p>
+<ul>
+<li><strong>Neither given</strong> → both the CDM and vocabulary tables are read from the engine’s
+default schema (PostgreSQL <code>public</code>, SQL Server <code>dbo</code>, Oracle the connecting user,
+…).</li>
+<li><strong><code>cdm_schema</code> only</strong> → the vocabulary tables are assumed to sit alongside the CDM
+tables, so <code>vocabulary_schema</code> defaults to <code>cdm_schema</code>. That is the case here:
+everything lives in <code>cdm</code>.</li>
+<li><strong>Both given</strong> → the CDM and vocabulary tables are read from their respective
+schemas.</li>
+</ul>
 <p>Two consequences worth highlighting:</p>
 <ul>
 <li><strong><code>host</code>/<code>port</code> are Docker-internal.</strong> They are the alias <code>omopdb</code> and the
@@ -281,15 +286,15 @@ URLs and credentials are hardcoded to match steps 2–3):</p>
 <span id="cb16-2"><a href="setup-resources.html#cb16-2" tabindex="-1"></a>o <span class="ot">&lt;-</span> <span class="fu">opal.login</span>(<span class="st">&quot;administrator&quot;</span>, <span class="st">&quot;password&quot;</span>, <span class="st">&quot;http://localhost:48080&quot;</span>)</span>
 <span id="cb16-3"><a href="setup-resources.html#cb16-3" tabindex="-1"></a><span class="fu">opal.resource_create</span>(</span>
 <span id="cb16-4"><a href="setup-resources.html#cb16-4" tabindex="-1"></a>  o, <span class="st">&quot;omop_demo&quot;</span>, <span class="at">name =</span> <span class="st">&quot;gibleed&quot;</span>,</span>
-<span id="cb16-5"><a href="setup-resources.html#cb16-5" tabindex="-1"></a>  <span class="at">url =</span> <span class="st">&quot;omop+dbi:///B64:eyJkYm1zIjoicG9zdGdyZXNxbCIs...&quot;</span>),  <span class="co"># the encoded JSON above</span></span>
-<span id="cb16-6"><a href="setup-resources.html#cb16-6" tabindex="-1"></a>  format   <span class="ot">=</span> <span class="st">&quot;omop.dbi.db&quot;</span>,</span>
-<span id="cb16-7"><a href="setup-resources.html#cb16-7" tabindex="-1"></a>  identity <span class="ot">=</span> <span class="st">&quot;postgres&quot;</span>, secret <span class="ot">=</span> <span class="st">&quot;postgres&quot;</span><span class="er">)</span></span>
+<span id="cb16-5"><a href="setup-resources.html#cb16-5" tabindex="-1"></a>  <span class="at">url      =</span> <span class="st">&quot;omop+dbi:postgresql://omopdb:5432/omop?cdm_schema=cdm&quot;</span>,</span>
+<span id="cb16-6"><a href="setup-resources.html#cb16-6" tabindex="-1"></a>  <span class="at">format   =</span> <span class="st">&quot;omop.dbi.db&quot;</span>,</span>
+<span id="cb16-7"><a href="setup-resources.html#cb16-7" tabindex="-1"></a>  <span class="at">identity =</span> <span class="st">&quot;postgres&quot;</span>, <span class="at">secret =</span> <span class="st">&quot;postgres&quot;</span>)</span>
 <span id="cb16-8"><a href="setup-resources.html#cb16-8" tabindex="-1"></a><span class="fu">opal.logout</span>(o)</span></code></pre></div>
 </div>
 <div id="a-note-on-disclosure-control" class="section level2 hasAnchor" number="4.2">
 <h2><span class="header-section-number">4.2</span> A note on disclosure control<a href="setup-resources.html#a-note-on-disclosure-control" class="anchor-section" aria-label="Anchor link to header"></a></h2>
 <p>No DataSHIELD <code>privacyControlLevel</code> is set here, and it would make no difference if
-it were: <strong>dsOMOP v2 does not read that option.</strong> The
+it were: <strong>dsOMOP does not read that option.</strong> The
 <code>permissive</code>/<code>banana</code>/<code>avocado</code>/… hierarchy is a <em>dsBase</em> mechanism. dsOMOP enforces
 its <strong>own</strong> statistical disclosure control on every response — the standard
 <code>nfilter.*</code> thresholds plus a <strong>mandatory, non-disableable identifier strip</strong> — so

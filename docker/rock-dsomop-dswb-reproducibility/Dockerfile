@@ -14,7 +14,7 @@ FROM ${ROCK_BASE}
 
 # Git ref (tag or commit SHA) in isglobal-brge/dsOMOP to install.
 # Pinned to the v2.0.0 release. Equivalent commit:
-#   fea78bb146bb46fbdd5c9e71be976f9c3d469ce9
+#   a4dfe1a2c986af506d956aa19fed7ee32fb519b1
 # Pass --build-arg DSOMOP_REF=<sha> to pin an exact commit instead of the tag.
 ARG DSOMOP_REF=2.0.0
 

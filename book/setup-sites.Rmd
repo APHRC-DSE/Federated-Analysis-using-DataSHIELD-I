@@ -35,14 +35,16 @@ the client reproducible with no certificates to manage.
 
 ## What easy-opal does per site
 
-For each site the script runs the same four `easy-opal` commands. Taking `aphrc`
-on port `48080` as the example:
+For each site the script runs the same four `easy-opal` commands — once per
+instance, with only the instance name and HTTP port changing between sites.
 
 **1. Create an isolated instance.** Each site is a separate easy-opal *instance*,
 so the three stacks run side by side without clashing:
 
 ```bash
 easy-opal instance create aphrc
+easy-opal instance create dgh
+easy-opal instance create iressef
 ```
 
 **2. Set up Opal + MongoDB** on the fixed port, over HTTP, with the admin password.
@@ -53,9 +55,19 @@ easy-opal -i aphrc setup \
   --stack-name aphrc --ssl-strategy none --host localhost \
   --http-port 48080 --password password \
   --opal-version 5.5.1 --mongo-version 8.2.4 --yes
+
+easy-opal -i dgh setup \
+  --stack-name dgh --ssl-strategy none --host localhost \
+  --http-port 48081 --password password \
+  --opal-version 5.5.1 --mongo-version 8.2.4 --yes
+
+easy-opal -i iressef setup \
+  --stack-name iressef --ssl-strategy none --host localhost \
+  --http-port 48082 --password password \
+  --opal-version 5.5.1 --mongo-version 8.2.4 --yes
 ```
 
-**3. Add the dsOMOP Rock profile.** This is what makes the site *OMOP-aware*. We
+**3. Add the dsOMOP Rock profile.** This is what makes each site *OMOP-aware*. We
 register our Rock image as a second profile named **`omop`**, alongside the default
 `rock` profile. The DataSHIELD client logs into this `omop` profile, which bundles
 **dsOMOP v2**:
@@ -64,31 +76,27 @@ register our Rock image as a second profile named **`omop`**, alongside the defa
 easy-opal -i aphrc profile add \
   --image davidsarrat/rock-dsomop-dswb-reproducibility --tag 2.0.0 \
   --name omop --yes
+
+easy-opal -i dgh profile add \
+  --image davidsarrat/rock-dsomop-dswb-reproducibility --tag 2.0.0 \
+  --name omop --yes
+
+easy-opal -i iressef profile add \
+  --image davidsarrat/rock-dsomop-dswb-reproducibility --tag 2.0.0 \
+  --name omop --yes
 ```
 
-**4. Restart** so the new profile goes live:
+**4. Restart** each site so the new profile goes live:
 
 ```bash
 easy-opal -i aphrc restart
+easy-opal -i dgh restart
+easy-opal -i iressef restart
 ```
-
-The script repeats these four commands for `dgh` (port 48081) and `iressef`
-(port 48082).
 
 > On **Apple Silicon** the script forces `linux/amd64` for the image pull only, so
 > the `amd64`-only dsOMOP image resolves and then runs emulated. The multi-arch
 > Opal/MongoDB images keep running natively.
-
-## Using your own image
-
-`davidsarrat/rock-dsomop-dswb-reproducibility:2.0.0` is published and public, so
-nothing is required here. To build and push your own dsOMOP Rock image instead (see
-[`docker/rock-dsomop-dswb-reproducibility/`](https://github.com/APHRC-DSE/Federated-Analysis-using-DataSHIELD-I/tree/main/docker/rock-dsomop-dswb-reproducibility)),
-just point `IMAGE` at it:
-
-```bash
-IMAGE=youruser/rock-dsomop-dswb-reproducibility bash 2_opal_stacks/setup_sites.sh
-```
 
 ## Verifying
 

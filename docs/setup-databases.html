@@ -162,8 +162,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <ul>
 <li class="chapter" data-level="2.1" data-path="setup-sites.html"><a href="setup-sites.html#the-fixed-ports-and-password"><i class="fa fa-check"></i><b>2.1</b> The fixed ports and password</a></li>
 <li class="chapter" data-level="2.2" data-path="setup-sites.html"><a href="setup-sites.html#what-easy-opal-does-per-site"><i class="fa fa-check"></i><b>2.2</b> What easy-opal does per site</a></li>
-<li class="chapter" data-level="2.3" data-path="setup-sites.html"><a href="setup-sites.html#using-your-own-image"><i class="fa fa-check"></i><b>2.3</b> Using your own image</a></li>
-<li class="chapter" data-level="2.4" data-path="setup-sites.html"><a href="setup-sites.html#verifying"><i class="fa fa-check"></i><b>2.4</b> Verifying</a></li>
+<li class="chapter" data-level="2.3" data-path="setup-sites.html"><a href="setup-sites.html#verifying"><i class="fa fa-check"></i><b>2.3</b> Verifying</a></li>
 </ul></li>
 <li class="chapter" data-level="3" data-path="setup-databases.html"><a href="setup-databases.html"><i class="fa fa-check"></i><b>3</b> Seeding the OMOP databases</a>
 <ul>
@@ -174,7 +173,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </ul></li>
 <li class="chapter" data-level="4" data-path="setup-resources.html"><a href="setup-resources.html"><i class="fa fa-check"></i><b>4</b> Registering the dsOMOP resources</a>
 <ul>
-<li class="chapter" data-level="4.1" data-path="setup-resources.html"><a href="setup-resources.html#the-dsomop-v2-resource-format"><i class="fa fa-check"></i><b>4.1</b> The dsOMOP v2 resource format</a></li>
+<li class="chapter" data-level="4.1" data-path="setup-resources.html"><a href="setup-resources.html#the-resource-format"><i class="fa fa-check"></i><b>4.1</b> The resource format</a></li>
 <li class="chapter" data-level="4.2" data-path="setup-resources.html"><a href="setup-resources.html#a-note-on-disclosure-control"><i class="fa fa-check"></i><b>4.2</b> A note on disclosure control</a></li>
 <li class="chapter" data-level="4.3" data-path="setup-resources.html"><a href="setup-resources.html#verifying-1"><i class="fa fa-check"></i><b>4.3</b> Verifying</a></li>
 </ul></li>
@@ -245,12 +244,13 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <p>Each site now needs its <strong>own</strong> OMOP CDM database. This step gives every site a
 PostgreSQL container holding a person-disjoint slice of the OHDSI <strong>GiBleed</strong>
 cohort. One command does it all:</p>
-<div class="sourceCode" id="cb10"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb10-1"><a href="setup-databases.html#cb10-1" tabindex="-1"></a><span class="fu">bash</span> 3_databases/setup_databases.sh</span></code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb9-1"><a href="setup-databases.html#cb9-1" tabindex="-1"></a><span class="fu">bash</span> 3_databases/setup_databases.sh</span></code></pre></div>
 <p>The full script:
 <a href="https://github.com/APHRC-DSE/Federated-Analysis-using-DataSHIELD-I/blob/main/3_databases/setup_databases.sh"><code>3_databases/setup_databases.sh</code></a>.</p>
 <div id="where-the-data-comes-from" class="section level2 hasAnchor" number="3.1">
 <h2><span class="header-section-number">3.1</span> Where the data comes from<a href="setup-databases.html#where-the-data-comes-from" class="anchor-section" aria-label="Anchor link to header"></a></h2>
-<p>The script downloads two <strong>pinned, Apache-2.0</strong> sources from OHDSI and caches them
+<p>The <a href="https://github.com/APHRC-DSE/Federated-Analysis-using-DataSHIELD-I/blob/main/3_databases/setup_databases.sh"><code>setup_databases.sh</code></a>
+script downloads two <strong>pinned, Apache-2.0</strong> sources from OHDSI and caches them
 under <code>3_databases/.cache/</code>:</p>
 <ul>
 <li>the <strong>GiBleed</strong> synthetic CSVs (OMOP CDM 5.3) — from
@@ -266,12 +266,25 @@ machine.</p>
 <div id="a-self-managed-postgresql-per-site" class="section level2 hasAnchor" number="3.2">
 <h2><span class="header-section-number">3.2</span> A self-managed PostgreSQL per site<a href="setup-databases.html#a-self-managed-postgresql-per-site" class="anchor-section" aria-label="Anchor link to header"></a></h2>
 <p>For each site the script starts a fresh PostgreSQL 16 container and <strong>attaches it to
-that site’s Docker network</strong> with the alias <code>omopdb</code>. Taking <code>aphrc</code> as the example:</p>
-<div class="sourceCode" id="cb11"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb11-1"><a href="setup-databases.html#cb11-1" tabindex="-1"></a><span class="ex">docker</span> run <span class="at">-d</span> <span class="at">--name</span> omopdb-aphrc <span class="dt">\</span></span>
-<span id="cb11-2"><a href="setup-databases.html#cb11-2" tabindex="-1"></a>  <span class="at">--network</span> <span class="op">&lt;</span>aphrc-network<span class="op">&gt;</span> --network-alias omopdb <span class="dt">\</span></span>
-<span id="cb11-3"><a href="setup-databases.html#cb11-3" tabindex="-1"></a>  <span class="at">-e</span> POSTGRES_USER=postgres <span class="at">-e</span> POSTGRES_PASSWORD=postgres <span class="at">-e</span> POSTGRES_DB=omop <span class="dt">\</span></span>
-<span id="cb11-4"><a href="setup-databases.html#cb11-4" tabindex="-1"></a>  <span class="at">-p</span> 45432:5432 <span class="dt">\</span></span>
-<span id="cb11-5"><a href="setup-databases.html#cb11-5" tabindex="-1"></a>  postgres:16</span></code></pre></div>
+that site’s Docker network</strong> with the alias <code>omopdb</code> — one per site, differing only
+in the container name, the site’s network and the inspection port:</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb10-1"><a href="setup-databases.html#cb10-1" tabindex="-1"></a><span class="ex">docker</span> run <span class="at">-d</span> <span class="at">--name</span> omopdb-aphrc <span class="dt">\</span></span>
+<span id="cb10-2"><a href="setup-databases.html#cb10-2" tabindex="-1"></a>  <span class="at">--network</span> <span class="op">&lt;</span>aphrc-network<span class="op">&gt;</span> --network-alias omopdb <span class="dt">\</span></span>
+<span id="cb10-3"><a href="setup-databases.html#cb10-3" tabindex="-1"></a>  <span class="at">-e</span> POSTGRES_USER=postgres <span class="at">-e</span> POSTGRES_PASSWORD=postgres <span class="at">-e</span> POSTGRES_DB=omop <span class="dt">\</span></span>
+<span id="cb10-4"><a href="setup-databases.html#cb10-4" tabindex="-1"></a>  <span class="at">-p</span> 45432:5432 <span class="dt">\</span></span>
+<span id="cb10-5"><a href="setup-databases.html#cb10-5" tabindex="-1"></a>  postgres:16</span>
+<span id="cb10-6"><a href="setup-databases.html#cb10-6" tabindex="-1"></a></span>
+<span id="cb10-7"><a href="setup-databases.html#cb10-7" tabindex="-1"></a><span class="ex">docker</span> run <span class="at">-d</span> <span class="at">--name</span> omopdb-dgh <span class="dt">\</span></span>
+<span id="cb10-8"><a href="setup-databases.html#cb10-8" tabindex="-1"></a>  <span class="at">--network</span> <span class="op">&lt;</span>dgh-network<span class="op">&gt;</span> --network-alias omopdb <span class="dt">\</span></span>
+<span id="cb10-9"><a href="setup-databases.html#cb10-9" tabindex="-1"></a>  <span class="at">-e</span> POSTGRES_USER=postgres <span class="at">-e</span> POSTGRES_PASSWORD=postgres <span class="at">-e</span> POSTGRES_DB=omop <span class="dt">\</span></span>
+<span id="cb10-10"><a href="setup-databases.html#cb10-10" tabindex="-1"></a>  <span class="at">-p</span> 45433:5432 <span class="dt">\</span></span>
+<span id="cb10-11"><a href="setup-databases.html#cb10-11" tabindex="-1"></a>  postgres:16</span>
+<span id="cb10-12"><a href="setup-databases.html#cb10-12" tabindex="-1"></a></span>
+<span id="cb10-13"><a href="setup-databases.html#cb10-13" tabindex="-1"></a><span class="ex">docker</span> run <span class="at">-d</span> <span class="at">--name</span> omopdb-iressef <span class="dt">\</span></span>
+<span id="cb10-14"><a href="setup-databases.html#cb10-14" tabindex="-1"></a>  <span class="at">--network</span> <span class="op">&lt;</span>iressef-network<span class="op">&gt;</span> --network-alias omopdb <span class="dt">\</span></span>
+<span id="cb10-15"><a href="setup-databases.html#cb10-15" tabindex="-1"></a>  <span class="at">-e</span> POSTGRES_USER=postgres <span class="at">-e</span> POSTGRES_PASSWORD=postgres <span class="at">-e</span> POSTGRES_DB=omop <span class="dt">\</span></span>
+<span id="cb10-16"><a href="setup-databases.html#cb10-16" tabindex="-1"></a>  <span class="at">-p</span> 45434:5432 <span class="dt">\</span></span>
+<span id="cb10-17"><a href="setup-databases.html#cb10-17" tabindex="-1"></a>  postgres:16</span></code></pre></div>
 <p>Two things matter here:</p>
 <ul>
 <li><strong>The network alias <code>omopdb</code>.</strong> Inside the site’s Docker network the Rock server
@@ -295,9 +308,10 @@ GiBleed CSV into its table.</p>
 <div id="sharding-by-person" class="section level2 hasAnchor" number="3.3">
 <h2><span class="header-section-number">3.3</span> Sharding by person<a href="setup-databases.html#sharding-by-person" class="anchor-section" aria-label="Anchor link to header"></a></h2>
 <p>This is what makes it a <em>federation</em> rather than three copies. After loading, the
-script keeps on each site only the persons whose <code>person_id</code> falls in that site’s
+<a href="https://github.com/APHRC-DSE/Federated-Analysis-using-DataSHIELD-I/blob/main/3_databases/setup_databases.sh">same script</a>
+keeps on each site only the persons whose <code>person_id</code> falls in that site’s
 residue class, and deletes their rows from every person-linked table:</p>
-<div class="sourceCode" id="cb12"><pre class="sourceCode sql"><code class="sourceCode sql"><span id="cb12-1"><a href="setup-databases.html#cb12-1" tabindex="-1"></a><span class="kw">DELETE</span> <span class="kw">FROM</span> cdm.<span class="op">&lt;</span><span class="kw">table</span><span class="op">&gt;</span> <span class="kw">WHERE</span> person_id % <span class="dv">3</span> <span class="op">&lt;&gt;</span> <span class="op">&lt;</span>site <span class="kw">index</span><span class="op">&gt;</span>;</span></code></pre></div>
+<div class="sourceCode" id="cb11"><pre class="sourceCode sql"><code class="sourceCode sql"><span id="cb11-1"><a href="setup-databases.html#cb11-1" tabindex="-1"></a><span class="kw">DELETE</span> <span class="kw">FROM</span> cdm.<span class="op">&lt;</span><span class="kw">table</span><span class="op">&gt;</span> <span class="kw">WHERE</span> person_id % <span class="dv">3</span> <span class="op">&lt;&gt;</span> <span class="op">&lt;</span>site <span class="kw">index</span><span class="op">&gt;</span>;</span></code></pre></div>
 <p>So a person — and <strong>all</strong> of their records — lives on exactly one site:</p>
 <table>
 <thead>
@@ -338,8 +352,8 @@ concept names locally without ever sharing a patient.</p>
 <h2><span class="header-section-number">3.4</span> Inspecting a site<a href="setup-databases.html#inspecting-a-site" class="anchor-section" aria-label="Anchor link to header"></a></h2>
 <p>The split is deterministic, so you can verify it directly against a site’s
 inspection port:</p>
-<div class="sourceCode" id="cb13"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb13-1"><a href="setup-databases.html#cb13-1" tabindex="-1"></a><span class="va">PGPASSWORD</span><span class="op">=</span>postgres <span class="ex">psql</span> <span class="at">-h</span> localhost <span class="at">-p</span> 45432 <span class="at">-U</span> postgres <span class="at">-d</span> omop <span class="dt">\</span></span>
-<span id="cb13-2"><a href="setup-databases.html#cb13-2" tabindex="-1"></a>  <span class="at">-c</span> <span class="st">&#39;select count(*) from cdm.person;&#39;</span>   <span class="co"># aphrc -&gt; 889</span></span></code></pre></div>
+<div class="sourceCode" id="cb12"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb12-1"><a href="setup-databases.html#cb12-1" tabindex="-1"></a><span class="va">PGPASSWORD</span><span class="op">=</span>postgres <span class="ex">psql</span> <span class="at">-h</span> localhost <span class="at">-p</span> 45432 <span class="at">-U</span> postgres <span class="at">-d</span> omop <span class="dt">\</span></span>
+<span id="cb12-2"><a href="setup-databases.html#cb12-2" tabindex="-1"></a>  <span class="at">-c</span> <span class="st">&#39;select count(*) from cdm.person;&#39;</span>   <span class="co"># aphrc -&gt; 889</span></span></code></pre></div>
 <p>Re-running the script recreates each <code>omopdb-&lt;site&gt;</code> container and its volume from
 scratch, so you always get a clean, identical load. Next we tell Opal where this
 database lives.</p>

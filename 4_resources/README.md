@@ -27,7 +27,7 @@ bash 4_resources/setup_resources.sh
 
 1. **Ensures a resource-only Opal project** (`omop_demo`). No storage database is
    attached — dsOMOP reads through the resource, not Opal tables.
-2. **(Re)creates one OMOP CDM resource** (name `gibleed`) of dsOMOP v2 format
+2. **(Re)creates one OMOP CDM resource** (name `gibleed`) of format
    **`omop.dbi.db`**, pointing the Rock session at that site's PostgreSQL.
 
 The resource path is the fixed `omop_demo.gibleed`, which step 5 logs into directly.
@@ -35,22 +35,21 @@ The resource path is the fixed `omop_demo.gibleed`, which step 5 logs into direc
 No DataSHIELD privacy-control level is set here — see
 [Privacy and disclosure control](#privacy-and-disclosure-control) below.
 
-## The dsOMOP v2 resource format (important)
+## The resource format
 
-> ⚠️ The public dsOMOP **README still documents the old v1 format**
-> (`type omop.cdm.db`, `opal.resource_extension_create(provider='dsOMOP',
-> factory='omop-cdm-db', ...)`). **dsOMOP 2.0.0 does not use that.** This step
-> follows the actual 2.0.0 source (`R/resource.R`).
-
-A v2 resource is an ordinary `resourcer` resource that the dsOMOP resolver
-matches **by `format == "omop.dbi.db"`**. All connection details ride inside the
-URL, base64url-encoded so Opal's R URL parser never sees a `?`, `&`, or `=`:
+A resource is an ordinary `resourcer` resource that the dsOMOP resolver
+matches **by `format == "omop.dbi.db"`**. All connection details ride inside a
+readable URL — engine, host, port and database, with any non-default schemas as
+query parameters:
 
 ```
-omop+dbi:///B64:<base64url( JSON )>
+omop+dbi:<dbms>://<host>:<port>/<database>?cdm_schema=...&vocabulary_schema=...
+```
 
-JSON = {"dbms":"postgresql","host":"omopdb","port":5432,
-        "database":"omop","cdm_schema":"cdm","vocabulary_schema":"cdm"}
+For this demo each site's resource is exactly:
+
+```
+omop+dbi:postgresql://omopdb:5432/omop?cdm_schema=cdm
 ```
 
 - **`host` / `port` are Docker-internal** — the network alias `omopdb` and the
@@ -59,16 +58,18 @@ JSON = {"dbms":"postgresql","host":"omopdb","port":5432,
   `omopdb` to its own site's database.
 - **Credentials are not in the URL.** The DB user/password are stored as the
   resource's `identity`/`secret` (here `postgres`/`postgres`).
+- **Schemas are optional.** With neither given, both the CDM and vocabulary
+  tables fall back to the engine's default schema; with only `cdm_schema` the
+  vocabulary schema defaults to it (the case here — everything lives in `cdm`).
 
 ## Privacy and disclosure control
 
 **dsOMOP 2.0.0 does not use `datashield.privacyControlLevel` at all.** The
 `permissive > banana > avocado > carrot > non-permissive` hierarchy is a
 *dsBase* mechanism (it gates dsBase functions such as `ds.dataFrameSubset` /
-`ds.reShape`). dsOMOP v2 neither depends on dsBase nor reads that option, so its
+`ds.reShape`). dsOMOP neither depends on dsBase nor reads that option, so its
 operations — **including data extraction** (`ds.omop.plan.execute`) — behave the
-same at every level. (The stale v1 README that mentions `permissive`/`banana`
-predates this rewrite.)
+same at every level.
 
 Instead, dsOMOP v2 enforces its **own** statistical disclosure control on every
 server response, regardless of the level:

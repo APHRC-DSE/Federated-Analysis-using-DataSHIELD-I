@@ -162,8 +162,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <ul>
 <li class="chapter" data-level="2.1" data-path="setup-sites.html"><a href="setup-sites.html#the-fixed-ports-and-password"><i class="fa fa-check"></i><b>2.1</b> The fixed ports and password</a></li>
 <li class="chapter" data-level="2.2" data-path="setup-sites.html"><a href="setup-sites.html#what-easy-opal-does-per-site"><i class="fa fa-check"></i><b>2.2</b> What easy-opal does per site</a></li>
-<li class="chapter" data-level="2.3" data-path="setup-sites.html"><a href="setup-sites.html#using-your-own-image"><i class="fa fa-check"></i><b>2.3</b> Using your own image</a></li>
-<li class="chapter" data-level="2.4" data-path="setup-sites.html"><a href="setup-sites.html#verifying"><i class="fa fa-check"></i><b>2.4</b> Verifying</a></li>
+<li class="chapter" data-level="2.3" data-path="setup-sites.html"><a href="setup-sites.html#verifying"><i class="fa fa-check"></i><b>2.3</b> Verifying</a></li>
 </ul></li>
 <li class="chapter" data-level="3" data-path="setup-databases.html"><a href="setup-databases.html"><i class="fa fa-check"></i><b>3</b> Seeding the OMOP databases</a>
 <ul>
@@ -174,7 +173,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </ul></li>
 <li class="chapter" data-level="4" data-path="setup-resources.html"><a href="setup-resources.html"><i class="fa fa-check"></i><b>4</b> Registering the dsOMOP resources</a>
 <ul>
-<li class="chapter" data-level="4.1" data-path="setup-resources.html"><a href="setup-resources.html#the-dsomop-v2-resource-format"><i class="fa fa-check"></i><b>4.1</b> The dsOMOP v2 resource format</a></li>
+<li class="chapter" data-level="4.1" data-path="setup-resources.html"><a href="setup-resources.html#the-resource-format"><i class="fa fa-check"></i><b>4.1</b> The resource format</a></li>
 <li class="chapter" data-level="4.2" data-path="setup-resources.html"><a href="setup-resources.html#a-note-on-disclosure-control"><i class="fa fa-check"></i><b>4.2</b> A note on disclosure control</a></li>
 <li class="chapter" data-level="4.3" data-path="setup-resources.html"><a href="setup-resources.html#verifying-1"><i class="fa fa-check"></i><b>4.3</b> Verifying</a></li>
 </ul></li>
@@ -295,22 +294,23 @@ Linux/amd64 hosts and <strong>emulated</strong> on Apple Silicon (slower, but it
 <h2><span class="header-section-number">1.2</span> Installing easy-opal (step 1)<a href="setup-prerequisites.html#installing-easy-opal-step-1" class="anchor-section" aria-label="Anchor link to header"></a></h2>
 <p>We deploy and manage the Opal + Rock sites with
 <a href="https://github.com/isglobal-brge/easy-opal"><strong>easy-opal</strong></a>, a CLI that wraps
-Docker Compose. Step 1 pins it to version <strong>2.1.0</strong> and installs it into a local
-virtual environment at the repo root, which sidesteps the
-<code>externally-managed-environment</code> error (PEP 668) on recent macOS / Ubuntu:</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="setup-prerequisites.html#cb1-1" tabindex="-1"></a><span class="fu">bash</span> 1_setup/install_easy_opal.sh</span></code></pre></div>
-<p>Then activate the environment and confirm it works — <code>easy-opal doctor</code> checks that
-Docker is reachable and correctly configured:</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="setup-prerequisites.html#cb2-1" tabindex="-1"></a><span class="bu">source</span> .venv/bin/activate</span>
-<span id="cb2-2"><a href="setup-prerequisites.html#cb2-2" tabindex="-1"></a><span class="ex">easy-opal</span> <span class="at">--version</span>   <span class="co"># -&gt; 2.1.0</span></span>
-<span id="cb2-3"><a href="setup-prerequisites.html#cb2-3" tabindex="-1"></a><span class="ex">easy-opal</span> doctor      <span class="co"># checks Docker, permissions, etc.</span></span></code></pre></div>
-<p><code>easy-opal</code> is an ordinary PyPI package, so if you prefer a global install any of
-these work just as well:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb3-1"><a href="setup-prerequisites.html#cb3-1" tabindex="-1"></a><span class="ex">pipx</span> install easy-opal==2.1.0      <span class="co"># isolated, on PATH globally</span></span>
-<span id="cb3-2"><a href="setup-prerequisites.html#cb3-2" tabindex="-1"></a><span class="ex">uv</span> tool install easy-opal==2.1.0   <span class="co"># fastest</span></span>
-<span id="cb3-3"><a href="setup-prerequisites.html#cb3-3" tabindex="-1"></a><span class="ex">pip</span> install easy-opal==2.1.0       <span class="co"># into the currently active environment</span></span></code></pre></div>
-<p>The full script for this step:
-<a href="https://github.com/APHRC-DSE/Federated-Analysis-using-DataSHIELD-I/blob/main/1_setup/install_easy_opal.sh"><code>1_setup/install_easy_opal.sh</code></a>.</p>
+Docker Compose. It is an ordinary PyPI package, so installing it is a single
+<code>pip</code> command:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="setup-prerequisites.html#cb1-1" tabindex="-1"></a><span class="ex">pip</span> install easy-opal</span></code></pre></div>
+<blockquote>
+<p><strong>Version.</strong> <code>easy-opal</code> is actively developed, so we deliberately do <strong>not</strong>
+pin a version. As of June 2026 the current release is <strong>2.1.0</strong> — that or newer
+is fine.</p>
+</blockquote>
+<p>That puts an <code>easy-opal</code> command on your <code>PATH</code>. Confirm it works — <code>easy-opal doctor</code> checks that Docker is reachable and correctly configured:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="setup-prerequisites.html#cb2-1" tabindex="-1"></a><span class="ex">easy-opal</span> <span class="at">--version</span></span>
+<span id="cb2-2"><a href="setup-prerequisites.html#cb2-2" tabindex="-1"></a><span class="ex">easy-opal</span> doctor      <span class="co"># checks Docker, permissions, etc.</span></span></code></pre></div>
+<blockquote>
+<p>If your system Python is <em>externally managed</em> (PEP 668) and a bare <code>pip install</code> is refused, install it in isolation instead — both still put
+<code>easy-opal</code> on your <code>PATH</code>:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb3-1"><a href="setup-prerequisites.html#cb3-1" tabindex="-1"></a><span class="ex">pipx</span> install easy-opal     <span class="co"># isolated, on PATH globally</span></span>
+<span id="cb3-2"><a href="setup-prerequisites.html#cb3-2" tabindex="-1"></a><span class="ex">uv</span> tool install easy-opal  <span class="co"># fastest</span></span></code></pre></div>
+</blockquote>
 <p>With <code>easy-opal</code> on your <code>PATH</code>, the next chapter stands up the three sites.</p>
 
 </div>

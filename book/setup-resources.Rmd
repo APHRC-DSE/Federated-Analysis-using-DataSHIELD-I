@@ -15,22 +15,33 @@ work:
 For each site it ensures a resource-only project **`omop_demo`** and (re)creates one
 resource named **`gibleed`** — the path `omop_demo.gibleed` the client logs into.
 
-## The dsOMOP v2 resource format
+## The resource format
 
-> ⚠️ The public dsOMOP **README still documents the old v1 format** (`omop.cdm.db`,
-> `opal.resource_extension_create(...)`). **dsOMOP 2.0.0 does not use that.** What
-> follows matches the actual 2.0.0 source.
-
-A v2 resource is an ordinary `resourcer` resource that the dsOMOP resolver matches
-**by its format, `omop.dbi.db`**. All the connection details ride inside the URL,
-base64url-encoded so Opal's R URL parser never has to cope with a `?`, `&` or `=`:
+A resource is an ordinary `resourcer` resource that the dsOMOP resolver matches
+**by its format, `omop.dbi.db`**. All the connection details ride inside a readable
+URL — the engine, host, port and database, with any non-default schemas as query
+parameters:
 
 ```
-omop+dbi:///B64:<base64url( JSON )>
-
-JSON = {"dbms":"postgresql","host":"omopdb","port":5432,
-        "database":"omop","cdm_schema":"cdm","vocabulary_schema":"cdm"}
+omop+dbi:<dbms>://<host>:<port>/<database>?cdm_schema=...&vocabulary_schema=...
 ```
+
+For this demo each site's resource is exactly:
+
+```
+omop+dbi:postgresql://omopdb:5432/omop?cdm_schema=cdm
+```
+
+The schema query parameters are **optional** and follow a simple rule:
+
+- **Neither given** → both the CDM and vocabulary tables are read from the engine's
+  default schema (PostgreSQL `public`, SQL Server `dbo`, Oracle the connecting user,
+  …).
+- **`cdm_schema` only** → the vocabulary tables are assumed to sit alongside the CDM
+  tables, so `vocabulary_schema` defaults to `cdm_schema`. That is the case here:
+  everything lives in `cdm`.
+- **Both given** → the CDM and vocabulary tables are read from their respective
+  schemas.
 
 Two consequences worth highlighting:
 
@@ -49,7 +60,7 @@ library(opalr)
 o <- opal.login("administrator", "password", "http://localhost:48080")
 opal.resource_create(
   o, "omop_demo", name = "gibleed",
-  url = "omop+dbi:///B64:eyJkYm1zIjoicG9zdGdyZXNxbCIs..."),  # the encoded JSON above
+  url      = "omop+dbi:postgresql://omopdb:5432/omop?cdm_schema=cdm",
   format   = "omop.dbi.db",
   identity = "postgres", secret = "postgres")
 opal.logout(o)
@@ -58,7 +69,7 @@ opal.logout(o)
 ## A note on disclosure control
 
 No DataSHIELD `privacyControlLevel` is set here, and it would make no difference if
-it were: **dsOMOP v2 does not read that option.** The
+it were: **dsOMOP does not read that option.** The
 `permissive`/`banana`/`avocado`/… hierarchy is a *dsBase* mechanism. dsOMOP enforces
 its **own** statistical disclosure control on every response — the standard
 `nfilter.*` thresholds plus a **mandatory, non-disableable identifier strip** — so

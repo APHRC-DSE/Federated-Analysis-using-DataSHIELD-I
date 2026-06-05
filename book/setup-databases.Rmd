@@ -13,7 +13,8 @@ The full script:
 
 ## Where the data comes from
 
-The script downloads two **pinned, Apache-2.0** sources from OHDSI and caches them
+The [`setup_databases.sh`](https://github.com/APHRC-DSE/Federated-Analysis-using-DataSHIELD-I/blob/main/3_databases/setup_databases.sh)
+script downloads two **pinned, Apache-2.0** sources from OHDSI and caches them
 under `3_databases/.cache/`:
 
 - the **GiBleed** synthetic CSVs (OMOP CDM 5.3) — from
@@ -29,13 +30,26 @@ machine.
 ## A self-managed PostgreSQL per site
 
 For each site the script starts a fresh PostgreSQL 16 container and **attaches it to
-that site's Docker network** with the alias `omopdb`. Taking `aphrc` as the example:
+that site's Docker network** with the alias `omopdb` — one per site, differing only
+in the container name, the site's network and the inspection port:
 
 ```bash
 docker run -d --name omopdb-aphrc \
   --network <aphrc-network> --network-alias omopdb \
   -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=omop \
   -p 45432:5432 \
+  postgres:16
+
+docker run -d --name omopdb-dgh \
+  --network <dgh-network> --network-alias omopdb \
+  -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=omop \
+  -p 45433:5432 \
+  postgres:16
+
+docker run -d --name omopdb-iressef \
+  --network <iressef-network> --network-alias omopdb \
+  -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=omop \
+  -p 45434:5432 \
   postgres:16
 ```
 
@@ -61,7 +75,8 @@ GiBleed CSV into its table.
 ## Sharding by person
 
 This is what makes it a *federation* rather than three copies. After loading, the
-script keeps on each site only the persons whose `person_id` falls in that site's
+[same script](https://github.com/APHRC-DSE/Federated-Analysis-using-DataSHIELD-I/blob/main/3_databases/setup_databases.sh)
+keeps on each site only the persons whose `person_id` falls in that site's
 residue class, and deletes their rows from every person-linked table:
 
 ```sql

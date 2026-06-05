@@ -5,7 +5,6 @@ installing-easy-opal-step-1
 setup-sites
 the-fixed-ports-and-password
 what-easy-opal-does-per-site
-using-your-own-image
 verifying
 setup-databases
 where-the-data-comes-from
@@ -13,7 +12,7 @@ a-self-managed-postgresql-per-site
 sharding-by-person
 inspecting-a-site
 setup-resources
-the-dsomop-v2-resource-format
+the-resource-format
 a-note-on-disclosure-control
 verifying-1
 setup-connect
