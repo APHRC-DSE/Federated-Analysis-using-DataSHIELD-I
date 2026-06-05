@@ -1,0 +1,103 @@
+# Extracting a fused person-level table {#extract}
+
+dsOMOP's **plan DSL** lets you request *exactly* the features you want — drawn
+from several OMOP tables — and materialises a single person-level data frame on
+each server. The fusion happens in place; nothing patient-level is transferred.
+We then hand off to standard `dsBaseClient` to confirm the extract landed as an
+ordinary server-side data frame.
+
+## The concepts to extract
+
+These are the OMOP concept ids the catalogue pointed us to — the outcome and its
+antecedent condition, and the NSAID ingredient set:
+
+```{r concepts}
+NSAID <- c(aspirin   = 19059056, celecoxib = 1118084, ibuprofen = 19078461,
+           naproxen  = 1115171,  diclofenac = 1124300)
+GI_BLEED     <- 192671
+PEPTIC_ULCER <- 4027663
+```
+
+## Building the plan
+
+We declare one **person-level** output that fuses three tables. Each feature is
+*named* — the name on the left of `=` becomes the output column — so nothing
+leaks out as an opaque `x<concept_id>` column. Two feature constructors do the
+clinical work:
+
+- `omop.feature.boolean(set)` — a single **"any of the set"** flag: `TRUE` when
+  the person has a record for *any* concept in the set. `nsaid` is `TRUE` for a
+  person with *any* of the five NSAIDs; `diclofenac` is the flag for one agent.
+- `omop.feature.count(set)` — the **total number of records** across the set,
+  giving `nsaid_n`, a continuous measure of NSAID burden.
+
+```{r plan}
+plan <- ds.omop.plan()
+plan <- ds.omop.plan.person_level(
+  plan, name = "study",
+  tables = list(
+    person = c(sex = "gender_concept_id", birth_year = "year_of_birth"),
+    condition_occurrence = list(
+      features = list(
+        gi_bleed     = omop.feature.boolean(GI_BLEED),
+        peptic_ulcer = omop.feature.boolean(PEPTIC_ULCER)),
+      concept_set = c(GI_BLEED, PEPTIC_ULCER)),
+    drug_exposure = list(
+      features = list(
+        diclofenac = omop.feature.boolean(NSAID["diclofenac"]),
+        nsaid      = omop.feature.boolean(unname(NSAID)),
+        nsaid_n    = omop.feature.count(unname(NSAID))),
+      concept_set = unname(NSAID))))
+
+# Harmonise concept-coded columns (e.g. sex) into federation-aligned factors.
+plan <- ds.omop.plan.options(plan, factor_concepts = TRUE)
+```
+
+`ds.omop.plan.preview()` resolves the plan against the schema without
+materialising data — a cheap dry run before committing:
+
+```{r preview, results = "hide"}
+invisible(ds.omop.plan.preview(plan, symbol = "omop", conns = conns))
+```
+
+## Executing on the server
+
+`ds.omop.plan.execute()` runs the plan on each site and binds the resulting
+person-level frame to the symbol `D`:
+
+```{r execute, results = "hide"}
+ds.omop.plan.execute(plan, out = c(study = "D"), symbol = "omop", conns = conns)
+```
+
+## Confirming the fused frame
+
+The columns are exactly the named features we asked for — across three tables —
+and **no identifier column came along** (dsOMOP strips person ids before the
+frame ever enters the DataSHIELD session):
+
+```{r colnames}
+ds.colnames("D")
+```
+
+Its dimensions, pooled across the three sites, recover the **full cohort of
+2&nbsp;694 persons** with seven feature columns:
+
+```{r dim}
+ds.dim("D", type = "combine")
+```
+
+This full-cohort count is not an accident. When a person has *no* NSAID record,
+or no peptic ulcer, the fused boolean/count features for that person are filled
+with **0**, not `NA` — so persons are never silently dropped from the cohort by
+the cross-table join. An absent event means "did not occur", which is exactly
+what a `0` encodes.
+
+`ds.summary()` confirms `D` is an ordinary server-side `data.frame` — this is the
+hand-off point from the OMOP layer to the standard DataSHIELD toolchain:
+
+```{r summary}
+ds.summary("D")[[1]]$class
+ds.summary("D")[[1]]$dimensions
+```
+
+The extract is now a federated data frame. The next chapter describes it.

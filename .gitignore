@@ -14,3 +14,11 @@ sites.env
 
 # easy-opal generated secrets (never commit)
 secrets.env
+
+# bookdown render intermediates (published output lives in docs/)
+book/_bookdown_files/
+book/_main*
+book/*_files/
+book/libs/
+book/*.knit.md
+book/*.utf8.md

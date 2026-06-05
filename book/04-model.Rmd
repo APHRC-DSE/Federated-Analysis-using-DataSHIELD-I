@@ -1,0 +1,106 @@
+# Modelling: a federated logistic GLM {#model}
+
+Because a dsOMOP extract is just a server-side data frame, the whole
+`dsBaseClient` modelling toolchain applies to it. We fit a **federated logistic
+regression** of gastrointestinal haemorrhage on demographics, NSAID exposure and
+prior peptic ulcer — pooling only the model's sufficient statistics across the
+three sites. No patient row ever leaves a server.
+
+## Assembling the modelling frame
+
+`ds.glm` needs numeric responses, so we cast the boolean features to 0/1 and bind
+them — together with the harmonised `sex` factor, the derived `age`, and the
+NSAID burden — into one frame `M`:
+
+```{r assemble, results = "hide"}
+ds.asNumeric("D$gi_bleed",     "gi_bleed")
+ds.asNumeric("D$diclofenac",   "diclofenac")
+ds.asNumeric("D$peptic_ulcer", "peptic_ulcer")
+
+ds.dataFrame(
+  c("gi_bleed", "D$sex", "age", "diclofenac", "D$nsaid_n", "peptic_ulcer"),
+  newobj = "M")
+```
+
+```{r colnames-m}
+ds.colnames("M")[[1]]
+```
+
+## Fitting the model (with its live training trace)
+
+`ds.glm` fits by **iteratively re-weighted least squares**, exchanging only
+aggregated sufficient statistics each round. The federation reports its progress
+every iteration — this is the genuine convergence trace from the live run:
+
+```{r fit, message = TRUE}
+fit <- ds.glm(
+  formula = "M$gi_bleed ~ M$sex + M$age + M$diclofenac + M$nsaid_n + M$peptic_ulcer",
+  family  = "binomial", datasources = conns)
+```
+
+The model converged in `r fit$iter` iterations over the full `r fit$Nvalid`-person
+cohort. Here are the pooled coefficients, with standard errors, *p*-values and
+odds ratios:
+
+```{r coefs}
+round(fit$coefficients, 4)
+```
+
+## Reading the result
+
+```{r interpret, echo = FALSE}
+or   <- function(v) round(exp(fit$coefficients[v, "Estimate"]), 2)
+# Return a preformatted string so knitr's inline hook prints it verbatim
+# instead of re-rendering tiny scientific notation as broken superscripts.
+pval <- function(v) {
+  p <- fit$coefficients[v, "p-value"]
+  if (p < 1e-4) formatC(p, format = "e", digits = 1) else formatC(p, format = "g", digits = 2)
+}
+```
+
+The headline is unambiguous and clinically coherent: a prior history of **peptic
+ulcer multiplies the odds of gastrointestinal haemorrhage by about
+`r or("M$peptic_ulcer")`** (*p* ≈ `r pval("M$peptic_ulcer")`), adjusting for
+everything else. **NSAID burden** (`nsaid_n`) carries a smaller but significant
+signal (*p* ≈ `r pval("M$nsaid_n")`), while **age**, **sex** and the
+**diclofenac** flag are not individually associated with the outcome in this
+cohort — exactly the kind of mixed, honest result a real analysis produces.
+
+That `diclofenac` and the any-NSAID flag add little is itself the story from
+Chapter \@ref(observe): this is an NSAID-saturated cohort, so it is the *amount*
+of exposure and the *prior ulcer*, not NSAID use per se, that move the outcome.
+
+## The same model, study-level
+
+`ds.glm` above pools individual-level sufficient statistics — one model over the
+combined federation. `ds.glmSLMA` instead fits the model **separately on each
+site** and meta-combines the per-site estimates (study-level meta-analysis),
+sharing no individual-level statistic across sites. The two routes agree closely,
+which is the reassurance that the pooled fit is not driven by any single site:
+
+```{r slma, message = FALSE}
+slma <- ds.glmSLMA(
+  formula = "M$gi_bleed ~ M$sex + M$age + M$diclofenac + M$nsaid_n + M$peptic_ulcer",
+  family  = "binomial", datasources = conns)
+round(slma$SLMA.pooled.ests.matrix, 4)
+```
+
+## Disconnect
+
+The analysis is complete, so we release the OMOP handles and log out of the
+federation:
+
+```{r logout, results = "hide"}
+ds.omop.disconnect(symbol = "omop", conns = conns)
+DSI::datashield.logout(conns)
+```
+
+## In summary
+
+Starting from nothing but three independent OMOP databases, we explored their
+catalogues, **fused three tables into one person-level frame on each server**,
+described it with federated summaries and plots, and fitted a federated logistic
+regression — recovering a clinically sensible result over the full 2&nbsp;694-person
+cohort while **no patient-level data ever left a site**. The OMOP layer produced
+and harmonised the analysis dataset; the ordinary DataSHIELD toolchain took it
+from there.

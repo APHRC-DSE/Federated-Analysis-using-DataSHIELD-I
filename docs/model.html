@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+<head>
+
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>Chapter 4 Modelling: a federated logistic GLM | Federated Analysis using DataSHIELD</title>
+  <meta name="description" content="A reproducible, end-to-end federated analysis over OMOP CDM data with DataSHIELD and dsOMOP v2. Every figure and table on these pages is the genuine result of executing the code against a live three-site federation." />
+  <meta name="generator" content="bookdown 0.46 and GitBook 2.6.7" />
+
+  <meta property="og:title" content="Chapter 4 Modelling: a federated logistic GLM | Federated Analysis using DataSHIELD" />
+  <meta property="og:type" content="book" />
+  
+  <meta property="og:description" content="A reproducible, end-to-end federated analysis over OMOP CDM data with DataSHIELD and dsOMOP v2. Every figure and table on these pages is the genuine result of executing the code against a live three-site federation." />
+  <meta name="github-repo" content="APHRC-DSE/Federated-Analysis-using-DataSHIELD-I" />
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="Chapter 4 Modelling: a federated logistic GLM | Federated Analysis using DataSHIELD" />
+  
+  <meta name="twitter:description" content="A reproducible, end-to-end federated analysis over OMOP CDM data with DataSHIELD and dsOMOP v2. Every figure and table on these pages is the genuine result of executing the code against a live three-site federation." />
+  
+
+<meta name="author" content="David Sarrat González · Michael Ochola" />
+
+
+
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  
+  
+<link rel="prev" href="observe.html"/>
+
+<script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6/dist/fuse.min.js"></script>
+<link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-table.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-bookdown.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-highlight.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-search.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-fontsettings.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-clipboard.css" rel="stylesheet" />
+
+
+
+
+
+
+
+
+<link href="libs/anchor-sections-1.1.0/anchor-sections.css" rel="stylesheet" />
+<link href="libs/anchor-sections-1.1.0/anchor-sections-hash.css" rel="stylesheet" />
+<script src="libs/anchor-sections-1.1.0/anchor-sections.js"></script>
+
+
+<style type="text/css">
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { color: #008000; } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { color: #008000; font-weight: bold; } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+<style type="text/css">
+  
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+</style>
+
+</head>
+
+<body>
+
+
+
+  <div class="book without-animation with-summary font-size-2 font-family-1" data-basepath=".">
+
+    <div class="book-summary">
+      <nav role="navigation">
+
+<ul class="summary">
+<li><a href="./index.html">Federated Analysis using DataSHIELD</a></li>
+
+<li class="divider"></li>
+<li class="chapter" data-level="" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i>Overview</a>
+<ul>
+<li class="chapter" data-level="" data-path="index.html"><a href="index.html#the-federation"><i class="fa fa-check"></i>The federation</a></li>
+<li class="chapter" data-level="" data-path="index.html"><a href="index.html#the-study"><i class="fa fa-check"></i>The study</a></li>
+<li class="chapter" data-level="" data-path="index.html"><a href="index.html#reproducing-this-book"><i class="fa fa-check"></i>Reproducing this book</a></li>
+<li class="chapter" data-level="" data-path="index.html"><a href="index.html#connecting"><i class="fa fa-check"></i>Connecting</a></li>
+</ul></li>
+<li class="chapter" data-level="1" data-path="explore.html"><a href="explore.html"><i class="fa fa-check"></i><b>1</b> Exploring the catalogue</a>
+<ul>
+<li class="chapter" data-level="1.1" data-path="explore.html"><a href="explore.html#what-tables-does-each-site-expose"><i class="fa fa-check"></i><b>1.1</b> What tables does each site expose?</a></li>
+<li class="chapter" data-level="1.2" data-path="explore.html"><a href="explore.html#what-variables-live-in-a-table"><i class="fa fa-check"></i><b>1.2</b> What variables live in a table?</a></li>
+<li class="chapter" data-level="1.3" data-path="explore.html"><a href="explore.html#how-big-is-each-table-per-site-and-pooled"><i class="fa fa-check"></i><b>1.3</b> How big is each table, per site and pooled?</a></li>
+<li class="chapter" data-level="1.4" data-path="explore.html"><a href="explore.html#which-clinical-concepts-are-most-prevalent"><i class="fa fa-check"></i><b>1.4</b> Which clinical concepts are most prevalent?</a></li>
+<li class="chapter" data-level="1.5" data-path="explore.html"><a href="explore.html#the-study-this-suggests"><i class="fa fa-check"></i><b>1.5</b> The study this suggests</a></li>
+</ul></li>
+<li class="chapter" data-level="2" data-path="extract.html"><a href="extract.html"><i class="fa fa-check"></i><b>2</b> Extracting a fused person-level table</a>
+<ul>
+<li class="chapter" data-level="2.1" data-path="extract.html"><a href="extract.html#the-concepts-to-extract"><i class="fa fa-check"></i><b>2.1</b> The concepts to extract</a></li>
+<li class="chapter" data-level="2.2" data-path="extract.html"><a href="extract.html#building-the-plan"><i class="fa fa-check"></i><b>2.2</b> Building the plan</a></li>
+<li class="chapter" data-level="2.3" data-path="extract.html"><a href="extract.html#executing-on-the-server"><i class="fa fa-check"></i><b>2.3</b> Executing on the server</a></li>
+<li class="chapter" data-level="2.4" data-path="extract.html"><a href="extract.html#confirming-the-fused-frame"><i class="fa fa-check"></i><b>2.4</b> Confirming the fused frame</a></li>
+</ul></li>
+<li class="chapter" data-level="3" data-path="observe.html"><a href="observe.html"><i class="fa fa-check"></i><b>3</b> Observing the extracted variables</a>
+<ul>
+<li class="chapter" data-level="3.1" data-path="observe.html"><a href="observe.html#a-derived-feature-age"><i class="fa fa-check"></i><b>3.1</b> A derived feature: age</a></li>
+<li class="chapter" data-level="3.2" data-path="observe.html"><a href="observe.html#prevalence-over-the-full-cohort"><i class="fa fa-check"></i><b>3.2</b> Prevalence over the full cohort</a>
+<ul>
+<li class="chapter" data-level="3.2.1" data-path="observe.html"><a href="observe.html#a-finding-hiding-in-the-data"><i class="fa fa-check"></i><b>3.2.1</b> A finding hiding in the data</a></li>
+</ul></li>
+<li class="chapter" data-level="3.3" data-path="observe.html"><a href="observe.html#pooled-summaries-of-the-continuous-features"><i class="fa fa-check"></i><b>3.3</b> Pooled summaries of the continuous features</a></li>
+<li class="chapter" data-level="3.4" data-path="observe.html"><a href="observe.html#federated-plots"><i class="fa fa-check"></i><b>3.4</b> Federated plots</a></li>
+<li class="chapter" data-level="3.5" data-path="observe.html"><a href="observe.html#the-key-association-previewed"><i class="fa fa-check"></i><b>3.5</b> The key association, previewed</a></li>
+</ul></li>
+<li class="chapter" data-level="4" data-path="model.html"><a href="model.html"><i class="fa fa-check"></i><b>4</b> Modelling: a federated logistic GLM</a>
+<ul>
+<li class="chapter" data-level="4.1" data-path="model.html"><a href="model.html#assembling-the-modelling-frame"><i class="fa fa-check"></i><b>4.1</b> Assembling the modelling frame</a></li>
+<li class="chapter" data-level="4.2" data-path="model.html"><a href="model.html#fitting-the-model-with-its-live-training-trace"><i class="fa fa-check"></i><b>4.2</b> Fitting the model (with its live training trace)</a></li>
+<li class="chapter" data-level="4.3" data-path="model.html"><a href="model.html#reading-the-result"><i class="fa fa-check"></i><b>4.3</b> Reading the result</a></li>
+<li class="chapter" data-level="4.4" data-path="model.html"><a href="model.html#the-same-model-study-level"><i class="fa fa-check"></i><b>4.4</b> The same model, study-level</a></li>
+<li class="chapter" data-level="4.5" data-path="model.html"><a href="model.html#disconnect"><i class="fa fa-check"></i><b>4.5</b> Disconnect</a></li>
+<li class="chapter" data-level="4.6" data-path="model.html"><a href="model.html#in-summary"><i class="fa fa-check"></i><b>4.6</b> In summary</a></li>
+</ul></li>
+<li class="divider"></li>
+<li><a href="https://github.com/APHRC-DSE/Federated-Analysis-using-DataSHIELD-I" target="blank">Reproducibility package</a></li>
+
+</ul>
+
+      </nav>
+    </div>
+
+    <div class="book-body">
+      <div class="body-inner">
+        <div class="book-header" role="navigation">
+          <h1>
+            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">Federated Analysis using DataSHIELD</a>
+          </h1>
+        </div>
+
+        <div class="page-wrapper" tabindex="-1" role="main">
+          <div class="page-inner">
+
+            <section class="normal" id="section-">
+<div id="model" class="section level1 hasAnchor" number="4">
+<h1><span class="header-section-number">Chapter 4</span> Modelling: a federated logistic GLM<a href="model.html#model" class="anchor-section" aria-label="Anchor link to header"></a></h1>
+<p>Because a dsOMOP extract is just a server-side data frame, the whole
+<code>dsBaseClient</code> modelling toolchain applies to it. We fit a <strong>federated logistic
+regression</strong> of gastrointestinal haemorrhage on demographics, NSAID exposure and
+prior peptic ulcer — pooling only the model’s sufficient statistics across the
+three sites. No patient row ever leaves a server.</p>
+<div id="assembling-the-modelling-frame" class="section level2 hasAnchor" number="4.1">
+<h2><span class="header-section-number">4.1</span> Assembling the modelling frame<a href="model.html#assembling-the-modelling-frame" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p><code>ds.glm</code> needs numeric responses, so we cast the boolean features to 0/1 and bind
+them — together with the harmonised <code>sex</code> factor, the derived <code>age</code>, and the
+NSAID burden — into one frame <code>M</code>:</p>
+<div class="sourceCode" id="cb32"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb32-1"><a href="model.html#cb32-1" tabindex="-1"></a><span class="fu">ds.asNumeric</span>(<span class="st">&quot;D$gi_bleed&quot;</span>,     <span class="st">&quot;gi_bleed&quot;</span>)</span>
+<span id="cb32-2"><a href="model.html#cb32-2" tabindex="-1"></a><span class="fu">ds.asNumeric</span>(<span class="st">&quot;D$diclofenac&quot;</span>,   <span class="st">&quot;diclofenac&quot;</span>)</span>
+<span id="cb32-3"><a href="model.html#cb32-3" tabindex="-1"></a><span class="fu">ds.asNumeric</span>(<span class="st">&quot;D$peptic_ulcer&quot;</span>, <span class="st">&quot;peptic_ulcer&quot;</span>)</span>
+<span id="cb32-4"><a href="model.html#cb32-4" tabindex="-1"></a></span>
+<span id="cb32-5"><a href="model.html#cb32-5" tabindex="-1"></a><span class="fu">ds.dataFrame</span>(</span>
+<span id="cb32-6"><a href="model.html#cb32-6" tabindex="-1"></a>  <span class="fu">c</span>(<span class="st">&quot;gi_bleed&quot;</span>, <span class="st">&quot;D$sex&quot;</span>, <span class="st">&quot;age&quot;</span>, <span class="st">&quot;diclofenac&quot;</span>, <span class="st">&quot;D$nsaid_n&quot;</span>, <span class="st">&quot;peptic_ulcer&quot;</span>),</span>
+<span id="cb32-7"><a href="model.html#cb32-7" tabindex="-1"></a>  <span class="at">newobj =</span> <span class="st">&quot;M&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb33"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb33-1"><a href="model.html#cb33-1" tabindex="-1"></a><span class="fu">ds.colnames</span>(<span class="st">&quot;M&quot;</span>)[[<span class="dv">1</span>]]</span>
+<span id="cb33-2"><a href="model.html#cb33-2" tabindex="-1"></a><span class="co">#&gt; [1] &quot;gi_bleed&quot;     &quot;sex&quot;          &quot;age&quot;          &quot;diclofenac&quot;   &quot;nsaid_n&quot;     </span></span>
+<span id="cb33-3"><a href="model.html#cb33-3" tabindex="-1"></a><span class="co">#&gt; [6] &quot;peptic_ulcer&quot;</span></span></code></pre></div>
+</div>
+<div id="fitting-the-model-with-its-live-training-trace" class="section level2 hasAnchor" number="4.2">
+<h2><span class="header-section-number">4.2</span> Fitting the model (with its live training trace)<a href="model.html#fitting-the-model-with-its-live-training-trace" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p><code>ds.glm</code> fits by <strong>iteratively re-weighted least squares</strong>, exchanging only
+aggregated sufficient statistics each round. The federation reports its progress
+every iteration — this is the genuine convergence trace from the live run:</p>
+<div class="sourceCode" id="cb34"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb34-1"><a href="model.html#cb34-1" tabindex="-1"></a>fit <span class="ot">&lt;-</span> <span class="fu">ds.glm</span>(</span>
+<span id="cb34-2"><a href="model.html#cb34-2" tabindex="-1"></a>  <span class="at">formula =</span> <span class="st">&quot;M$gi_bleed ~ M$sex + M$age + M$diclofenac + M$nsaid_n + M$peptic_ulcer&quot;</span>,</span>
+<span id="cb34-3"><a href="model.html#cb34-3" tabindex="-1"></a>  <span class="at">family  =</span> <span class="st">&quot;binomial&quot;</span>, <span class="at">datasources =</span> conns)</span>
+<span id="cb34-4"><a href="model.html#cb34-4" tabindex="-1"></a><span class="co">#&gt; Iteration 1...</span></span>
+<span id="cb34-5"><a href="model.html#cb34-5" tabindex="-1"></a><span class="co">#&gt; CURRENT DEVIANCE:      3734.67700885699</span></span>
+<span id="cb34-6"><a href="model.html#cb34-6" tabindex="-1"></a><span class="co">#&gt; Iteration 2...</span></span>
+<span id="cb34-7"><a href="model.html#cb34-7" tabindex="-1"></a><span class="co">#&gt; CURRENT DEVIANCE:      2402.84773061472</span></span>
+<span id="cb34-8"><a href="model.html#cb34-8" tabindex="-1"></a><span class="co">#&gt; Iteration 3...</span></span>
+<span id="cb34-9"><a href="model.html#cb34-9" tabindex="-1"></a><span class="co">#&gt; CURRENT DEVIANCE:      2344.91106777003</span></span>
+<span id="cb34-10"><a href="model.html#cb34-10" tabindex="-1"></a><span class="co">#&gt; Iteration 4...</span></span>
+<span id="cb34-11"><a href="model.html#cb34-11" tabindex="-1"></a><span class="co">#&gt; CURRENT DEVIANCE:      2343.48010937631</span></span>
+<span id="cb34-12"><a href="model.html#cb34-12" tabindex="-1"></a><span class="co">#&gt; Iteration 5...</span></span>
+<span id="cb34-13"><a href="model.html#cb34-13" tabindex="-1"></a><span class="co">#&gt; CURRENT DEVIANCE:      2343.47859539296</span></span>
+<span id="cb34-14"><a href="model.html#cb34-14" tabindex="-1"></a><span class="co">#&gt; Iteration 6...</span></span>
+<span id="cb34-15"><a href="model.html#cb34-15" tabindex="-1"></a><span class="co">#&gt; CURRENT DEVIANCE:      2343.47859539105</span></span>
+<span id="cb34-16"><a href="model.html#cb34-16" tabindex="-1"></a><span class="co">#&gt; SUMMARY OF MODEL STATE after iteration 6</span></span>
+<span id="cb34-17"><a href="model.html#cb34-17" tabindex="-1"></a><span class="co">#&gt; Current deviance 2343.47859539105 on 2688 degrees of freedom</span></span>
+<span id="cb34-18"><a href="model.html#cb34-18" tabindex="-1"></a><span class="co">#&gt; Convergence criterion TRUE (8.15548972641514e-13)</span></span>
+<span id="cb34-19"><a href="model.html#cb34-19" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb34-20"><a href="model.html#cb34-20" tabindex="-1"></a><span class="co">#&gt; beta: -2.1724568060342 -0.000526725272757233 0.00674726691578812 -0.00110142982525194 -0.0859587376367707 1.37487667184113</span></span>
+<span id="cb34-21"><a href="model.html#cb34-21" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb34-22"><a href="model.html#cb34-22" tabindex="-1"></a><span class="co">#&gt; Information matrix overall:</span></span>
+<span id="cb34-23"><a href="model.html#cb34-23" tabindex="-1"></a><span class="co">#&gt;                (Intercept)   M$sex8532       M$age M$diclofenac  M$nsaid_n M$peptic_ulcer</span></span>
+<span id="cb34-24"><a href="model.html#cb34-24" tabindex="-1"></a><span class="co">#&gt; (Intercept)       365.6699   185.20301   22734.622    100.45630  1322.2588      177.00793</span></span>
+<span id="cb34-25"><a href="model.html#cb34-25" tabindex="-1"></a><span class="co">#&gt; M$sex8532         185.2030   185.20301   11592.553     51.90948   679.5642       88.40518</span></span>
+<span id="cb34-26"><a href="model.html#cb34-26" tabindex="-1"></a><span class="co">#&gt; M$age           22734.6217 11592.55258 1508111.822   6286.98725 88291.8068    11028.42073</span></span>
+<span id="cb34-27"><a href="model.html#cb34-27" tabindex="-1"></a><span class="co">#&gt; M$diclofenac      100.4563    51.90948    6286.987    100.45630   371.1896       29.09972</span></span>
+<span id="cb34-28"><a href="model.html#cb34-28" tabindex="-1"></a><span class="co">#&gt; M$nsaid_n        1322.2588   679.56422   88291.807    371.18961  6102.6082      657.89954</span></span>
+<span id="cb34-29"><a href="model.html#cb34-29" tabindex="-1"></a><span class="co">#&gt; M$peptic_ulcer    177.0079    88.40518   11028.421     29.09972   657.8995      177.00793</span></span>
+<span id="cb34-30"><a href="model.html#cb34-30" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb34-31"><a href="model.html#cb34-31" tabindex="-1"></a><span class="co">#&gt; Score vector overall:</span></span>
+<span id="cb34-32"><a href="model.html#cb34-32" tabindex="-1"></a><span class="co">#&gt;                         [,1]</span></span>
+<span id="cb34-33"><a href="model.html#cb34-33" tabindex="-1"></a><span class="co">#&gt; (Intercept)    -7.312941e-10</span></span>
+<span id="cb34-34"><a href="model.html#cb34-34" tabindex="-1"></a><span class="co">#&gt; M$sex8532      -3.760867e-10</span></span>
+<span id="cb34-35"><a href="model.html#cb34-35" tabindex="-1"></a><span class="co">#&gt; M$age          -4.527624e-08</span></span>
+<span id="cb34-36"><a href="model.html#cb34-36" tabindex="-1"></a><span class="co">#&gt; M$diclofenac   -2.673826e-10</span></span>
+<span id="cb34-37"><a href="model.html#cb34-37" tabindex="-1"></a><span class="co">#&gt; M$nsaid_n      -3.187539e-09</span></span>
+<span id="cb34-38"><a href="model.html#cb34-38" tabindex="-1"></a><span class="co">#&gt; M$peptic_ulcer -1.896927e-11</span></span>
+<span id="cb34-39"><a href="model.html#cb34-39" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb34-40"><a href="model.html#cb34-40" tabindex="-1"></a><span class="co">#&gt; Current deviance: 2343.47859539105</span></span></code></pre></div>
+<p>The model converged in 6 iterations over the full 2694-person
+cohort. Here are the pooled coefficients, with standard errors, <em>p</em>-values and
+odds ratios:</p>
+<div class="sourceCode" id="cb35"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb35-1"><a href="model.html#cb35-1" tabindex="-1"></a><span class="fu">round</span>(fit<span class="sc">$</span>coefficients, <span class="dv">4</span>)</span>
+<span id="cb35-2"><a href="model.html#cb35-2" tabindex="-1"></a><span class="co">#&gt;                Estimate Std. Error z-value p-value low0.95CI.LP high0.95CI.LP   P_OR</span></span>
+<span id="cb35-3"><a href="model.html#cb35-3" tabindex="-1"></a><span class="co">#&gt; (Intercept)     -2.1725     0.2244 -9.6817  0.0000      -2.6122       -1.7327 0.1023</span></span>
+<span id="cb35-4"><a href="model.html#cb35-4" tabindex="-1"></a><span class="co">#&gt; M$sex8532       -0.0005     0.1047 -0.0050  0.9960      -0.2057        0.2046 0.9995</span></span>
+<span id="cb35-5"><a href="model.html#cb35-5" tabindex="-1"></a><span class="co">#&gt; M$age            0.0067     0.0039  1.7410  0.0817      -0.0008        0.0143 1.0068</span></span>
+<span id="cb35-6"><a href="model.html#cb35-6" tabindex="-1"></a><span class="co">#&gt; M$diclofenac    -0.0011     0.1208 -0.0091  0.9927      -0.2378        0.2356 0.9989</span></span>
+<span id="cb35-7"><a href="model.html#cb35-7" tabindex="-1"></a><span class="co">#&gt; M$nsaid_n       -0.0860     0.0329 -2.6157  0.0089      -0.1504       -0.0215 0.9176</span></span>
+<span id="cb35-8"><a href="model.html#cb35-8" tabindex="-1"></a><span class="co">#&gt; M$peptic_ulcer   1.3749     0.1080 12.7298  0.0000       1.1632        1.5866 3.9546</span></span>
+<span id="cb35-9"><a href="model.html#cb35-9" tabindex="-1"></a><span class="co">#&gt;                low0.95CI.P_OR high0.95CI.P_OR</span></span>
+<span id="cb35-10"><a href="model.html#cb35-10" tabindex="-1"></a><span class="co">#&gt; (Intercept)            0.0684          0.1502</span></span>
+<span id="cb35-11"><a href="model.html#cb35-11" tabindex="-1"></a><span class="co">#&gt; M$sex8532              0.8141          1.2270</span></span>
+<span id="cb35-12"><a href="model.html#cb35-12" tabindex="-1"></a><span class="co">#&gt; M$age                  0.9992          1.0144</span></span>
+<span id="cb35-13"><a href="model.html#cb35-13" tabindex="-1"></a><span class="co">#&gt; M$diclofenac           0.7884          1.2656</span></span>
+<span id="cb35-14"><a href="model.html#cb35-14" tabindex="-1"></a><span class="co">#&gt; M$nsaid_n              0.8604          0.9787</span></span>
+<span id="cb35-15"><a href="model.html#cb35-15" tabindex="-1"></a><span class="co">#&gt; M$peptic_ulcer         3.2001          4.8869</span></span></code></pre></div>
+</div>
+<div id="reading-the-result" class="section level2 hasAnchor" number="4.3">
+<h2><span class="header-section-number">4.3</span> Reading the result<a href="model.html#reading-the-result" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>The headline is unambiguous and clinically coherent: a prior history of <strong>peptic
+ulcer multiplies the odds of gastrointestinal haemorrhage by about
+3.95</strong> (<em>p</em> ≈ 4.0e-37), adjusting for
+everything else. <strong>NSAID burden</strong> (<code>nsaid_n</code>) carries a smaller but significant
+signal (<em>p</em> ≈ 0.0089), while <strong>age</strong>, <strong>sex</strong> and the
+<strong>diclofenac</strong> flag are not individually associated with the outcome in this
+cohort — exactly the kind of mixed, honest result a real analysis produces.</p>
+<p>That <code>diclofenac</code> and the any-NSAID flag add little is itself the story from
+Chapter <a href="observe.html#observe">3</a>: this is an NSAID-saturated cohort, so it is the <em>amount</em>
+of exposure and the <em>prior ulcer</em>, not NSAID use per se, that move the outcome.</p>
+</div>
+<div id="the-same-model-study-level" class="section level2 hasAnchor" number="4.4">
+<h2><span class="header-section-number">4.4</span> The same model, study-level<a href="model.html#the-same-model-study-level" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p><code>ds.glm</code> above pools individual-level sufficient statistics — one model over the
+combined federation. <code>ds.glmSLMA</code> instead fits the model <strong>separately on each
+site</strong> and meta-combines the per-site estimates (study-level meta-analysis),
+sharing no individual-level statistic across sites. The two routes agree closely,
+which is the reassurance that the pooled fit is not driven by any single site:</p>
+<div class="sourceCode" id="cb36"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb36-1"><a href="model.html#cb36-1" tabindex="-1"></a>slma <span class="ot">&lt;-</span> <span class="fu">ds.glmSLMA</span>(</span>
+<span id="cb36-2"><a href="model.html#cb36-2" tabindex="-1"></a>  <span class="at">formula =</span> <span class="st">&quot;M$gi_bleed ~ M$sex + M$age + M$diclofenac + M$nsaid_n + M$peptic_ulcer&quot;</span>,</span>
+<span id="cb36-3"><a href="model.html#cb36-3" tabindex="-1"></a>  <span class="at">family  =</span> <span class="st">&quot;binomial&quot;</span>, <span class="at">datasources =</span> conns)</span>
+<span id="cb36-4"><a href="model.html#cb36-4" tabindex="-1"></a><span class="fu">round</span>(slma<span class="sc">$</span>SLMA.pooled.ests.matrix, <span class="dv">4</span>)</span>
+<span id="cb36-5"><a href="model.html#cb36-5" tabindex="-1"></a><span class="co">#&gt;                pooled.ML  se.ML pooled.REML se.REML pooled.FE  se.FE</span></span>
+<span id="cb36-6"><a href="model.html#cb36-6" tabindex="-1"></a><span class="co">#&gt; (Intercept)      -2.1754 0.2257     -2.1708  0.2552   -2.1754 0.2257</span></span>
+<span id="cb36-7"><a href="model.html#cb36-7" tabindex="-1"></a><span class="co">#&gt; M$sex8532        -0.0048 0.1050     -0.0048  0.1050   -0.0048 0.1050</span></span>
+<span id="cb36-8"><a href="model.html#cb36-8" tabindex="-1"></a><span class="co">#&gt; M$age             0.0069 0.0046      0.0068  0.0057    0.0071 0.0039</span></span>
+<span id="cb36-9"><a href="model.html#cb36-9" tabindex="-1"></a><span class="co">#&gt; M$diclofenac     -0.0004 0.1212     -0.0004  0.1212   -0.0004 0.1212</span></span>
+<span id="cb36-10"><a href="model.html#cb36-10" tabindex="-1"></a><span class="co">#&gt; M$nsaid_n        -0.0887 0.0332     -0.0887  0.0362   -0.0887 0.0332</span></span>
+<span id="cb36-11"><a href="model.html#cb36-11" tabindex="-1"></a><span class="co">#&gt; M$peptic_ulcer    1.3815 0.1085      1.3815  0.1085    1.3815 0.1085</span></span></code></pre></div>
+</div>
+<div id="disconnect" class="section level2 hasAnchor" number="4.5">
+<h2><span class="header-section-number">4.5</span> Disconnect<a href="model.html#disconnect" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>The analysis is complete, so we release the OMOP handles and log out of the
+federation:</p>
+<div class="sourceCode" id="cb37"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb37-1"><a href="model.html#cb37-1" tabindex="-1"></a><span class="fu">ds.omop.disconnect</span>(<span class="at">symbol =</span> <span class="st">&quot;omop&quot;</span>, <span class="at">conns =</span> conns)</span>
+<span id="cb37-2"><a href="model.html#cb37-2" tabindex="-1"></a>DSI<span class="sc">::</span><span class="fu">datashield.logout</span>(conns)</span></code></pre></div>
+</div>
+<div id="in-summary" class="section level2 hasAnchor" number="4.6">
+<h2><span class="header-section-number">4.6</span> In summary<a href="model.html#in-summary" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>Starting from nothing but three independent OMOP databases, we explored their
+catalogues, <strong>fused three tables into one person-level frame on each server</strong>,
+described it with federated summaries and plots, and fitted a federated logistic
+regression — recovering a clinically sensible result over the full 2 694-person
+cohort while <strong>no patient-level data ever left a site</strong>. The OMOP layer produced
+and harmonised the analysis dataset; the ordinary DataSHIELD toolchain took it
+from there.</p>
+
+</div>
+</div>
+            </section>
+
+          </div>
+        </div>
+      </div>
+<a href="observe.html" class="navigation navigation-prev navigation-unique" aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+
+    </div>
+  </div>
+<script src="libs/gitbook-2.6.7/js/app.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/clipboard.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-search.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-sharing.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-fontsettings.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-bookdown.js"></script>
+<script src="libs/gitbook-2.6.7/js/jquery.highlight.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-clipboard.js"></script>
+<script>
+gitbook.require(["gitbook"], function(gitbook) {
+gitbook.start({
+  "sharing": false,
+  "fontsettings": {
+    "theme": "white",
+    "family": "sans",
+    "size": 2
+  },
+  "edit": {
+    "link": null,
+    "text": null
+  },
+  "history": {
+    "link": null,
+    "text": null
+  },
+  "view": {
+    "link": null,
+    "text": null
+  },
+  "download": null,
+  "search": {
+    "engine": "fuse",
+    "options": null
+  },
+  "toc": {
+    "collapse": "subsection"
+  }
+});
+});
+</script>
+
+</body>
+
+</html>

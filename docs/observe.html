@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+<head>
+
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>Chapter 3 Observing the extracted variables | Federated Analysis using DataSHIELD</title>
+  <meta name="description" content="A reproducible, end-to-end federated analysis over OMOP CDM data with DataSHIELD and dsOMOP v2. Every figure and table on these pages is the genuine result of executing the code against a live three-site federation." />
+  <meta name="generator" content="bookdown 0.46 and GitBook 2.6.7" />
+
+  <meta property="og:title" content="Chapter 3 Observing the extracted variables | Federated Analysis using DataSHIELD" />
+  <meta property="og:type" content="book" />
+  
+  <meta property="og:description" content="A reproducible, end-to-end federated analysis over OMOP CDM data with DataSHIELD and dsOMOP v2. Every figure and table on these pages is the genuine result of executing the code against a live three-site federation." />
+  <meta name="github-repo" content="APHRC-DSE/Federated-Analysis-using-DataSHIELD-I" />
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="Chapter 3 Observing the extracted variables | Federated Analysis using DataSHIELD" />
+  
+  <meta name="twitter:description" content="A reproducible, end-to-end federated analysis over OMOP CDM data with DataSHIELD and dsOMOP v2. Every figure and table on these pages is the genuine result of executing the code against a live three-site federation." />
+  
+
+<meta name="author" content="David Sarrat González · Michael Ochola" />
+
+
+
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  
+  
+<link rel="prev" href="extract.html"/>
+<link rel="next" href="model.html"/>
+<script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6/dist/fuse.min.js"></script>
+<link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-table.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-bookdown.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-highlight.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-search.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-fontsettings.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-clipboard.css" rel="stylesheet" />
+
+
+
+
+
+
+
+
+<link href="libs/anchor-sections-1.1.0/anchor-sections.css" rel="stylesheet" />
+<link href="libs/anchor-sections-1.1.0/anchor-sections-hash.css" rel="stylesheet" />
+<script src="libs/anchor-sections-1.1.0/anchor-sections.js"></script>
+
+
+<style type="text/css">
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { color: #008000; } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { color: #008000; font-weight: bold; } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+<style type="text/css">
+  
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+</style>
+
+</head>
+
+<body>
+
+
+
+  <div class="book without-animation with-summary font-size-2 font-family-1" data-basepath=".">
+
+    <div class="book-summary">
+      <nav role="navigation">
+
+<ul class="summary">
+<li><a href="./index.html">Federated Analysis using DataSHIELD</a></li>
+
+<li class="divider"></li>
+<li class="chapter" data-level="" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i>Overview</a>
+<ul>
+<li class="chapter" data-level="" data-path="index.html"><a href="index.html#the-federation"><i class="fa fa-check"></i>The federation</a></li>
+<li class="chapter" data-level="" data-path="index.html"><a href="index.html#the-study"><i class="fa fa-check"></i>The study</a></li>
+<li class="chapter" data-level="" data-path="index.html"><a href="index.html#reproducing-this-book"><i class="fa fa-check"></i>Reproducing this book</a></li>
+<li class="chapter" data-level="" data-path="index.html"><a href="index.html#connecting"><i class="fa fa-check"></i>Connecting</a></li>
+</ul></li>
+<li class="chapter" data-level="1" data-path="explore.html"><a href="explore.html"><i class="fa fa-check"></i><b>1</b> Exploring the catalogue</a>
+<ul>
+<li class="chapter" data-level="1.1" data-path="explore.html"><a href="explore.html#what-tables-does-each-site-expose"><i class="fa fa-check"></i><b>1.1</b> What tables does each site expose?</a></li>
+<li class="chapter" data-level="1.2" data-path="explore.html"><a href="explore.html#what-variables-live-in-a-table"><i class="fa fa-check"></i><b>1.2</b> What variables live in a table?</a></li>
+<li class="chapter" data-level="1.3" data-path="explore.html"><a href="explore.html#how-big-is-each-table-per-site-and-pooled"><i class="fa fa-check"></i><b>1.3</b> How big is each table, per site and pooled?</a></li>
+<li class="chapter" data-level="1.4" data-path="explore.html"><a href="explore.html#which-clinical-concepts-are-most-prevalent"><i class="fa fa-check"></i><b>1.4</b> Which clinical concepts are most prevalent?</a></li>
+<li class="chapter" data-level="1.5" data-path="explore.html"><a href="explore.html#the-study-this-suggests"><i class="fa fa-check"></i><b>1.5</b> The study this suggests</a></li>
+</ul></li>
+<li class="chapter" data-level="2" data-path="extract.html"><a href="extract.html"><i class="fa fa-check"></i><b>2</b> Extracting a fused person-level table</a>
+<ul>
+<li class="chapter" data-level="2.1" data-path="extract.html"><a href="extract.html#the-concepts-to-extract"><i class="fa fa-check"></i><b>2.1</b> The concepts to extract</a></li>
+<li class="chapter" data-level="2.2" data-path="extract.html"><a href="extract.html#building-the-plan"><i class="fa fa-check"></i><b>2.2</b> Building the plan</a></li>
+<li class="chapter" data-level="2.3" data-path="extract.html"><a href="extract.html#executing-on-the-server"><i class="fa fa-check"></i><b>2.3</b> Executing on the server</a></li>
+<li class="chapter" data-level="2.4" data-path="extract.html"><a href="extract.html#confirming-the-fused-frame"><i class="fa fa-check"></i><b>2.4</b> Confirming the fused frame</a></li>
+</ul></li>
+<li class="chapter" data-level="3" data-path="observe.html"><a href="observe.html"><i class="fa fa-check"></i><b>3</b> Observing the extracted variables</a>
+<ul>
+<li class="chapter" data-level="3.1" data-path="observe.html"><a href="observe.html#a-derived-feature-age"><i class="fa fa-check"></i><b>3.1</b> A derived feature: age</a></li>
+<li class="chapter" data-level="3.2" data-path="observe.html"><a href="observe.html#prevalence-over-the-full-cohort"><i class="fa fa-check"></i><b>3.2</b> Prevalence over the full cohort</a>
+<ul>
+<li class="chapter" data-level="3.2.1" data-path="observe.html"><a href="observe.html#a-finding-hiding-in-the-data"><i class="fa fa-check"></i><b>3.2.1</b> A finding hiding in the data</a></li>
+</ul></li>
+<li class="chapter" data-level="3.3" data-path="observe.html"><a href="observe.html#pooled-summaries-of-the-continuous-features"><i class="fa fa-check"></i><b>3.3</b> Pooled summaries of the continuous features</a></li>
+<li class="chapter" data-level="3.4" data-path="observe.html"><a href="observe.html#federated-plots"><i class="fa fa-check"></i><b>3.4</b> Federated plots</a></li>
+<li class="chapter" data-level="3.5" data-path="observe.html"><a href="observe.html#the-key-association-previewed"><i class="fa fa-check"></i><b>3.5</b> The key association, previewed</a></li>
+</ul></li>
+<li class="chapter" data-level="4" data-path="model.html"><a href="model.html"><i class="fa fa-check"></i><b>4</b> Modelling: a federated logistic GLM</a>
+<ul>
+<li class="chapter" data-level="4.1" data-path="model.html"><a href="model.html#assembling-the-modelling-frame"><i class="fa fa-check"></i><b>4.1</b> Assembling the modelling frame</a></li>
+<li class="chapter" data-level="4.2" data-path="model.html"><a href="model.html#fitting-the-model-with-its-live-training-trace"><i class="fa fa-check"></i><b>4.2</b> Fitting the model (with its live training trace)</a></li>
+<li class="chapter" data-level="4.3" data-path="model.html"><a href="model.html#reading-the-result"><i class="fa fa-check"></i><b>4.3</b> Reading the result</a></li>
+<li class="chapter" data-level="4.4" data-path="model.html"><a href="model.html#the-same-model-study-level"><i class="fa fa-check"></i><b>4.4</b> The same model, study-level</a></li>
+<li class="chapter" data-level="4.5" data-path="model.html"><a href="model.html#disconnect"><i class="fa fa-check"></i><b>4.5</b> Disconnect</a></li>
+<li class="chapter" data-level="4.6" data-path="model.html"><a href="model.html#in-summary"><i class="fa fa-check"></i><b>4.6</b> In summary</a></li>
+</ul></li>
+<li class="divider"></li>
+<li><a href="https://github.com/APHRC-DSE/Federated-Analysis-using-DataSHIELD-I" target="blank">Reproducibility package</a></li>
+
+</ul>
+
+      </nav>
+    </div>
+
+    <div class="book-body">
+      <div class="body-inner">
+        <div class="book-header" role="navigation">
+          <h1>
+            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">Federated Analysis using DataSHIELD</a>
+          </h1>
+        </div>
+
+        <div class="page-wrapper" tabindex="-1" role="main">
+          <div class="page-inner">
+
+            <section class="normal" id="section-">
+<div id="observe" class="section level1 hasAnchor" number="3">
+<h1><span class="header-section-number">Chapter 3</span> Observing the extracted variables<a href="observe.html#observe" class="anchor-section" aria-label="Anchor link to header"></a></h1>
+<p>The fused frame <code>D</code> is now an ordinary federated data frame, so from here we use
+plain <code>dsBaseClient</code>. Every statistic below combines sufficient statistics from
+all three sites; every plot is disclosure-controlled on the server before
+anything is returned.</p>
+<div id="a-derived-feature-age" class="section level2 hasAnchor" number="3.1">
+<h2><span class="header-section-number">3.1</span> A derived feature: age<a href="observe.html#a-derived-feature-age" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>We turn <code>birth_year</code> into <code>age</code> as of 2020 with a single server-side expression:</p>
+<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="observe.html#cb19-1" tabindex="-1"></a><span class="fu">ds.make</span>(<span class="st">&quot;(2020 - D$birth_year)&quot;</span>, <span class="st">&quot;age&quot;</span>)</span></code></pre></div>
+</div>
+<div id="prevalence-over-the-full-cohort" class="section level2 hasAnchor" number="3.2">
+<h2><span class="header-section-number">3.2</span> Prevalence over the full cohort<a href="observe.html#prevalence-over-the-full-cohort" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>Because absent events were zero-filled (Chapter <a href="extract.html#extract">2</a>), these
+prevalences are over the <strong>whole 2 694-person cohort</strong>, not just the persons
+who happen to appear in a given event table. The outcome, gastrointestinal
+haemorrhage, affects 479 persons:</p>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="observe.html#cb20-1" tabindex="-1"></a><span class="fu">ds.table</span>(<span class="st">&quot;D$gi_bleed&quot;</span>)<span class="sc">$</span>output.list<span class="sc">$</span>TABLES.COMBINED_all.sources_counts</span>
+<span id="cb20-2"><a href="observe.html#cb20-2" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb20-3"><a href="observe.html#cb20-3" tabindex="-1"></a><span class="co">#&gt;  Data in all studies were valid </span></span>
+<span id="cb20-4"><a href="observe.html#cb20-4" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb20-5"><a href="observe.html#cb20-5" tabindex="-1"></a><span class="co">#&gt; Study 1 :  No errors reported from this study</span></span>
+<span id="cb20-6"><a href="observe.html#cb20-6" tabindex="-1"></a><span class="co">#&gt; Study 2 :  No errors reported from this study</span></span>
+<span id="cb20-7"><a href="observe.html#cb20-7" tabindex="-1"></a><span class="co">#&gt; Study 3 :  No errors reported from this study</span></span>
+<span id="cb20-8"><a href="observe.html#cb20-8" tabindex="-1"></a><span class="co">#&gt; D$gi_bleed</span></span>
+<span id="cb20-9"><a href="observe.html#cb20-9" tabindex="-1"></a><span class="co">#&gt;    0    1   NA </span></span>
+<span id="cb20-10"><a href="observe.html#cb20-10" tabindex="-1"></a><span class="co">#&gt; 2215  479    0</span></span></code></pre></div>
+<p>Its antecedent, peptic ulcer, is more common (802 persons):</p>
+<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="observe.html#cb21-1" tabindex="-1"></a><span class="fu">ds.table</span>(<span class="st">&quot;D$peptic_ulcer&quot;</span>)<span class="sc">$</span>output.list<span class="sc">$</span>TABLES.COMBINED_all.sources_counts</span>
+<span id="cb21-2"><a href="observe.html#cb21-2" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb21-3"><a href="observe.html#cb21-3" tabindex="-1"></a><span class="co">#&gt;  Data in all studies were valid </span></span>
+<span id="cb21-4"><a href="observe.html#cb21-4" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb21-5"><a href="observe.html#cb21-5" tabindex="-1"></a><span class="co">#&gt; Study 1 :  No errors reported from this study</span></span>
+<span id="cb21-6"><a href="observe.html#cb21-6" tabindex="-1"></a><span class="co">#&gt; Study 2 :  No errors reported from this study</span></span>
+<span id="cb21-7"><a href="observe.html#cb21-7" tabindex="-1"></a><span class="co">#&gt; Study 3 :  No errors reported from this study</span></span>
+<span id="cb21-8"><a href="observe.html#cb21-8" tabindex="-1"></a><span class="co">#&gt; D$peptic_ulcer</span></span>
+<span id="cb21-9"><a href="observe.html#cb21-9" tabindex="-1"></a><span class="co">#&gt;    0    1   NA </span></span>
+<span id="cb21-10"><a href="observe.html#cb21-10" tabindex="-1"></a><span class="co">#&gt; 1892  802    0</span></span></code></pre></div>
+<p>Diclofenac exposure covers 850 persons:</p>
+<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="observe.html#cb22-1" tabindex="-1"></a><span class="fu">ds.table</span>(<span class="st">&quot;D$diclofenac&quot;</span>)<span class="sc">$</span>output.list<span class="sc">$</span>TABLES.COMBINED_all.sources_counts</span>
+<span id="cb22-2"><a href="observe.html#cb22-2" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb22-3"><a href="observe.html#cb22-3" tabindex="-1"></a><span class="co">#&gt;  Data in all studies were valid </span></span>
+<span id="cb22-4"><a href="observe.html#cb22-4" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb22-5"><a href="observe.html#cb22-5" tabindex="-1"></a><span class="co">#&gt; Study 1 :  No errors reported from this study</span></span>
+<span id="cb22-6"><a href="observe.html#cb22-6" tabindex="-1"></a><span class="co">#&gt; Study 2 :  No errors reported from this study</span></span>
+<span id="cb22-7"><a href="observe.html#cb22-7" tabindex="-1"></a><span class="co">#&gt; Study 3 :  No errors reported from this study</span></span>
+<span id="cb22-8"><a href="observe.html#cb22-8" tabindex="-1"></a><span class="co">#&gt; D$diclofenac</span></span>
+<span id="cb22-9"><a href="observe.html#cb22-9" tabindex="-1"></a><span class="co">#&gt;    0    1   NA </span></span>
+<span id="cb22-10"><a href="observe.html#cb22-10" tabindex="-1"></a><span class="co">#&gt; 1844  850    0</span></span></code></pre></div>
+<div id="a-finding-hiding-in-the-data" class="section level3 hasAnchor" number="3.2.1">
+<h3><span class="header-section-number">3.2.1</span> A finding hiding in the data<a href="observe.html#a-finding-hiding-in-the-data" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>The “any NSAID” flag tells us something about how the cohort was built — <strong>every
+single person</strong> has at least one NSAID record:</p>
+<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="observe.html#cb23-1" tabindex="-1"></a><span class="fu">ds.table</span>(<span class="st">&quot;D$nsaid&quot;</span>)<span class="sc">$</span>output.list<span class="sc">$</span>TABLES.COMBINED_all.sources_counts</span>
+<span id="cb23-2"><a href="observe.html#cb23-2" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb23-3"><a href="observe.html#cb23-3" tabindex="-1"></a><span class="co">#&gt;  Data in all studies were valid </span></span>
+<span id="cb23-4"><a href="observe.html#cb23-4" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb23-5"><a href="observe.html#cb23-5" tabindex="-1"></a><span class="co">#&gt; Study 1 :  No errors reported from this study</span></span>
+<span id="cb23-6"><a href="observe.html#cb23-6" tabindex="-1"></a><span class="co">#&gt; Study 2 :  No errors reported from this study</span></span>
+<span id="cb23-7"><a href="observe.html#cb23-7" tabindex="-1"></a><span class="co">#&gt; Study 3 :  No errors reported from this study</span></span>
+<span id="cb23-8"><a href="observe.html#cb23-8" tabindex="-1"></a><span class="co">#&gt; D$nsaid</span></span>
+<span id="cb23-9"><a href="observe.html#cb23-9" tabindex="-1"></a><span class="co">#&gt;    1   NA </span></span>
+<span id="cb23-10"><a href="observe.html#cb23-10" tabindex="-1"></a><span class="co">#&gt; 2694    0</span></span></code></pre></div>
+<p>The flag is universal (2 694 / 2 694), so it carries no information for
+a model — it is collinear with the intercept. This is why we also extracted
+<code>nsaid_n</code> (how <em>many</em> NSAID records) and <code>diclofenac</code> (a <em>specific</em> agent): within
+a uniformly-exposed cohort, the <strong>burden</strong> and the <strong>choice of drug</strong> are what can
+still discriminate. Extracting all three let the data reveal this; we now model
+the informative ones.</p>
+</div>
+</div>
+<div id="pooled-summaries-of-the-continuous-features" class="section level2 hasAnchor" number="3.3">
+<h2><span class="header-section-number">3.3</span> Pooled summaries of the continuous features<a href="observe.html#pooled-summaries-of-the-continuous-features" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="observe.html#cb24-1" tabindex="-1"></a><span class="fu">ds.mean</span>(<span class="st">&quot;age&quot;</span>, <span class="at">type =</span> <span class="st">&quot;combine&quot;</span>)<span class="sc">$</span>Global.Mean</span>
+<span id="cb24-2"><a href="observe.html#cb24-2" tabindex="-1"></a><span class="co">#&gt;                 EstimatedMean Nmissing Nvalid Ntotal</span></span>
+<span id="cb24-3"><a href="observe.html#cb24-3" tabindex="-1"></a><span class="co">#&gt; studiesCombined      61.93356        0   2694   2694</span></span>
+<span id="cb24-4"><a href="observe.html#cb24-4" tabindex="-1"></a><span class="fu">ds.mean</span>(<span class="st">&quot;D$nsaid_n&quot;</span>, <span class="at">type =</span> <span class="st">&quot;combine&quot;</span>)<span class="sc">$</span>Global.Mean</span>
+<span id="cb24-5"><a href="observe.html#cb24-5" tabindex="-1"></a><span class="co">#&gt;                 EstimatedMean Nmissing Nvalid Ntotal</span></span>
+<span id="cb24-6"><a href="observe.html#cb24-6" tabindex="-1"></a><span class="co">#&gt; studiesCombined      3.711952        0   2694   2694</span></span></code></pre></div>
+<p>The pooled quantiles of age:</p>
+<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="observe.html#cb25-1" tabindex="-1"></a><span class="fu">ds.quantileMean</span>(<span class="st">&quot;age&quot;</span>, <span class="at">type =</span> <span class="st">&quot;combine&quot;</span>)</span>
+<span id="cb25-2"><a href="observe.html#cb25-2" tabindex="-1"></a><span class="co">#&gt;       5%      10%      25%      50%      75%      90%      95%     Mean </span></span>
+<span id="cb25-3"><a href="observe.html#cb25-3" tabindex="-1"></a><span class="co">#&gt; 41.00000 44.00000 50.00000 59.34410 70.35820 83.01819 97.05865 61.93356</span></span></code></pre></div>
+</div>
+<div id="federated-plots" class="section level2 hasAnchor" number="3.4">
+<h2><span class="header-section-number">3.4</span> Federated plots<a href="observe.html#federated-plots" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>A pooled histogram of age across the three sites — drawn from server-side
+binned counts, never individual rows:</p>
+<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="observe.html#cb26-1" tabindex="-1"></a><span class="fu">ds.histogram</span>(<span class="st">&quot;age&quot;</span>, <span class="at">type =</span> <span class="st">&quot;combine&quot;</span>)</span></code></pre></div>
+<p><img src="federated-analysis-datashield_files/figure-html/hist-age-1.png" width="85%" style="display: block; margin: auto;" /></p>
+<pre><code>#&gt; $breaks
+#&gt;  [1]  32.75227  41.02255  49.29283  57.56311  65.83340  74.10368  82.37396  90.64424
+#&gt;  [9]  98.91453 107.18481 115.45509
+#&gt; 
+#&gt; $counts
+#&gt;  [1] 160 489 572 538 427 225 107  58  66  52
+#&gt; 
+#&gt; $density
+#&gt;  [1] 0.007175728 0.021962067 0.025722805 0.024126709 0.019160386 0.010084822 0.004811924
+#&gt;  [8] 0.002599475 0.002947306 0.002323629
+#&gt; 
+#&gt; $mids
+#&gt;  [1]  36.88741  45.15769  53.42797  61.69825  69.96854  78.23882  86.50910  94.77939
+#&gt;  [9] 103.04967 111.31995
+#&gt; 
+#&gt; $xname
+#&gt; [1] &quot;xvect&quot;
+#&gt; 
+#&gt; $equidist
+#&gt; [1] TRUE
+#&gt; 
+#&gt; $intensities
+#&gt;  [1] 0.007175728 0.021962067 0.025722805 0.024126709 0.019160386 0.010084822 0.004811924
+#&gt;  [8] 0.002599475 0.002947306 0.002323629
+#&gt; 
+#&gt; attr(,&quot;class&quot;)
+#&gt; [1] &quot;histogram&quot;</code></pre>
+<p>And the distribution of NSAID burden (<code>nsaid_n</code>) — right-skewed, as drug-record
+counts usually are:</p>
+<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb28-1"><a href="observe.html#cb28-1" tabindex="-1"></a><span class="fu">ds.histogram</span>(<span class="st">&quot;D$nsaid_n&quot;</span>, <span class="at">type =</span> <span class="st">&quot;combine&quot;</span>)</span></code></pre></div>
+<p><img src="federated-analysis-datashield_files/figure-html/hist-nsaid-1.png" width="85%" style="display: block; margin: auto;" /></p>
+<pre><code>#&gt; $breaks
+#&gt;  [1]  0.9633019  2.2922630  3.6212240  4.9501851  6.2791462  7.6081072  8.9370683
+#&gt;  [8] 10.2660294 11.5949904 12.9239515 14.2529125
+#&gt; 
+#&gt; $counts
+#&gt;  [1] 821 577 479 586 115  61  37   3   5   0
+#&gt; 
+#&gt; $density
+#&gt;  [1] 0.2295733933 0.1612422815 0.1336921213 0.1637645190 0.0320458351 0.0168828605
+#&gt;  [7] 0.0102698832 0.0008464201 0.0013528722 0.0000000000
+#&gt; 
+#&gt; $mids
+#&gt;  [1]  1.627782  2.956744  4.285705  5.614666  6.943627  8.272588  9.601549 10.930510
+#&gt;  [9] 12.259471 13.588432
+#&gt; 
+#&gt; $xname
+#&gt; [1] &quot;xvect&quot;
+#&gt; 
+#&gt; $equidist
+#&gt; [1] TRUE
+#&gt; 
+#&gt; $intensities
+#&gt;  [1] 0.2295733933 0.1612422815 0.1336921213 0.1637645190 0.0320458351 0.0168828605
+#&gt;  [7] 0.0102698832 0.0008464201 0.0013528722 0.0000000000
+#&gt; 
+#&gt; attr(,&quot;class&quot;)
+#&gt; [1] &quot;histogram&quot;</code></pre>
+<p>A federated heatmap shows the joint density of age and NSAID burden, with the
+server applying its own anonymisation to the binned surface:</p>
+<div class="sourceCode" id="cb30"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb30-1"><a href="observe.html#cb30-1" tabindex="-1"></a><span class="fu">ds.heatmapPlot</span>(<span class="at">x =</span> <span class="st">&quot;age&quot;</span>, <span class="at">y =</span> <span class="st">&quot;D$nsaid_n&quot;</span>, <span class="at">type =</span> <span class="st">&quot;combine&quot;</span>)</span></code></pre></div>
+<p><img src="federated-analysis-datashield_files/figure-html/heatmap-1.png" width="85%" style="display: block; margin: auto;" /></p>
+</div>
+<div id="the-key-association-previewed" class="section level2 hasAnchor" number="3.5">
+<h2><span class="header-section-number">3.5</span> The key association, previewed<a href="observe.html#the-key-association-previewed" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>Cross-tabulating the outcome against its antecedent already hints at the result
+the model will quantify — GI haemorrhage is markedly more frequent among persons
+with a peptic-ulcer history:</p>
+<div class="sourceCode" id="cb31"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb31-1"><a href="observe.html#cb31-1" tabindex="-1"></a><span class="fu">ds.table</span>(<span class="st">&quot;D$gi_bleed&quot;</span>, <span class="st">&quot;D$peptic_ulcer&quot;</span>)<span class="sc">$</span>output.list<span class="sc">$</span>TABLES.COMBINED_all.sources_counts</span>
+<span id="cb31-2"><a href="observe.html#cb31-2" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb31-3"><a href="observe.html#cb31-3" tabindex="-1"></a><span class="co">#&gt;  Data in all studies were valid </span></span>
+<span id="cb31-4"><a href="observe.html#cb31-4" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb31-5"><a href="observe.html#cb31-5" tabindex="-1"></a><span class="co">#&gt; Study 1 :  No errors reported from this study</span></span>
+<span id="cb31-6"><a href="observe.html#cb31-6" tabindex="-1"></a><span class="co">#&gt; Study 2 :  No errors reported from this study</span></span>
+<span id="cb31-7"><a href="observe.html#cb31-7" tabindex="-1"></a><span class="co">#&gt; Study 3 :  No errors reported from this study</span></span>
+<span id="cb31-8"><a href="observe.html#cb31-8" tabindex="-1"></a><span class="co">#&gt;           D$peptic_ulcer</span></span>
+<span id="cb31-9"><a href="observe.html#cb31-9" tabindex="-1"></a><span class="co">#&gt; D$gi_bleed    0   1 NA</span></span>
+<span id="cb31-10"><a href="observe.html#cb31-10" tabindex="-1"></a><span class="co">#&gt;         0  1679 536  0</span></span>
+<span id="cb31-11"><a href="observe.html#cb31-11" tabindex="-1"></a><span class="co">#&gt;         1   213 266  0</span></span>
+<span id="cb31-12"><a href="observe.html#cb31-12" tabindex="-1"></a><span class="co">#&gt;         NA    0   0  0</span></span></code></pre></div>
+<p>The final chapter turns this into a federated logistic regression.</p>
+
+</div>
+</div>
+            </section>
+
+          </div>
+        </div>
+      </div>
+<a href="extract.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="model.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+    </div>
+  </div>
+<script src="libs/gitbook-2.6.7/js/app.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/clipboard.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-search.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-sharing.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-fontsettings.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-bookdown.js"></script>
+<script src="libs/gitbook-2.6.7/js/jquery.highlight.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-clipboard.js"></script>
+<script>
+gitbook.require(["gitbook"], function(gitbook) {
+gitbook.start({
+  "sharing": false,
+  "fontsettings": {
+    "theme": "white",
+    "family": "sans",
+    "size": 2
+  },
+  "edit": {
+    "link": null,
+    "text": null
+  },
+  "history": {
+    "link": null,
+    "text": null
+  },
+  "view": {
+    "link": null,
+    "text": null
+  },
+  "download": null,
+  "search": {
+    "engine": "fuse",
+    "options": null
+  },
+  "toc": {
+    "collapse": "subsection"
+  }
+});
+});
+</script>
+
+</body>
+
+</html>

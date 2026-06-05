@@ -1,0 +1,101 @@
+# Observing the extracted variables {#observe}
+
+The fused frame `D` is now an ordinary federated data frame, so from here we use
+plain `dsBaseClient`. Every statistic below combines sufficient statistics from
+all three sites; every plot is disclosure-controlled on the server before
+anything is returned.
+
+## A derived feature: age
+
+We turn `birth_year` into `age` as of 2020 with a single server-side expression:
+
+```{r age, results = "hide"}
+ds.make("(2020 - D$birth_year)", "age")
+```
+
+## Prevalence over the full cohort
+
+Because absent events were zero-filled (Chapter \@ref(extract)), these
+prevalences are over the **whole 2&nbsp;694-person cohort**, not just the persons
+who happen to appear in a given event table. The outcome, gastrointestinal
+haemorrhage, affects 479 persons:
+
+```{r prev-gib}
+ds.table("D$gi_bleed")$output.list$TABLES.COMBINED_all.sources_counts
+```
+
+Its antecedent, peptic ulcer, is more common (802 persons):
+
+```{r prev-ulcer}
+ds.table("D$peptic_ulcer")$output.list$TABLES.COMBINED_all.sources_counts
+```
+
+Diclofenac exposure covers 850 persons:
+
+```{r prev-diclo}
+ds.table("D$diclofenac")$output.list$TABLES.COMBINED_all.sources_counts
+```
+
+### A finding hiding in the data
+
+The "any NSAID" flag tells us something about how the cohort was built — **every
+single person** has at least one NSAID record:
+
+```{r nsaid-saturated}
+ds.table("D$nsaid")$output.list$TABLES.COMBINED_all.sources_counts
+```
+
+The flag is universal (2&nbsp;694 / 2&nbsp;694), so it carries no information for
+a model — it is collinear with the intercept. This is why we also extracted
+`nsaid_n` (how *many* NSAID records) and `diclofenac` (a *specific* agent): within
+a uniformly-exposed cohort, the **burden** and the **choice of drug** are what can
+still discriminate. Extracting all three let the data reveal this; we now model
+the informative ones.
+
+## Pooled summaries of the continuous features
+
+```{r means}
+ds.mean("age", type = "combine")$Global.Mean
+ds.mean("D$nsaid_n", type = "combine")$Global.Mean
+```
+
+The pooled quantiles of age:
+
+```{r quantiles}
+ds.quantileMean("age", type = "combine")
+```
+
+## Federated plots
+
+A pooled histogram of age across the three sites — drawn from server-side
+binned counts, never individual rows:
+
+```{r hist-age}
+ds.histogram("age", type = "combine")
+```
+
+And the distribution of NSAID burden (`nsaid_n`) — right-skewed, as drug-record
+counts usually are:
+
+```{r hist-nsaid}
+ds.histogram("D$nsaid_n", type = "combine")
+```
+
+A federated heatmap shows the joint density of age and NSAID burden, with the
+server applying its own anonymisation to the binned surface:
+
+```{r heatmap}
+ds.heatmapPlot(x = "age", y = "D$nsaid_n", type = "combine")
+```
+
+## The key association, previewed
+
+Cross-tabulating the outcome against its antecedent already hints at the result
+the model will quantify — GI haemorrhage is markedly more frequent among persons
+with a peptic-ulcer history:
+
+```{r crosstab}
+ds.table("D$gi_bleed", "D$peptic_ulcer")$output.list$TABLES.COMBINED_all.sources_counts
+```
+
+The final chapter turns this into a federated logistic regression.

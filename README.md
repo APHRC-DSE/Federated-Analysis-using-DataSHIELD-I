@@ -5,6 +5,13 @@ DataSHIELD"**. It stands up a **fully local, three-site federation** and runs a
 real federated analysis over **OMOP CDM** data using **DataSHIELD** and
 [**dsOMOP**](https://github.com/isglobal-brge/dsOMOP) **v2.0.0**.
 
+> **Read the analysis:** the full end-to-end workflow — catalogue exploration,
+> multi-table extraction, federated summaries and plots, and a federated logistic
+> regression — is published as a live-rendered book at
+> **<https://aphrc-dse.github.io/Federated-Analysis-using-DataSHIELD-I/>**. Every
+> figure and table there is the genuine result of executing the code against the
+> three sites. The book sources live in [`book/`](book/).
+
 The synthetic OHDSI **GiBleed** cohort (2 694 persons) is **sharded by person**
 across three independent sites — `aphrc`, `dgh`, `iressef` — so that every
 person and all of their records live on exactly one site. The client never sees

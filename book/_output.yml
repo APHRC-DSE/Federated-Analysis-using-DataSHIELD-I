@@ -1,0 +1,15 @@
+bookdown::gitbook:
+  split_by: chapter
+  config:
+    toc:
+      collapse: subsection
+      before: |
+        <li><a href="./index.html">Federated Analysis using DataSHIELD</a></li>
+      after: |
+        <li><a href="https://github.com/APHRC-DSE/Federated-Analysis-using-DataSHIELD-I" target="blank">Reproducibility package</a></li>
+    download: false
+    sharing: false
+    fontsettings:
+      theme: white
+      family: sans
+      size: 2

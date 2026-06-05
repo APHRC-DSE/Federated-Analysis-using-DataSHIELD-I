@@ -1,0 +1,106 @@
+# Exploring the catalogue {#explore}
+
+Before extracting anything we explore the federation with dsOMOP's **aggregate**
+functions. These introspect each site's OMOP schema and return only
+disclosure-checked metadata and counts — no patient-level data is transferred.
+This is how an analyst decides *what* to study.
+
+## What tables does each site expose?
+
+dsOMOP discovers tables at runtime by reading the CDM schema; it does not
+hard-code an OMOP version. Here are the tables visible on the first site:
+
+```{r tables}
+tabs <- ds.omop.tables(symbol = "omop", conns = conns)
+head(tabs[[1]], 15)
+```
+
+## What variables live in a table?
+
+`ds.omop.columns()` lists a table's fields. The `person` table carries the
+demographics we will use, and the event tables carry the clinical concepts:
+
+```{r columns}
+ds.omop.columns("person", symbol = "omop", conns = conns)[[1]]
+ds.omop.columns("condition_occurrence", symbol = "omop", conns = conns)[[1]]
+```
+
+## How big is each table, per site and pooled?
+
+`ds.omop.table.stats()` returns disclosure-checked **row** counts and
+**distinct-person** counts for each site. Because the cohort is sharded by
+person into disjoint slices, the pooled distinct-person count is the sum across
+sites — and for `person` it reconstructs the whole cohort (2&nbsp;694), without
+any site exposing more than its own shard.
+
+```{r counts}
+sites <- names(conns)
+tbls  <- c("person", "condition_occurrence", "drug_exposure", "measurement")
+
+per_site <- lapply(tbls, function(tb)
+  ds.omop.table.stats(tb, symbol = "omop", conns = conns)$per_site)
+names(per_site) <- tbls
+
+tabulate_field <- function(field) {
+  m <- t(vapply(per_site, function(ps)
+    vapply(sites, function(s) as.numeric(ps[[s]][[field]]), numeric(1)),
+    numeric(length(sites))))
+  colnames(m) <- sites
+  cbind(m, pooled = rowSums(m))
+}
+```
+
+Distinct persons per table — the `person` row is the full cohort, and the event
+tables show how many of those persons have records of each kind:
+
+```{r persons}
+tabulate_field("persons")
+```
+
+Total rows per table:
+
+```{r rows}
+tabulate_field("rows")
+```
+
+## Which clinical concepts are most prevalent?
+
+`ds.omop.concept.prevalence()` ranks concepts by the number of distinct persons
+who have them, fusing the three shards into one pooled ranking. A concept is
+reported only when every shard contributes (otherwise it is suppressed), so the
+ranking is both pooled and disclosure-safe.
+
+The most prevalent **conditions** point straight at a question — gastrointestinal
+haemorrhage and peptic ulcer are both here:
+
+```{r prev-cond}
+prev_cond <- ds.omop.concept.prevalence(
+  "condition_occurrence", metric = "persons", top_n = 12,
+  scope = "pooled", symbol = "omop", conns = conns)
+subset(prev_cond$pooled, !suppressed, select = c("concept_name", "n_persons"))
+```
+
+And the most prevalent **drugs** are dominated by NSAIDs and analgesics — the
+exposure of interest for a GI-bleed study:
+
+```{r prev-drug}
+prev_drug <- ds.omop.concept.prevalence(
+  "drug_exposure", metric = "persons", top_n = 12,
+  scope = "pooled", symbol = "omop", conns = conns)
+subset(prev_drug$pooled, !suppressed, select = c("concept_name", "n_persons"))
+```
+
+## The study this suggests
+
+The catalogue hands us a clinically coherent question. Gastrointestinal
+haemorrhage is well represented; peptic ulcer — its best-known antecedent — is
+even more common; and the cohort is saturated with NSAIDs, the classic
+pharmacological trigger. So we will build a person-level frame fusing:
+
+| Source table | Feature(s) | Role |
+|---|---|---|
+| `person` | `sex`, `birth_year` (→ `age`) | adjustment |
+| `condition_occurrence` | `gi_bleed`, `peptic_ulcer` | outcome, key predictor |
+| `drug_exposure` | `nsaid` (any of 5), `nsaid_n` (count), `diclofenac` | exposure |
+
+The next chapter extracts exactly this, on the server, in one shot.
