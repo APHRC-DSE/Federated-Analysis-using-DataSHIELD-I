@@ -13,8 +13,10 @@ ARG ROCK_BASE=datashield/rock-base:6.3.5-R4.5.3
 FROM ${ROCK_BASE}
 
 # Git ref (tag or commit SHA) in isglobal-brge/dsOMOP to install.
-# Pinned to the v2.0.0 release. Equivalent commit:
-#   a4dfe1a2c986af506d956aa19fed7ee32fb519b1
+# Pinned to the v2.0.0 release; the tag resolves to commit:
+#   5e30952 (tip of the v2.0.0 line: per-engine OMOP CDM resource types
+#   under their own Opal category; SQLite/DuckDB expose the optional
+#   CDM/vocabulary schemas; resource docs aligned to the omop.dbi.db model)
 # Pass --build-arg DSOMOP_REF=<sha> to pin an exact commit instead of the tag.
 ARG DSOMOP_REF=2.0.0
 

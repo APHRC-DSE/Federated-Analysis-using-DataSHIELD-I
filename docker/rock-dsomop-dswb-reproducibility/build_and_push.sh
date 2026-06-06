@@ -12,7 +12,7 @@ set -euo pipefail
 
 IMAGE="${IMAGE:-}"
 TAG="${TAG:-2.0.0}"
-DSOMOP_REF="${DSOMOP_REF:-2.0.0}"   # tag 2.0.0 == commit a4dfe1a; override with a SHA to pin exactly
+DSOMOP_REF="${DSOMOP_REF:-2.0.0}"   # tag 2.0.0 == commit 5e30952; override with a SHA to pin exactly
 ROCK_BASE="${ROCK_BASE:-datashield/rock-base:6.3.5-R4.5.3}"
 
 if [ -z "$IMAGE" ]; then
