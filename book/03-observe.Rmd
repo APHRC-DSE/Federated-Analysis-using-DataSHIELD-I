@@ -22,6 +22,14 @@ its distribution sits in a plausible human range (the pooled view follows below)
 ds.summary("age")[[1]]
 ```
 
+The mean age sits near 62 — older than a present-day population, but expected
+here. The GiBleed cohort is a frozen synthetic snapshot (Synthea-generated,
+released 2019-05-25, with records ending 2019-07-03), and no person in it is born
+after 1986. Because the data are fixed at that 2019 horizon we derive `age`
+against a constant reference year (2020) rather than the system date: a
+`Sys.Date()` value would drift on every rebuild, whereas a fixed anchor keeps the
+figures in this chapter reproducible.
+
 ## Prevalence over the full cohort
 
 Because absent events were zero-filled (Chapter \@ref(extract)), these

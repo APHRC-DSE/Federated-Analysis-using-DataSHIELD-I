@@ -268,6 +268,7 @@ its distribution sits in a plausible human range (the pooled view follows below)
 <span id="cb36-8"><a href="observe.html#cb36-8" tabindex="-1"></a><span class="co">#&gt; $`quantiles &amp; mean`</span></span>
 <span id="cb36-9"><a href="observe.html#cb36-9" tabindex="-1"></a><span class="co">#&gt;       5%      10%      25%      50%      75%      90%      95%     Mean </span></span>
 <span id="cb36-10"><a href="observe.html#cb36-10" tabindex="-1"></a><span class="co">#&gt; 41.00000 44.00000 50.00000 59.00000 69.00000 83.00000 98.00000 61.54106</span></span></code></pre></div>
+<p>The mean age sits near 62 — older than a present-day population, but expected here. The GiBleed cohort is a frozen synthetic snapshot (Synthea-generated, released 2019-05-25, with records ending 2019-07-03), and no person in it is born after 1986. Because the data are fixed at that 2019 horizon we derive <code>age</code> against a constant reference year (2020) rather than the system date: a <code>Sys.Date()</code> value would drift on every rebuild, whereas a fixed anchor keeps the figures in this chapter reproducible.</p>
 </div>
 <div id="prevalence-over-the-full-cohort" class="section level2 hasAnchor" number="8.2">
 <h2><span class="header-section-number">8.2</span> Prevalence over the full cohort<a href="observe.html#prevalence-over-the-full-cohort" class="anchor-section" aria-label="Anchor link to header"></a></h2>
