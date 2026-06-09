@@ -18,9 +18,10 @@ resource named **`gibleed`** — the path `omop_demo.gibleed` the client logs in
 ## The resource format
 
 A resource is an ordinary `resourcer` resource that the dsOMOP resolver matches
-**by its format, `omop.dbi.db`**. All the connection details ride inside a readable
-URL — the engine, host, port and database, with any non-default schemas as query
-parameters:
+**by its format, `omop.dbi.db`**. We register it through the dsOMOP provider with
+structured connection parameters; Opal stores the resolver-ready definition as a
+readable URL — the engine, host, port and database, with any non-default schemas as
+query parameters:
 
 ```
 omop+dbi:<dbms>://<host>:<port>/<database>?cdm_schema=...&vocabulary_schema=...
@@ -51,18 +52,24 @@ Two consequences worth highlighting:
   resolves `omopdb` to its own database.
 - **Credentials are not in the URL.** The DB user/password (`postgres`/`postgres`)
   are stored separately as the resource's `identity` / `secret`.
+- **Bound to the dsOMOP provider.** Registering through the provider, rather than as a
+  bare URL, also records which package backs the resource, so no separate package hint
+  is needed.
 
-In R, the script builds that URL and creates the resource roughly like this (site
-URLs and credentials are hardcoded to match steps 2–3):
+In R, the script registers the resource through the dsOMOP provider, passing the
+connection details as structured parameters (site values and credentials are
+hardcoded to match steps 2–3):
 
 ```r
 library(opalr)
 o <- opal.login("administrator", "password", "http://localhost:48080")
-opal.resource_create(
+opal.resource_extension_create(
   o, "omop_demo", name = "gibleed",
-  url      = "omop+dbi:postgresql://omopdb:5432/omop?cdm_schema=cdm",
-  format   = "omop.dbi.db",
-  identity = "postgres", secret = "postgres")
+  provider    = "dsOMOP",
+  factory     = "postgresql",
+  parameters  = list(host = "omopdb", port = 5432L,
+                     database = "omop", cdm_schema = "cdm"),
+  credentials = list(username = "postgres", password = "postgres"))
 opal.logout(o)
 ```
 

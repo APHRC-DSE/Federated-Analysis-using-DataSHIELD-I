@@ -13,17 +13,24 @@
 # Rock "omop" profile (handled by the image + easy-opal in step 2).
 #
 # How dsOMOP resources work:
-#   - The resolver in the Rock "omop" profile matches resources whose
-#     format == "omop.dbi.db".
-#   - All connection details travel in a readable resource URL:
-#         omop+dbi:<dbms>://<host>:<port>/<database>?cdm_schema=...&vocabulary_schema=...
-#     Here we only give the CDM schema: the vocabulary schema defaults to it,
-#     and an omitted CDM schema would fall back to the engine's default
-#     (PostgreSQL: "public").
-#   - DB credentials are NOT in the URL; they are the resource's identity/secret.
+#   - We register the resource through the dsOMOP resource provider with the
+#     engine-specific factory ("postgresql" here). Opal then files it under the
+#     "OMOP CDM Database" resource category and computes, server-side, the same
+#     resolver-ready resource a hand-written URL would produce:
+#         format == "omop.dbi.db"
+#         url    == omop+dbi:postgresql://<host>:<port>/<database>?cdm_schema=...
+#     The resolver in the Rock "omop" profile matches on that format.
+#   - Connection details are passed as structured parameters (host, port,
+#     database, cdm_schema). We give only the CDM schema: the vocabulary schema
+#     defaults to it, and an omitted CDM schema would fall back to the engine
+#     default (PostgreSQL: "public").
+#   - DB credentials are NOT parameters; they are the resource identity/secret.
 #   - host/port point at the PostgreSQL container over the site's Docker network
 #     (alias "omopdb", internal port 5432 — from step 3), so the same resource
 #     definition is valid on every site regardless of host port mapping.
+#   - Binding to the dsOMOP provider also tells Opal which package backs the
+#     resource, so no explicit package hint is needed (the federated analysis
+#     loads dsOMOP through ds.omop.connect() in any case).
 #
 # Ports / credentials are HARDCODED below — the same fixed values steps 2, 3, 5
 # and the book use. If you changed a port in step 2, change it here too.
@@ -65,27 +72,6 @@ pg_pass   <- "postgres"
 project   <- "omop_demo"
 resource  <- "gibleed"
 
-# --- build the dsOMOP resource URL (matches dsOMOP 2.0.0 R/resource.R) ------
-make_omop_url <- function(dbms, host, port, database, cdm_schema = NULL,
-                          vocabulary_schema = NULL) {
-  url <- sprintf("omop+dbi:%s://%s:%d/%s", dbms, host, as.integer(port), database)
-  q <- character(0)
-  if (!is.null(cdm_schema))
-    q <- c(q, paste0("cdm_schema=", utils::URLencode(cdm_schema, reserved = TRUE)))
-  if (!is.null(vocabulary_schema))
-    q <- c(q, paste0("vocabulary_schema=", utils::URLencode(vocabulary_schema, reserved = TRUE)))
-  if (length(q) > 0) url <- paste0(url, "?", paste(q, collapse = "&"))
-  url
-}
-
-# Single schema in this demo: the vocabulary tables (concept, ...) live in the
-# same "cdm" schema. We pass only cdm_schema; dsOMOP defaults the vocabulary
-# schema to it, so this is equivalent to setting both.
-omop_url <- make_omop_url(
-  dbms = "postgresql", host = pg_host, port = pg_port,
-  database = pg_db, cdm_schema = pg_schema
-)
-
 cat(sprintf("Resource on each site: project='%s' name='%s' format='omop.dbi.db'\n",
             project, resource))
 cat(sprintf("  -> %s://%s:%s/%s  schema=%s  (user '%s')\n\n",
@@ -106,10 +92,15 @@ for (site in names(sites)) {
   # Recreate so re-runs always reflect the current config (create skips if it
   # already exists, so delete first).
   opal.resource_delete(o, project, resource, silent = TRUE)
-  opal.resource_create(o, project, name = resource, url = omop_url,
-                       description = "OMOP CDM (GiBleed shard) for dsOMOP",
-                       format = "omop.dbi.db",
-                       identity = pg_user, secret = pg_pass)
+  opal.resource_extension_create(
+    o, project, name = resource,
+    provider    = "dsOMOP",
+    factory     = "postgresql",
+    parameters  = list(host = pg_host, port = as.integer(pg_port),
+                       database = pg_db, cdm_schema = pg_schema),
+    credentials = list(username = pg_user, password = pg_pass),
+    description = "OMOP CDM (GiBleed shard) for dsOMOP"
+  )
 
   if (opal.resource_exists(o, project, resource)) {
     cat(sprintf("    resource '%s.%s' created OK\n\n", project, resource))

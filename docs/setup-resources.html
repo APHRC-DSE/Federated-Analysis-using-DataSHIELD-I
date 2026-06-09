@@ -254,7 +254,8 @@ resource named <strong><code>gibleed</code></strong> — the path <code>omop_dem
 <div id="the-resource-format" class="section level2 hasAnchor" number="4.1">
 <h2><span class="header-section-number">4.1</span> The resource format<a href="setup-resources.html#the-resource-format" class="anchor-section" aria-label="Anchor link to header"></a></h2>
 <p>A resource is an ordinary <code>resourcer</code> resource that the dsOMOP resolver matches
-<strong>by its format, <code>omop.dbi.db</code></strong>. All the connection details ride inside a readable
+<strong>by its format, <code>omop.dbi.db</code></strong>. We register it through the dsOMOP provider with
+structured connection parameters; Opal stores the resolver-ready definition as a readable
 URL — the engine, host, port and database, with any non-default schemas as query
 parameters:</p>
 <pre><code>omop+dbi:&lt;dbms&gt;://&lt;host&gt;:&lt;port&gt;/&lt;database&gt;?cdm_schema=...&amp;vocabulary_schema=...</code></pre>
@@ -279,17 +280,21 @@ The same resource definition is therefore valid on every site; each Rock session
 resolves <code>omopdb</code> to its own database.</li>
 <li><strong>Credentials are not in the URL.</strong> The DB user/password (<code>postgres</code>/<code>postgres</code>)
 are stored separately as the resource’s <code>identity</code> / <code>secret</code>.</li>
+<li><strong>Bound to the dsOMOP provider.</strong> Registering through the provider, rather than as a
+bare URL, also records which package backs the resource, so no separate package hint is needed.</li>
 </ul>
-<p>In R, the script builds that URL and creates the resource roughly like this (site
-URLs and credentials are hardcoded to match steps 2–3):</p>
+<p>In R, the script registers the resource through the dsOMOP provider, passing the connection
+details as structured parameters (site values and credentials are hardcoded to match steps 2–3):</p>
 <div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="setup-resources.html#cb16-1" tabindex="-1"></a><span class="fu">library</span>(opalr)</span>
 <span id="cb16-2"><a href="setup-resources.html#cb16-2" tabindex="-1"></a>o <span class="ot">&lt;-</span> <span class="fu">opal.login</span>(<span class="st">&quot;administrator&quot;</span>, <span class="st">&quot;password&quot;</span>, <span class="st">&quot;http://localhost:48080&quot;</span>)</span>
-<span id="cb16-3"><a href="setup-resources.html#cb16-3" tabindex="-1"></a><span class="fu">opal.resource_create</span>(</span>
+<span id="cb16-3"><a href="setup-resources.html#cb16-3" tabindex="-1"></a><span class="fu">opal.resource_extension_create</span>(</span>
 <span id="cb16-4"><a href="setup-resources.html#cb16-4" tabindex="-1"></a>  o, <span class="st">&quot;omop_demo&quot;</span>, <span class="at">name =</span> <span class="st">&quot;gibleed&quot;</span>,</span>
-<span id="cb16-5"><a href="setup-resources.html#cb16-5" tabindex="-1"></a>  <span class="at">url      =</span> <span class="st">&quot;omop+dbi:postgresql://omopdb:5432/omop?cdm_schema=cdm&quot;</span>,</span>
-<span id="cb16-6"><a href="setup-resources.html#cb16-6" tabindex="-1"></a>  <span class="at">format   =</span> <span class="st">&quot;omop.dbi.db&quot;</span>,</span>
-<span id="cb16-7"><a href="setup-resources.html#cb16-7" tabindex="-1"></a>  <span class="at">identity =</span> <span class="st">&quot;postgres&quot;</span>, <span class="at">secret =</span> <span class="st">&quot;postgres&quot;</span>)</span>
-<span id="cb16-8"><a href="setup-resources.html#cb16-8" tabindex="-1"></a><span class="fu">opal.logout</span>(o)</span></code></pre></div>
+<span id="cb16-5"><a href="setup-resources.html#cb16-5" tabindex="-1"></a>  <span class="at">provider    =</span> <span class="st">&quot;dsOMOP&quot;</span>,</span>
+<span id="cb16-6"><a href="setup-resources.html#cb16-6" tabindex="-1"></a>  <span class="at">factory     =</span> <span class="st">&quot;postgresql&quot;</span>,</span>
+<span id="cb16-7"><a href="setup-resources.html#cb16-7" tabindex="-1"></a>  <span class="at">parameters  =</span> <span class="fu">list</span>(<span class="at">host =</span> <span class="st">&quot;omopdb&quot;</span>, <span class="at">port =</span> <span class="dv">5432L</span>,</span>
+<span id="cb16-8"><a href="setup-resources.html#cb16-8" tabindex="-1"></a>                     <span class="at">database =</span> <span class="st">&quot;omop&quot;</span>, <span class="at">cdm_schema =</span> <span class="st">&quot;cdm&quot;</span>),</span>
+<span id="cb16-9"><a href="setup-resources.html#cb16-9" tabindex="-1"></a>  <span class="at">credentials =</span> <span class="fu">list</span>(<span class="at">username =</span> <span class="st">&quot;postgres&quot;</span>, <span class="at">password =</span> <span class="st">&quot;postgres&quot;</span>))</span>
+<span id="cb16-10"><a href="setup-resources.html#cb16-10" tabindex="-1"></a><span class="fu">opal.logout</span>(o)</span></code></pre></div>
 </div>
 <div id="a-note-on-disclosure-control" class="section level2 hasAnchor" number="4.2">
 <h2><span class="header-section-number">4.2</span> A note on disclosure control<a href="setup-resources.html#a-note-on-disclosure-control" class="anchor-section" aria-label="Anchor link to header"></a></h2>
